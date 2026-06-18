@@ -13,8 +13,13 @@ use OpenSEO\Admin\Assets as AdminAssets;
 use OpenSEO\Admin\SettingsPage;
 use OpenSEO\Ai\Abilities;
 use OpenSEO\Contracts\Hookable;
-use OpenSEO\Frontend\MetaTags;
+use OpenSEO\Frontend\Head\Canonical;
+use OpenSEO\Frontend\Head\Description;
+use OpenSEO\Frontend\Head\HeadPrinter;
+use OpenSEO\Frontend\Head\Robots;
 use OpenSEO\Meta\PostMeta;
+use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
 
 /**
@@ -77,11 +82,19 @@ final class Plugin {
 	 * @return array<int, Hookable>
 	 */
 	private function modules(): array {
-		$options = new Options();
+		$options   = new Options();
+		$variables = new Variables( $options );
+		$resolver  = new Resolver( $options, $variables );
 
 		$modules = array(
 			new PostMeta(),
-			new MetaTags( $options ),
+			new HeadPrinter(
+				array(
+					new Description( $resolver ),
+					new Robots( $resolver ),
+					new Canonical( $resolver ),
+				)
+			),
 			new Abilities(),
 		);
 
