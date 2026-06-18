@@ -61,7 +61,7 @@
 
 - [ ] **Step 1: Write the failing test**
 
-Replace the body of `tests/Unit/OptionsTest.php` test methods with the new shape (keep the `setUp`/`tearDown` and the `wp_strip_*` helpers at the bottom of the file):
+Replace the four test method bodies in `tests/Unit/OptionsTest.php` with the new shape. **Keep intact** the `setUp`/`tearDown` methods AND the `wp_strip_all_tags_stub()` / `wp_strip_tags_compat()` helper functions at the bottom of the file — the `sanitize_text_field` alias below still calls `wp_strip_tags_compat()`, so deleting it breaks the test with an undefined-function fatal:
 
 ```php
 public function test_returns_on_page_defaults_when_nothing_is_stored(): void {
@@ -246,13 +246,18 @@ final class VariablesTest extends TestCase {
         $this->assertSame( 'A short summary.', $variables->replace( '%excerpt%', 42 ) );
     }
 
-    public function test_collapses_whitespace_when_tokens_are_empty(): void {
+    public function test_strips_separators_when_tokens_are_empty(): void {
+        // Mock the full set of functions Variables touches when $post_id > 0,
+        // otherwise Brain Monkey fatals on the first unmocked call.
+        Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
         Functions\when( 'get_the_title' )->justReturn( '' );
+        Functions\when( 'get_the_excerpt' )->justReturn( '' );
+        Functions\when( 'wp_strip_all_tags' )->returnArg();
 
         $variables = new Variables( new Options() );
 
-        // Empty %title% leaves no double spaces or dangling separators.
-        $this->assertSame( '-', $variables->replace( '%title% %sep%', 7 ) );
+        // Empty %title% leaves no double spaces or dangling separator.
+        $this->assertSame( '', $variables->replace( '%title% %sep%', 7 ) );
     }
 }
 ```
@@ -308,11 +313,24 @@ final class Variables {
 
         $output = strtr( $template, $replacements );
 
-        // Collapse whitespace left by empty tokens, then trim stray separators.
-        $output = (string) preg_replace( '/\s+/', ' ', $output );
-        $separator = (string) $this->options->get( 'title_separator' );
+        // Collapse whitespace left by empty tokens.
+        $output = trim( (string) preg_replace( '/\s+/', ' ', $output ) );
 
-        return trim( $output, " {$separator}" );
+        // Strip leading/trailing separators left dangling by empty tokens.
+        // Treat the separator as a whole string (it may be multi-character),
+        // not as a character set the way trim()'s charlist would.
+        $separator = trim( (string) $this->options->get( 'title_separator' ) );
+
+        if ( '' !== $separator ) {
+            $quoted = preg_quote( $separator, '/' );
+            $output = (string) preg_replace(
+                '/^(?:' . $quoted . '\s*)+|(?:\s*' . $quoted . ')+$/',
+                '',
+                $output
+            );
+        }
+
+        return trim( $output );
     }
 }
 ```
@@ -372,6 +390,22 @@ final class MetaRegistrationTest extends WP_UnitTestCase {
         update_post_meta( $post_id, '_openseo_title', 'Custom title' );
 
         $this->assertSame( 'Custom title', get_post_meta( $post_id, '_openseo_title', true ) );
+    }
+
+    public function test_meta_round_trips_through_rest_like_the_editor(): void {
+        $editor_id = self::factory()->user->create( array( 'role' => 'editor' ) );
+        wp_set_current_user( $editor_id );
+        $post_id = self::factory()->post->create( array( 'post_author' => $editor_id ) );
+
+        // Mirror what useEntityProp does: PUT the post with a meta payload.
+        $request = new \WP_REST_Request( 'POST', '/wp/v2/posts/' . $post_id );
+        $request->set_body_params(
+            array( 'meta' => array( '_openseo_title' => 'Via REST' ) )
+        );
+        $response = rest_do_request( $request );
+
+        $this->assertSame( 200, $response->get_status() );
+        $this->assertSame( 'Via REST', get_post_meta( $post_id, '_openseo_title', true ) );
     }
 }
 ```
@@ -442,6 +476,12 @@ final class PostMeta implements Hookable {
         );
 
         foreach ( $post_types as $post_type ) {
+            // The block editor only round-trips meta over REST when the post
+            // type supports custom-fields; show_in_rest alone is not enough.
+            if ( ! post_type_supports( $post_type, 'custom-fields' ) ) {
+                add_post_type_support( $post_type, 'custom-fields' );
+            }
+
             foreach ( self::KEYS as $key ) {
                 register_post_meta(
                     $post_type,
@@ -476,12 +516,16 @@ final class PostMeta implements Hookable {
     /**
      * Authorize reading/writing the meta over REST.
      *
-     * @param bool   $allowed Whether the user can act.
-     * @param string $meta_key Meta key.
-     * @param int    $post_id Post being edited.
+     * Loose parameter types on purpose: WordPress invokes this auth filter with
+     * different value shapes depending on context, so strict scalar hints here
+     * can fatal under declare(strict_types=1).
+     *
+     * @param mixed $allowed  WP-provided default (unused).
+     * @param mixed $meta_key Meta key (unused).
+     * @param mixed $post_id  Post being edited.
      */
-    public function can_edit( bool $allowed, string $meta_key, int $post_id ): bool {
-        return current_user_can( 'edit_post', $post_id );
+    public function can_edit( $allowed, $meta_key, $post_id ): bool {
+        return current_user_can( 'edit_post', (int) $post_id );
     }
 }
 ```
@@ -539,7 +583,9 @@ final class ResolverTest extends TestCase {
         Monkey\setUp();
         Functions\when( 'get_option' )->justReturn( array() );
         Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
+        Functions\when( 'get_the_excerpt' )->justReturn( '' );
         Functions\when( 'wp_strip_all_tags' )->returnArg();
+        Functions\when( 'is_front_page' )->justReturn( false );
     }
 
     protected function tearDown(): void {
@@ -847,6 +893,8 @@ public function test_singular_head_outputs_description_robots_canonical(): void 
     $this->assertStringContainsString( 'A summary for search engines.', $output );
     $this->assertStringContainsString( '<meta name="robots" content="index, follow"', $output );
     $this->assertStringContainsString( 'rel="canonical"', $output );
+    // Exactly one canonical — the core's rel_canonical must be removed.
+    $this->assertSame( 1, substr_count( $output, 'rel="canonical"' ) );
 }
 
 public function test_noindex_override_is_reflected_in_head(): void {
@@ -927,6 +975,8 @@ final class HeadPrinter implements Hookable {
      * Print OpenSEO's head tags early in wp_head.
      */
     public function register(): void {
+        // OpenSEO emits its own canonical; drop the core's to avoid duplicates.
+        remove_action( 'wp_head', 'rel_canonical' );
         add_action( 'wp_head', array( $this, 'print_head' ), 1 );
     }
 
@@ -1263,10 +1313,14 @@ final class OpenGraph implements Presenter {
                 continue;
             }
 
+            // URL-valued properties get esc_url (validates the protocol);
+            // text-valued ones get esc_attr.
+            $is_url = in_array( $property, array( 'og:url', 'og:image' ), true );
+
             printf(
                 '<meta property="%s" content="%s" />' . "\n",
                 esc_attr( $property ),
-                esc_attr( $value )
+                $is_url ? esc_url( $value ) : esc_attr( $value )
             );
         }
     }
@@ -1310,7 +1364,7 @@ final class Twitter implements Presenter {
             printf(
                 '<meta name="%s" content="%s" />' . "\n",
                 esc_attr( $name ),
-                esc_attr( $value )
+                'twitter:image' === $name ? esc_url( $value ) : esc_attr( $value )
             );
         }
     }
@@ -1457,10 +1511,14 @@ Create `assets/src/editor/index.js`:
 
 ```javascript
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
+// WP 7.0: PluginDocumentSettingPanel lives in @wordpress/editor
+// (it was removed from @wordpress/edit-post).
+import {
+	PluginDocumentSettingPanel,
+	store as editorStore,
+} from '@wordpress/editor';
 import { useEntityProp } from '@wordpress/core-data';
 import { useSelect } from '@wordpress/data';
-import { store as editorStore } from '@wordpress/editor';
 import {
 	TextControl,
 	TextareaControl,
@@ -1906,6 +1964,15 @@ Expected: all green; `assets/build/editor.js` builds without errors.
 - [ ] **Smoke-test the whole flow in wp-env**
 
 Create a post, fill the OpenSEO panel (title, description, social image, noindex toggle), publish, and confirm the front-end `<head>` reflects every field; toggle noindex and confirm `content="noindex, follow"`.
+
+- [ ] **Sync the docs that referenced `MetaTags`**
+
+`README.md` (architecture tree) and `CLAUDE.md` (key modules) still describe `Frontend/MetaTags.php`. Update both to reference the new `Frontend\Head\*` layer and `Meta\*`, then commit:
+
+```bash
+git add README.md CLAUDE.md
+git commit -m "docs: replace MetaTags with Frontend\\Head + Meta layers"
+```
 
 ---
 
