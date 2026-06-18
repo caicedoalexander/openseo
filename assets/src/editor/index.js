@@ -135,13 +135,13 @@ function AdvancedTab() {
 	);
 }
 
-const TABS = [
-	{ name: 'general', title: __( 'General', 'openseo' ) },
-	{ name: 'social', title: __( 'Social', 'openseo' ) },
-	{ name: 'advanced', title: __( 'Advanced', 'openseo' ) },
-];
-
 function OpenSeoPanel() {
+	const TABS = [
+		{ name: 'general', title: __( 'General', 'openseo' ) },
+		{ name: 'social', title: __( 'Social', 'openseo' ) },
+		{ name: 'advanced', title: __( 'Advanced', 'openseo' ) },
+	];
+
 	return (
 		<PluginDocumentSettingPanel
 			name="openseo-panel"
