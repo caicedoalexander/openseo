@@ -261,6 +261,11 @@ final class Sitemap implements Hookable {
 }
 ```
 
+> Note: these callbacks take `mixed` params (refining the spec §3 signatures,
+> which showed `bool`/`string`) because WordPress invokes filter callbacks with
+> unguaranteed types at the plugin boundary — the same defensive pattern already
+> used by `PostMeta::can_edit`. Each method casts the value it needs internally.
+
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `vendor/bin/phpunit --filter SitemapTest tests/Unit/Sitemap/SitemapTest.php`
@@ -580,7 +585,7 @@ git commit -m "feat(sitemap): register the Sitemap module in the composition roo
 - Create: `tests/Integration/SitemapTest.php`
 
 **Interfaces:**
-- Consumes: `Sitemap::register()` (Task 1), `Options::OPTION_KEY`, core `WP_Sitemaps` / `WP_Sitemaps_Posts`.
+- Consumes: the sitemap filters registered by the booted plugin (Task 4), `Options::OPTION_KEY`, core `WP_Sitemaps` / `WP_Sitemaps_Posts`.
 - Produces: end-to-end coverage that noindex exclusion, author-provider removal, and the master toggle behave against a real WordPress runtime.
 
 - [ ] **Step 1: Write the integration tests**
@@ -600,16 +605,21 @@ declare( strict_types=1 );
 namespace OpenSEO\Tests\Integration;
 
 use OpenSEO\Settings\Options;
-use OpenSEO\Sitemap\Sitemap;
 use WP_Sitemaps;
 use WP_Sitemaps_Posts;
 use WP_UnitTestCase;
 
 final class SitemapTest extends WP_UnitTestCase {
 
+	/**
+	 * The booted plugin already registers the sitemap filters globally (proven by
+	 * PluginBootTest::test_sitemap_filters_are_registered_after_boot), so the tests
+	 * drive behavior through the live option instead of re-registering the module.
+	 * setUp only resets the option to a known baseline (authors off, sitemap on).
+	 */
 	public function setUp(): void {
 		parent::setUp();
-		( new Sitemap( new Options() ) )->register();
+		delete_option( Options::OPTION_KEY );
 	}
 
 	public function test_noindexed_post_is_excluded_from_post_url_list(): void {
@@ -656,11 +666,11 @@ final class SitemapTest extends WP_UnitTestCase {
 }
 ```
 
-> Note: `setUp()` registers a fresh module instance; the booted plugin may have
-> registered the same filters globally. Re-running the (pure) callbacks is
-> idempotent for these assertions, so the duplication is harmless. Each test runs
-> inside a rolled-back DB transaction, so `update_option` changes never leak
-> between tests.
+> Note: the sitemap filters are registered exactly once, by the booted plugin
+> (Task 4) — the tests do not re-register the module, so there is no second filter
+> instance to reason about. Each test runs inside a rolled-back DB transaction, so
+> the `setUp()` `delete_option` and any `update_option` changes never leak between
+> tests.
 
 - [ ] **Step 2: Run the new tests**
 
