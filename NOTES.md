@@ -90,6 +90,26 @@ npm run test:js            # unit tests JS
 
 > Mantener los tres gates (PHPCS, PHPStan, PHPUnit) en verde antes de cada commit.
 
+### IA (Fase 2): qué cubre CI y cómo probar de verdad
+
+El AI Client de WP 7.0 está en el core, pero **CI no tiene ningún conector configurado** (sin
+clave de proveedor), así que la suite solo ejercita el camino determinista
+**`openseo_no_connector`** y la exposición REST de las abilities
+(`tests/Integration/AbilitiesTest.php`). El editor invoca las abilities con `apiFetch` al
+endpoint REST `/wp-abilities/v1/abilities/<name>/run` (no `executeAbility`).
+
+Para probar una generación **real** contra un proveedor (no va a CI, requiere clave):
+
+```bash
+# instala un AI Provider plugin en wp-env y actívalo
+npm run env:run -- cli wp plugin install ai-provider-for-openai --activate
+# configura la clave en Settings → Connectors (o vía constante en wp-config)
+# luego, en el editor de una entrada, pulsa "Generate with AI"
+```
+
+Sin conector, el panel del editor muestra "Connect an AI provider… Settings → Connectors" en
+lugar del botón, y la pestaña **Settings → OpenSEO → AI** indica "No AI connector is configured".
+
 ---
 
 ## 6. WP-CLI (vía wp-env)

@@ -86,9 +86,20 @@ and the wp-env integration suite.
 - `Settings/Options.php` — all settings live under a **single option key** `openseo_settings`
   (`Options::OPTION_KEY`). Typed read (`all`/`get` merge over `defaults()`) and `sanitize()` on
   write. Single key keeps activation seeding and uninstall cleanup trivial.
-- `Ai/Abilities.php` — registers the ability category + abilities on `wp_abilities_api_init`,
-  guarded by `function_exists('wp_register_ability')` so it degrades gracefully pre-7.0. Each
-  ability declares `input_schema`, `output_schema`, `execute_callback`, and `permission_callback`.
+- `Ai/` — the AI layer. `Abilities` registers the `openseo` category on
+  `wp_abilities_api_categories_init` (the category MUST register on this hook, not on
+  `wp_abilities_api_init`, or it is rejected) and the `generate-meta-description` /
+  `generate-title` abilities on `wp_abilities_api_init` (all `function_exists`-guarded for
+  pre-7.0). Each ability declares `input_schema`, `output_schema`, `execute_callback`,
+  `permission_callback`, and `meta` (`show_in_rest => true` — load-bearing, so the editor can
+  reach the ability over REST — plus `annotations.{readonly:false,destructive:false,idempotent:false}`).
+  Each `execute_callback` calls the WP 7.0 AI Client (`wp_ai_client_prompt()`), guarded by
+  `Ai\Connector::is_text_generation_available()`, and returns a suggestion or a `WP_Error`
+  (`openseo_no_connector` when Settings → Connectors has none — no silent fallback). `Prompts`
+  builds the prompt strings (pure, unit-tested); `Connector` is the shared readiness check +
+  `settings_url()`. The editor invokes the same abilities via `apiFetch` POST to
+  `/wp-abilities/v1/abilities/<name>/run` (NOT `@wordpress/abilities`'s `executeAbility`, which
+  runs client-side JS abilities, not PHP ones; and WP 7.0 ships no `wp-abilities` script handle).
 - `Meta/` — the on-page core: `PostMeta` registers the per-entry `_openseo_*` meta
   (`show_in_rest` + `auth_callback`, with `custom-fields` support so the block editor can
   round-trip it); `Resolver` computes effective values via the cascade *per-entry override →

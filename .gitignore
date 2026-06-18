@@ -23,6 +23,10 @@
 *.log
 debug.log
 
+# Browser-verification artifacts (Playwright/manual QA screenshots)
+/.playwright-mcp/
+/*.png
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db
