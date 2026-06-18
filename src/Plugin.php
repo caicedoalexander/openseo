@@ -14,6 +14,7 @@ use OpenSEO\Admin\SettingsPage;
 use OpenSEO\Ai\Abilities;
 use OpenSEO\Contracts\Hookable;
 use OpenSEO\Frontend\MetaTags;
+use OpenSEO\Meta\PostMeta;
 use OpenSEO\Settings\Options;
 
 /**
@@ -79,6 +80,7 @@ final class Plugin {
 		$options = new Options();
 
 		$modules = array(
+			new PostMeta(),
 			new MetaTags( $options ),
 			new Abilities(),
 		);
