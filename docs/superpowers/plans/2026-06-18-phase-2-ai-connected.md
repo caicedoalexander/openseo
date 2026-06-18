@@ -25,7 +25,7 @@
 
 **Created (PHP):**
 - `src/Ai/Prompts.php` — pure prompt builder (system instructions + user prompt). No WordPress calls.
-- `src/Ai/Connector.php` — `static is_text_generation_available(): bool`; the one place that asks the AI Client "can I generate text right now?".
+- `src/Ai/Connector.php` — `static is_text_generation_available(): bool` (the one place that asks the AI Client "can I generate text right now?") + `static settings_url(): string` (single source of truth for the Settings → Connectors link).
 - `stubs/ai-client.php` — PHPStan stubs for `wp_ai_client_prompt()`, `WP_AI_Client_Prompt_Builder`, and the Connectors functions.
 
 **Created (tests):**
@@ -51,6 +51,55 @@
 
 ---
 
+## Task 0: Pre-flight — confirm the WP 7.0 AI/Abilities API surface
+
+**Files:** none (verification only; runs in wp-env). No commit.
+
+**Why:** Tasks 1–9 encode assumptions about brand-new WordPress 7.0 APIs. Confirm the few high-risk ones once, up front, so the stubs and the ability registration are right from the first commit. If a check disagrees, adjust the affected task's code before writing it.
+
+- [ ] **Step 1: Start wp-env**
+
+Run: `npm run env:start`
+
+- [ ] **Step 2: Confirm the AI Client builder method names**
+
+Run:
+```bash
+npm run env:run -- cli wp eval 'var_export( array(
+  "prompt_fn"  => function_exists("wp_ai_client_prompt"),
+  "system"     => method_exists("WP_AI_Client_Prompt_Builder","using_system_instruction"),
+  "system_alt" => method_exists("WP_AI_Client_Prompt_Builder","with_system_instruction"),
+  "max_tokens" => method_exists("WP_AI_Client_Prompt_Builder","using_max_tokens"),
+  "model_pref" => method_exists("WP_AI_Client_Prompt_Builder","using_model_preference"),
+  "json"       => method_exists("WP_AI_Client_Prompt_Builder","as_json_response"),
+  "supported"  => method_exists("WP_AI_Client_Prompt_Builder","is_supported_for_text_generation"),
+  "gen_text"   => method_exists("WP_AI_Client_Prompt_Builder","generate_text"),
+) );'
+```
+Expected: every entry `true` except possibly `system_alt`. **If `system` is false and `system_alt` is true**, the real method is `with_system_instruction` — use that name everywhere it appears (Task 1 stub, Task 4 ability, the two test doubles). Record the confirmed names before continuing.
+
+- [ ] **Step 3: Confirm the abilities category hook + getter**
+
+Run:
+```bash
+npm run env:run -- cli wp eval 'var_export( array(
+  "categories_hook" => has_action("wp_abilities_api_categories_init") !== false || did_action("wp_abilities_api_categories_init") > 0,
+  "register_cat_fn" => function_exists("wp_register_ability_category"),
+  "get_ability_fn"  => function_exists("wp_get_ability"),
+) );'
+```
+Task 4 registers the category on `wp_abilities_api_categories_init`. If that hook is genuinely absent in this core build, register the category inside `register_abilities()` instead (guarded by `function_exists`).
+
+- [ ] **Step 4: Confirm the Connectors screen URL**
+
+In the browser, open `http://localhost:8888/wp-admin/` and go to **Settings → Connectors**. Note the real URL (the `page` query arg). It is the single value behind `Connector::settings_url()` (Task 3). If it is not `options-general.php?page=connectors`, use the real slug there.
+
+- [ ] **Step 5: Record findings**
+
+No commit. Carry the confirmed method names, category-hook availability, and Connectors URL into Tasks 1, 3, 4, 6, 9.
+
+---
+
 ## Task 1: PHPStan stubs for the AI Client + Connectors API
 
 **Files:**
@@ -60,6 +109,8 @@
 **Interfaces:**
 - Consumes: nothing.
 - Produces: static-analysis signatures for `wp_ai_client_prompt( string ): WP_AI_Client_Prompt_Builder`; the builder's chainable methods (`using_system_instruction`, `using_max_tokens`, `using_model_preference`, `as_json_response`) plus `is_supported_for_text_generation(): bool` and `generate_text(): string|WP_Error`; and `wp_get_connectors()`, `wp_get_connector()`, `wp_is_connector_registered()`. Used by Tasks 3–4 and 6–9. Not loaded at runtime.
+
+> Method names below assume Task 0 Step 2 confirmed `using_system_instruction` (not `with_system_instruction`). If Task 0 found otherwise, use the confirmed name in the stub.
 
 - [ ] **Step 1: Create the stub file**
 
@@ -310,7 +361,7 @@ git commit -m "feat(ai): add pure prompt builder"
 
 **Interfaces:**
 - Consumes: `wp_ai_client_prompt()` (AI Client).
-- Produces: `final class Connector { public static function is_text_generation_available(): bool; }` — `false` when the AI Client is absent or no connector supports text generation; otherwise the AI Client's own feature-detection (no external API call). Consumed by `Ai\Abilities` (Task 4), `EditorPanel` (Task 6), `SettingsPage` (Task 9).
+- Produces: `final class Connector { public static function is_text_generation_available(): bool; public static function settings_url(): string; }` — `is_text_generation_available()` is `false` when the AI Client is absent or no connector supports text generation, else the AI Client's own feature-detection (no external API call); `settings_url()` is the single source of truth for the Settings → Connectors link. Consumed by `Ai\Abilities` (Task 4), `EditorPanel` (Task 6), `SettingsPage` (Task 9).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -339,9 +390,23 @@ final class ConnectorTest extends TestCase {
 		parent::tearDown();
 	}
 
+	/**
+	 * Runs isolated: once another test stubs wp_ai_client_prompt, Brain Monkey
+	 * defines it globally for the rest of the process, so function_exists() would
+	 * leak `true` here without a fresh process.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
 	public function test_returns_false_when_ai_client_is_absent(): void {
 		// wp_ai_client_prompt is never stubbed → function_exists() is false.
 		$this->assertFalse( Connector::is_text_generation_available() );
+	}
+
+	public function test_settings_url_points_to_the_connectors_screen(): void {
+		Functions\when( 'admin_url' )->returnArg();
+
+		$this->assertStringContainsString( 'page=connectors', Connector::settings_url() );
 	}
 
 	public function test_returns_true_when_text_generation_is_supported(): void {
@@ -413,6 +478,16 @@ final class Connector {
 
 		return (bool) wp_ai_client_prompt( '' )->is_supported_for_text_generation();
 	}
+
+	/**
+	 * Admin URL of the Settings → Connectors screen.
+	 *
+	 * Single source of truth so the editor panel and the settings page link to
+	 * the same place. Confirm the page slug against WP 7.0 in wp-env (Task 0).
+	 */
+	public static function settings_url(): string {
+		return admin_url( 'options-general.php?page=connectors' );
+	}
 }
 ```
 
@@ -441,7 +516,7 @@ git commit -m "feat(ai): add connector availability check"
 
 **Interfaces:**
 - Consumes: `Ai\Prompts` (Task 2), `Ai\Connector` (Task 3), `Settings\Options`, the AI Client.
-- Produces: `final class Abilities implements Hookable { public function __construct( Options $options ); public function register(): void; public function register_abilities(): void; public function generate_meta_description( array $input ): array|WP_Error; public function generate_title( array $input ): array|WP_Error; public function can_edit_post( array $input = array() ): bool; }`. `generate_meta_description` returns `array{meta_description: string}` or `WP_Error`; `generate_title` returns `array{title: string}` or `WP_Error`. Error codes: `openseo_invalid_post`, `openseo_no_connector`. Both abilities register `readonly => false`.
+- Produces: `final class Abilities implements Hookable { public function __construct( Options $options ); public function register(): void; public function register_category(): void; public function register_abilities(): void; public function generate_meta_description( array $input ): array|WP_Error; public function generate_title( array $input ): array|WP_Error; public function can_edit_post( array $input = array() ): bool; }`. `generate_meta_description` returns `array{meta_description: string}` or `WP_Error`; `generate_title` returns `array{title: string}` or `WP_Error`. Error codes: `openseo_invalid_post`, `openseo_no_connector`. **Both abilities register with `meta.show_in_rest => true`** (so `executeAbility`/REST can run them — this is load-bearing for the editor) **and `meta.annotations.readonly => false`** (consumes credits, not idempotent → must POST, not a cacheable GET). The category registers on `wp_abilities_api_categories_init`; the abilities on `wp_abilities_api_init`.
 
 - [ ] **Step 1: Add the unit-test polyfills**
 
@@ -530,19 +605,35 @@ final class AbilitiesTest extends TestCase {
 		return $post;
 	}
 
-	public function test_registers_category_and_both_abilities(): void {
-		Functions\when( 'wp_register_ability_category' )->justReturn( null );
+	public function test_registers_the_category(): void {
+		$slug = '';
+		Functions\when( 'wp_register_ability_category' )->alias(
+			static function ( $name ) use ( &$slug ): void {
+				$slug = $name;
+			}
+		);
+
+		$this->abilities()->register_category();
+
+		$this->assertSame( 'openseo', $slug );
+	}
+
+	public function test_registers_both_abilities_exposed_over_rest(): void {
 		$registered = array();
 		Functions\when( 'wp_register_ability' )->alias(
-			static function ( $name ) use ( &$registered ): void {
-				$registered[] = $name;
+			static function ( $name, $args ) use ( &$registered ): void {
+				$registered[ $name ] = $args;
 			}
 		);
 
 		$this->abilities()->register_abilities();
 
-		$this->assertContains( 'openseo/generate-meta-description', $registered );
-		$this->assertContains( 'openseo/generate-title', $registered );
+		$this->assertArrayHasKey( 'openseo/generate-meta-description', $registered );
+		$this->assertArrayHasKey( 'openseo/generate-title', $registered );
+		// Regression guard (C1/H1): without meta.show_in_rest the editor's
+		// executeAbility call gets no REST route; annotations live under meta.
+		$this->assertTrue( $registered['openseo/generate-meta-description']['meta']['show_in_rest'] );
+		$this->assertFalse( $registered['openseo/generate-title']['meta']['annotations']['readonly'] );
 	}
 
 	public function test_invalid_post_returns_error(): void {
@@ -598,6 +689,24 @@ final class AbilitiesTest extends TestCase {
 		$result = $this->abilities()->generate_title( array( 'post_id' => 7 ) );
 
 		$this->assertSame( array( 'title' => 'Just a title' ), $result );
+	}
+
+	public function test_falls_back_to_first_value_when_json_key_differs(): void {
+		Functions\when( 'get_post' )->justReturn( $this->fake_post() );
+		Functions\when( 'wp_strip_all_tags' )->returnArg();
+		Functions\when( 'wp_trim_words' )->returnArg();
+		Functions\when( 'is_wp_error' )->alias(
+			static fn( $v ) => $v instanceof WP_Error
+		);
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_ai_client_prompt' )->justReturn(
+			new FakePromptBuilder( true, '{"description":"Fallback value."}' )
+		);
+
+		$result = $this->abilities()->generate_meta_description( array( 'post_id' => 7 ) );
+
+		// Wrong key → use the first string value, never the raw JSON.
+		$this->assertSame( array( 'meta_description' => 'Fallback value.' ), $result );
 	}
 
 	public function test_propagates_generation_error(): void {
@@ -704,31 +813,39 @@ final class Abilities implements Hookable {
 	public function __construct( private readonly Options $options ) {}
 
 	/**
-	 * Register the Abilities API init hook.
+	 * Register the Abilities API hooks: category first, then abilities.
 	 */
 	public function register(): void {
+		add_action( 'wp_abilities_api_categories_init', array( $this, 'register_category' ) );
 		add_action( 'wp_abilities_api_init', array( $this, 'register_abilities' ) );
 	}
 
 	/**
-	 * Register the ability category and abilities.
+	 * Register the ability category.
 	 *
 	 * Guarded with function_exists so the plugin degrades gracefully if the
 	 * Abilities API is unavailable (WordPress < 7.0 without the feature plugin).
 	 */
-	public function register_abilities(): void {
-		if ( ! function_exists( 'wp_register_ability' ) ) {
+	public function register_category(): void {
+		if ( ! function_exists( 'wp_register_ability_category' ) ) {
 			return;
 		}
 
-		if ( function_exists( 'wp_register_ability_category' ) ) {
-			wp_register_ability_category(
-				self::CATEGORY,
-				array(
-					'label'       => __( 'OpenSEO', 'openseo' ),
-					'description' => __( 'SEO analysis and AI-assisted optimization abilities.', 'openseo' ),
-				)
-			);
+		wp_register_ability_category(
+			self::CATEGORY,
+			array(
+				'label'       => __( 'OpenSEO', 'openseo' ),
+				'description' => __( 'SEO analysis and AI-assisted optimization abilities.', 'openseo' ),
+			)
+		);
+	}
+
+	/**
+	 * Register the abilities.
+	 */
+	public function register_abilities(): void {
+		if ( ! function_exists( 'wp_register_ability' ) ) {
+			return;
 		}
 
 		wp_register_ability(
@@ -737,11 +854,11 @@ final class Abilities implements Hookable {
 				'label'               => __( 'Generate meta description', 'openseo' ),
 				'description'         => __( 'Generates an SEO meta description for a post using the site\'s configured AI connector. Consumes provider credits.', 'openseo' ),
 				'category'            => self::CATEGORY,
-				'readonly'            => false,
 				'input_schema'        => $this->post_id_input_schema(),
 				'output_schema'       => $this->output_schema( 'meta_description' ),
 				'execute_callback'    => array( $this, 'generate_meta_description' ),
 				'permission_callback' => array( $this, 'can_edit_post' ),
+				'meta'                => $this->ability_meta(),
 			)
 		);
 
@@ -751,12 +868,34 @@ final class Abilities implements Hookable {
 				'label'               => __( 'Generate SEO title', 'openseo' ),
 				'description'         => __( 'Generates an SEO title for a post using the site\'s configured AI connector. Consumes provider credits.', 'openseo' ),
 				'category'            => self::CATEGORY,
-				'readonly'            => false,
 				'input_schema'        => $this->post_id_input_schema(),
 				'output_schema'       => $this->output_schema( 'title' ),
 				'execute_callback'    => array( $this, 'generate_title' ),
 				'permission_callback' => array( $this, 'can_edit_post' ),
+				'meta'                => $this->ability_meta(),
 			)
+		);
+	}
+
+	/**
+	 * Shared ability meta.
+	 *
+	 * `show_in_rest` is load-bearing: without it the ability has no REST run
+	 * endpoint and the editor's executeAbility() call fails. The annotations go
+	 * under `meta.annotations` (a top-level `readonly` key is silently ignored);
+	 * the abilities are not readonly — each call spends provider credits and is
+	 * not idempotent, so clients must POST rather than treat them as safe GETs.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private function ability_meta(): array {
+		return array(
+			'show_in_rest' => true,
+			'annotations'  => array(
+				'readonly'    => false,
+				'destructive' => false,
+				'idempotent'  => false,
+			),
 		);
 	}
 
@@ -824,9 +963,16 @@ final class Abilities implements Hookable {
 		}
 
 		$decoded = json_decode( (string) $generated, true );
-		$value   = is_array( $decoded ) && isset( $decoded[ $output_key ] )
-			? (string) $decoded[ $output_key ]
-			: (string) $generated;
+
+		if ( is_array( $decoded ) ) {
+			// Prefer the declared key; tolerate the model using a different key
+			// by taking the first string value — never echo the raw JSON back.
+			$candidate = $decoded[ $output_key ] ?? reset( $decoded );
+			$value     = is_string( $candidate ) ? $candidate : '';
+		} else {
+			// Not JSON: treat the whole response as the suggestion.
+			$value = (string) $generated;
+		}
 
 		return array( $output_key => sanitize_text_field( $value ) );
 	}
@@ -913,7 +1059,7 @@ git commit -m "feat(ai): generate meta description and title via the AI Client"
 
 **Interfaces:**
 - Consumes: `Ai\Abilities` (Task 4).
-- Produces: a wp-env test proving that, with no connector configured (the CI reality), executing the ability returns `WP_Error` with code `openseo_no_connector`. This is the deterministic AI path CI can verify without a provider key.
+- Produces: a wp-env test proving (a) the ability is **exposed over REST** — the `/run` route exists (regression guard for the `meta.show_in_rest` requirement), and (b) with no connector configured (the CI reality), executing the ability returns `WP_Error` with code `openseo_no_connector`. These are the deterministic AI paths CI can verify without a provider key.
 
 - [ ] **Step 1: Write the integration test**
 
@@ -949,6 +1095,26 @@ final class AbilitiesTest extends WP_UnitTestCase {
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertSame( 'openseo_invalid_post', $result->get_error_code() );
 	}
+
+	public function test_meta_description_ability_is_exposed_over_rest(): void {
+		$admin = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $admin );
+		$post_id = self::factory()->post->create( array( 'post_author' => $admin ) );
+
+		// executeAbility() in the editor POSTs here. The route only exists when
+		// the ability registers meta.show_in_rest => true (regression guard for
+		// the editor's core flow). Without a connector the ability still returns
+		// openseo_no_connector — an error, but NOT rest_no_route / 404.
+		$request = new \WP_REST_Request(
+			'POST',
+			'/wp-abilities/v1/openseo/generate-meta-description/run'
+		);
+		$request->set_body_params( array( 'input' => array( 'post_id' => $post_id ) ) );
+		$response = rest_do_request( $request );
+
+		$this->assertNotSame( 404, $response->get_status() );
+		$this->assertNotSame( 'rest_no_route', $response->get_data()['code'] ?? '' );
+	}
 }
 ```
 
@@ -961,7 +1127,7 @@ Expected: PASS. (No connector is configured in wp-env, so `is_text_generation_av
 
 ```bash
 git add tests/Integration/AbilitiesTest.php
-git commit -m "test(ai): cover the no-connector and invalid-post ability paths"
+git commit -m "test(ai): cover REST exposure, no-connector, and invalid-post paths"
 ```
 
 ---
@@ -991,9 +1157,7 @@ Then, in `enqueue()`, insert this block **between** the `wp_enqueue_script( ... 
 			'window.openseoEditor = ' . wp_json_encode(
 				array(
 					'aiAvailable'   => Connector::is_text_generation_available(),
-					// The Connectors screen lives under Settings in WP 7.0;
-					// confirm the page slug during manual testing (Task 8).
-					'connectorsUrl' => admin_url( 'options-general.php?page=connectors' ),
+					'connectorsUrl' => Connector::settings_url(),
 				)
 			) . ';',
 			'before'
@@ -1371,7 +1535,7 @@ Then add this method to the class (after `add_text_field()`):
 	 * Render the AI section intro: connector status + link.
 	 */
 	public function render_ai_intro(): void {
-		$url = admin_url( 'options-general.php?page=connectors' );
+		$url = Connector::settings_url();
 
 		if ( Connector::is_text_generation_available() ) {
 			printf(
@@ -1469,7 +1633,8 @@ git commit -m "docs: document AI-connected abilities and manual testing"
 | New `generate-title` ability | 4 |
 | `Ai\Prompts` pure helper | 2 |
 | `Ai\Connector` readiness check | 3 |
-| `readonly: false` annotation on generation abilities | 4 |
+| Abilities exposed over REST (`meta.show_in_rest`) + `readonly: false` under `meta.annotations` | 4, 5 |
+| Connectors link as a single source of truth (`Connector::settings_url()`) | 3, 6, 9 |
 | No silent fallback → `openseo_no_connector` `WP_Error` | 4, 5 |
 | Editor "Generate with AI" buttons via `executeAbility`, fill field | 8 |
 | Proactive no-connector UX (disabled + Connectors link) | 6, 8 |
@@ -1477,7 +1642,8 @@ git commit -m "docs: document AI-connected abilities and manual testing"
 | Settings AI section (connector status + link), optional `ai_model` | 9 |
 | PHPStan stubs for AI Client + Connectors | 1 |
 | Unit tests (Prompts, Connector, abilities: success/no_connector/invalid_post) | 2, 3, 4 |
-| Integration test: no-connector execute path | 5 |
+| Integration test: REST exposure + no-connector execute path | 5 |
+| Pre-flight verification of the WP 7.0 API surface | 0 |
 | JS test: error helper | 7 |
 | Manual provider testing documented | Final verification |
 | Alt-text, model picker UI, streaming | Out of scope — by design |
@@ -1486,5 +1652,7 @@ No gaps.
 
 **2. Placeholder scan:** No "TBD"/"add error handling"/"similar to Task N". Every code step shows complete code. The one value to confirm at runtime (`connectorsUrl` slug) is a concrete default with an explicit manual verification step in Task 8 — not a placeholder.
 
-**3. Type consistency:** `Connector::is_text_generation_available()` (Task 3) is called verbatim in Tasks 4, 6, 9. `Prompts::system_meta_description()` / `system_title()` / `user_for_post()` (Task 2) are called verbatim in Task 4. `Abilities::__construct( Options )` (Task 4) matches the `new Abilities( $options )` wiring (Task 4 Step 5) and both test files. Ability output keys `meta_description` / `title` (Task 4) match the `field` props passed to `GenerateButton` (Task 8) and the JS `result?.[ field ]` read. `aiErrorMessage( error )` (Task 7) is imported and called in Task 8. Error code `openseo_no_connector` is produced in Task 4 and matched in Tasks 5 (assertion) and 7 (`aiErrorMessage` branch).
+**3. Type consistency:** `Connector::is_text_generation_available()` (Task 3) is called verbatim in Tasks 4, 6, 9. `Prompts::system_meta_description()` / `system_title()` / `user_for_post()` (Task 2) are called verbatim in Task 4. `Abilities::__construct( Options )` (Task 4) matches the `new Abilities( $options )` wiring (Task 4 Step 5) and both test files. Ability output keys `meta_description` / `title` (Task 4) match the `field` props passed to `GenerateButton` (Task 8) and the JS `result?.[ field ]` read. `aiErrorMessage( error )` (Task 7) is imported and called in Task 8. Error code `openseo_no_connector` is produced in Task 4 and matched in Tasks 5 (assertion) and 7 (`aiErrorMessage` branch). `Connector::settings_url()` (Task 3) replaces the hard-coded URL in Tasks 6 and 9. `ability_meta()` (Task 4) is asserted by the Task 4 unit guard and the Task 5 REST test.
+
+**4. Hardening from the `wp-plan-reviewer` audit:** registration now sets `meta.show_in_rest => true` and puts annotations under `meta.annotations` (a top-level `readonly` is ignored — was CRITICAL: the editor's `executeAbility` would have had no REST route); the category registers on `wp_abilities_api_categories_init`; Task 5 now asserts REST exposure (so the CRITICAL can't regress unseen); the Connectors URL is centralized in `Connector::settings_url()`; the JSON fallback never echoes raw JSON; the Brain-Monkey "AI client absent" test runs in an isolated process; and Task 0 verifies the uncertain WP 7.0 API names/slug in wp-env up front.
 ```
