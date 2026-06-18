@@ -102,7 +102,7 @@ final class Plugin {
 					new Twitter( $resolver ),
 				)
 			),
-			new Abilities(),
+			new Abilities( $options ),
 		);
 
 		if ( is_admin() ) {
