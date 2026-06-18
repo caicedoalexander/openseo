@@ -68,6 +68,7 @@ final class SettingsPage implements Hookable {
 		add_settings_section( 'openseo_titles', __( 'Titles & Meta', 'openseo' ), '__return_false', 'openseo_titles' );
 		add_settings_section( 'openseo_social', __( 'Social', 'openseo' ), '__return_false', 'openseo_social' );
 		add_settings_section( 'openseo_ai', __( 'AI', 'openseo' ), array( $this, 'render_ai_intro' ), 'openseo_ai' );
+		add_settings_section( 'openseo_sitemaps', __( 'Sitemaps', 'openseo' ), '__return_false', 'openseo_sitemaps' );
 
 		$this->add_text_field( 'title_separator', __( 'Title separator', 'openseo' ), 'openseo_titles' );
 		$this->add_text_field( 'title_template', __( 'Default title template', 'openseo' ), 'openseo_titles' );
@@ -76,6 +77,8 @@ final class SettingsPage implements Hookable {
 		$this->add_text_field( 'home_description', __( 'Homepage description', 'openseo' ), 'openseo_titles' );
 		$this->add_text_field( 'og_default_image', __( 'Default social image URL', 'openseo' ), 'openseo_social' );
 		$this->add_text_field( 'ai_model', __( 'AI model (optional override)', 'openseo' ), 'openseo_ai' );
+		$this->add_checkbox_field( 'sitemap_enabled', __( 'Enable XML sitemap', 'openseo' ), 'openseo_sitemaps' );
+		$this->add_checkbox_field( 'sitemap_include_authors', __( 'Include author sitemap', 'openseo' ), 'openseo_sitemaps' );
 	}
 
 	/**
@@ -95,6 +98,36 @@ final class SettingsPage implements Hookable {
 					esc_attr( $key ),
 					esc_attr( Options::OPTION_KEY ),
 					esc_attr( (string) $this->options->get( $key ) )
+				);
+			},
+			$section,
+			$section,
+			array( 'label_for' => 'openseo_' . $key )
+		);
+	}
+
+	/**
+	 * Register one checkbox field bound to a single option key.
+	 *
+	 * A hidden companion field is emitted before the checkbox so the key is always
+	 * submitted ('0' when unchecked, '1' when checked); this lets the tab-scoped
+	 * sanitizer turn the box off, which a bare checkbox could never do.
+	 *
+	 * @param string $key     Option key name.
+	 * @param string $label   Field label text.
+	 * @param string $section Settings section ID.
+	 */
+	private function add_checkbox_field( string $key, string $label, string $section ): void {
+		add_settings_field(
+			$key,
+			$label,
+			function () use ( $key ): void {
+				printf(
+					'<input type="hidden" name="%1$s[%2$s]" value="0" />'
+					. '<input type="checkbox" id="openseo_%2$s" name="%1$s[%2$s]" value="1"%3$s />',
+					esc_attr( Options::OPTION_KEY ),
+					esc_attr( $key ),
+					checked( '1', (string) $this->options->get( $key ), false )
 				);
 			},
 			$section,

@@ -10,10 +10,11 @@ declare( strict_types=1 );
 defined( 'ABSPATH' ) || exit;
 
 $openseo_tabs = array(
-	'general' => __( 'General', 'openseo' ),
-	'titles'  => __( 'Titles & Meta', 'openseo' ),
-	'social'  => __( 'Social', 'openseo' ),
-	'ai'      => __( 'AI', 'openseo' ),
+	'general'  => __( 'General', 'openseo' ),
+	'titles'   => __( 'Titles & Meta', 'openseo' ),
+	'social'   => __( 'Social', 'openseo' ),
+	'sitemaps' => __( 'Sitemaps', 'openseo' ),
+	'ai'       => __( 'AI', 'openseo' ),
 );
 
 // Read-only tab selector; the form posts to options.php and saves all sections.

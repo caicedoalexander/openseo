@@ -38,4 +38,15 @@ final class SettingsPageTest extends WP_UnitTestCase {
 		$section_fields = $wp_settings_fields['openseo_ai']['openseo_ai'] ?? array();
 		$this->assertArrayHasKey( 'ai_model', $section_fields );
 	}
+
+	public function test_sitemaps_section_and_fields_register(): void {
+		global $wp_settings_fields;
+
+		$page = new SettingsPage( new Options() );
+		$page->register_settings();
+
+		$section_fields = $wp_settings_fields['openseo_sitemaps']['openseo_sitemaps'] ?? array();
+		$this->assertArrayHasKey( 'sitemap_enabled', $section_fields );
+		$this->assertArrayHasKey( 'sitemap_include_authors', $section_fields );
+	}
 }
