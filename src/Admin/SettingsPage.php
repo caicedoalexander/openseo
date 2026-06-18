@@ -13,10 +13,7 @@ use OpenSEO\Contracts\Hookable;
 use OpenSEO\Settings\Options;
 
 /**
- * Registers the settings page, its fields, and the Settings API option.
- *
- * The Settings API handles the nonce and the option save; we add the
- * capability check and per-field escaping/sanitization.
+ * Registers the tabbed settings page, its fields, and the single option.
  */
 final class SettingsPage implements Hookable {
 
@@ -51,7 +48,7 @@ final class SettingsPage implements Hookable {
 	}
 
 	/**
-	 * Register the option, section, and fields with the Settings API.
+	 * Register the option, sections, and fields with the Settings API.
 	 */
 	public function register_settings(): void {
 		register_setting(
@@ -64,29 +61,40 @@ final class SettingsPage implements Hookable {
 			)
 		);
 
-		add_settings_section(
-			'openseo_general',
-			__( 'General', 'openseo' ),
-			'__return_false',
-			self::MENU_SLUG
-		);
+		add_settings_section( 'openseo_general', __( 'General', 'openseo' ), '__return_false', self::MENU_SLUG );
+		add_settings_section( 'openseo_titles', __( 'Titles & Meta', 'openseo' ), '__return_false', self::MENU_SLUG );
+		add_settings_section( 'openseo_social', __( 'Social', 'openseo' ), '__return_false', self::MENU_SLUG );
 
-		add_settings_field(
-			'enable_meta_description',
-			__( 'Output meta description', 'openseo' ),
-			array( $this, 'render_checkbox' ),
-			self::MENU_SLUG,
-			'openseo_general',
-			array( 'label_for' => 'openseo_enable_meta_description' )
-		);
+		$this->add_text_field( 'title_separator', __( 'Title separator', 'openseo' ), 'openseo_titles' );
+		$this->add_text_field( 'title_template', __( 'Default title template', 'openseo' ), 'openseo_titles' );
+		$this->add_text_field( 'description_template', __( 'Default description template', 'openseo' ), 'openseo_titles' );
+		$this->add_text_field( 'home_title', __( 'Homepage title', 'openseo' ), 'openseo_titles' );
+		$this->add_text_field( 'home_description', __( 'Homepage description', 'openseo' ), 'openseo_titles' );
+		$this->add_text_field( 'og_default_image', __( 'Default social image URL', 'openseo' ), 'openseo_social' );
+	}
 
+	/**
+	 * Register one text field bound to a single option key.
+	 *
+	 * @param string $key     Option key name.
+	 * @param string $label   Field label text.
+	 * @param string $section Settings section ID.
+	 */
+	private function add_text_field( string $key, string $label, string $section ): void {
 		add_settings_field(
-			'default_meta_description',
-			__( 'Default meta description', 'openseo' ),
-			array( $this, 'render_textarea' ),
+			$key,
+			$label,
+			function () use ( $key ): void {
+				printf(
+					'<input type="text" id="openseo_%1$s" name="%2$s[%1$s]" value="%3$s" class="regular-text" />',
+					esc_attr( $key ),
+					esc_attr( Options::OPTION_KEY ),
+					esc_attr( (string) $this->options->get( $key ) )
+				);
+			},
 			self::MENU_SLUG,
-			'openseo_general',
-			array( 'label_for' => 'openseo_default_meta_description' )
+			$section,
+			array( 'label_for' => 'openseo_' . $key )
 		);
 	}
 
@@ -99,31 +107,5 @@ final class SettingsPage implements Hookable {
 		}
 
 		require OPENSEO_PLUGIN_DIR . 'templates/admin/settings-page.php';
-	}
-
-	/**
-	 * Render the "enable meta description" checkbox field.
-	 */
-	public function render_checkbox(): void {
-		$value = (bool) $this->options->get( 'enable_meta_description' );
-
-		printf(
-			'<input type="checkbox" id="openseo_enable_meta_description" name="%1$s[enable_meta_description]" value="1" %2$s />',
-			esc_attr( Options::OPTION_KEY ),
-			checked( $value, true, false )
-		);
-	}
-
-	/**
-	 * Render the default meta description textarea field.
-	 */
-	public function render_textarea(): void {
-		$value = (string) $this->options->get( 'default_meta_description' );
-
-		printf(
-			'<textarea id="openseo_default_meta_description" name="%1$s[default_meta_description]" rows="3" class="large-text">%2$s</textarea>',
-			esc_attr( Options::OPTION_KEY ),
-			esc_textarea( $value )
-		);
 	}
 }
