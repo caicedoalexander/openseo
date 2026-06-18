@@ -105,6 +105,42 @@ final class OptionsTest extends TestCase {
 		// The unrelated tab's saved value survives instead of resetting to default.
 		$this->assertSame( 'Stored title %sep% %sitename%', $clean['title_template'] );
 	}
+
+	public function test_sitemap_defaults(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$options = new Options();
+
+		$this->assertSame( '1', $options->get( 'sitemap_enabled' ) );
+		$this->assertSame( '', $options->get( 'sitemap_include_authors' ) );
+	}
+
+	public function test_sanitize_normalizes_sitemap_checkboxes(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+
+		$options = new Options();
+
+		$on = $options->sanitize(
+			array(
+				'sitemap_enabled'         => '1',
+				'sitemap_include_authors' => '1',
+			)
+		);
+		$this->assertSame( '1', $on['sitemap_enabled'] );
+		$this->assertSame( '1', $on['sitemap_include_authors'] );
+
+		$off = $options->sanitize(
+			array(
+				'sitemap_enabled'         => '0',
+				'sitemap_include_authors' => '0',
+			)
+		);
+		$this->assertSame( '', $off['sitemap_enabled'] );
+		$this->assertSame( '', $off['sitemap_include_authors'] );
+	}
 }
 
 

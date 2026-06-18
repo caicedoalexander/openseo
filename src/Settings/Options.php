@@ -28,13 +28,15 @@ final class Options {
 	 */
 	public function defaults(): array {
 		return array(
-			'title_separator'      => '-',
-			'title_template'       => '%title% %sep% %sitename%',
-			'description_template' => '%excerpt%',
-			'home_title'           => '%sitename% %sep% %tagline%',
-			'home_description'     => '',
-			'og_default_image'     => '',
-			'ai_model'             => '',
+			'title_separator'         => '-',
+			'title_template'          => '%title% %sep% %sitename%',
+			'description_template'    => '%excerpt%',
+			'home_title'              => '%sitename% %sep% %tagline%',
+			'home_description'        => '',
+			'og_default_image'        => '',
+			'sitemap_enabled'         => '1',
+			'sitemap_include_authors' => '',
+			'ai_model'                => '',
 		);
 	}
 
@@ -79,6 +81,14 @@ final class Options {
 		foreach ( array( 'title_separator', 'title_template', 'description_template', 'home_title', 'home_description', 'ai_model' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = sanitize_text_field( wp_unslash( $input[ $key ] ) );
+			}
+		}
+
+		// Checkboxes: a hidden companion field guarantees the key is present (0 or
+		// 1) when its tab is submitted, so an explicit '1' check turns it on/off.
+		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors' ) as $key ) {
+			if ( isset( $input[ $key ] ) ) {
+				$clean[ $key ] = '1' === $input[ $key ] ? '1' : '';
 			}
 		}
 
