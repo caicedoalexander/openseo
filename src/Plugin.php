@@ -10,10 +10,20 @@ declare( strict_types=1 );
 namespace OpenSEO;
 
 use OpenSEO\Admin\Assets as AdminAssets;
+use OpenSEO\Admin\Editor\EditorPanel;
 use OpenSEO\Admin\SettingsPage;
 use OpenSEO\Ai\Abilities;
 use OpenSEO\Contracts\Hookable;
-use OpenSEO\Frontend\MetaTags;
+use OpenSEO\Frontend\Head\Canonical;
+use OpenSEO\Frontend\Head\Description;
+use OpenSEO\Frontend\Head\HeadPrinter;
+use OpenSEO\Frontend\Head\OpenGraph;
+use OpenSEO\Frontend\Head\Robots;
+use OpenSEO\Frontend\Head\Title;
+use OpenSEO\Frontend\Head\Twitter;
+use OpenSEO\Meta\PostMeta;
+use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
 
 /**
@@ -76,16 +86,29 @@ final class Plugin {
 	 * @return array<int, Hookable>
 	 */
 	private function modules(): array {
-		$options = new Options();
+		$options   = new Options();
+		$variables = new Variables( $options );
+		$resolver  = new Resolver( $options, $variables );
 
 		$modules = array(
-			new MetaTags( $options ),
+			new PostMeta(),
+			new Title( $resolver ),
+			new HeadPrinter(
+				array(
+					new Description( $resolver ),
+					new Robots( $resolver ),
+					new Canonical( $resolver ),
+					new OpenGraph( $resolver ),
+					new Twitter( $resolver ),
+				)
+			),
 			new Abilities(),
 		);
 
 		if ( is_admin() ) {
 			$modules[] = new SettingsPage( $options );
 			$modules[] = new AdminAssets();
+			$modules[] = new EditorPanel();
 		}
 
 		return $modules;

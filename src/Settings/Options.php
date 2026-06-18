@@ -28,9 +28,13 @@ final class Options {
 	 */
 	public function defaults(): array {
 		return array(
-			'enable_meta_description'  => true,
-			'default_meta_description' => '',
-			'ai_model'                 => '',
+			'title_separator'      => '-',
+			'title_template'       => '%title% %sep% %sitename%',
+			'description_template' => '%excerpt%',
+			'home_title'           => '%sitename% %sep% %tagline%',
+			'home_description'     => '',
+			'og_default_image'     => '',
+			'ai_model'             => '',
 		);
 	}
 
@@ -69,15 +73,15 @@ final class Options {
 		$input = is_array( $input ) ? $input : array();
 		$clean = $this->defaults();
 
-		$clean['enable_meta_description'] = ! empty( $input['enable_meta_description'] );
+		foreach ( array( 'title_separator', 'title_template', 'description_template', 'home_title', 'home_description', 'ai_model' ) as $key ) {
+			if ( isset( $input[ $key ] ) ) {
+				$clean[ $key ] = sanitize_text_field( wp_unslash( $input[ $key ] ) );
+			}
+		}
 
-		$clean['default_meta_description'] = isset( $input['default_meta_description'] )
-			? sanitize_text_field( wp_unslash( $input['default_meta_description'] ) )
-			: '';
-
-		$clean['ai_model'] = isset( $input['ai_model'] )
-			? sanitize_text_field( wp_unslash( $input['ai_model'] ) )
-			: '';
+		if ( isset( $input['og_default_image'] ) ) {
+			$clean['og_default_image'] = esc_url_raw( wp_unslash( $input['og_default_image'] ) );
+		}
 
 		return $clean;
 	}

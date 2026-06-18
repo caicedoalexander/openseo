@@ -13,6 +13,7 @@ module.exports = {
 			process.cwd(),
 			'assets/src/admin/index.js'
 		),
+		editor: path.resolve( process.cwd(), 'assets/src/editor/index.js' ),
 	},
 	output: {
 		...defaultConfig.output,
