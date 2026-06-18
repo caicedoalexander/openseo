@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace OpenSEO;
 
 use OpenSEO\Admin\Assets as AdminAssets;
+use OpenSEO\Admin\Editor\EditorPanel;
 use OpenSEO\Admin\SettingsPage;
 use OpenSEO\Ai\Abilities;
 use OpenSEO\Contracts\Hookable;
@@ -107,6 +108,7 @@ final class Plugin {
 		if ( is_admin() ) {
 			$modules[] = new SettingsPage( $options );
 			$modules[] = new AdminAssets();
+			$modules[] = new EditorPanel();
 		}
 
 		return $modules;
