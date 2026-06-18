@@ -7,14 +7,19 @@ import {
 } from '@wordpress/editor';
 import { useEntityProp } from '@wordpress/core-data';
 import { useSelect } from '@wordpress/data';
+import { useState } from '@wordpress/element';
 import {
+	Button,
+	Notice,
 	TextControl,
 	TextareaControl,
 	ToggleControl,
 	TabPanel,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { executeAbility } from '@wordpress/abilities';
 import { buildSnippetPreview } from './preview';
+import { aiErrorMessage } from './ai';
 
 function useMeta( key ) {
 	const postType = useSelect(
@@ -27,6 +32,70 @@ function useMeta( key ) {
 	const update = ( next ) => setMeta( { ...meta, [ key ]: next } );
 
 	return [ value, update ];
+}
+
+function GenerateButton( { abilityName, field, onResult } ) {
+	const postId = useSelect(
+		( select ) => select( editorStore ).getCurrentPostId(),
+		[]
+	);
+	const [ busy, setBusy ] = useState( false );
+	const [ error, setError ] = useState( '' );
+
+	const aiAvailable = window.openseoEditor?.aiAvailable ?? false;
+	const connectorsUrl = window.openseoEditor?.connectorsUrl ?? '';
+
+	if ( ! aiAvailable ) {
+		return (
+			<Notice status="warning" isDismissible={ false }>
+				{ __(
+					'Connect an AI provider to generate suggestions.',
+					'openseo'
+				) }{ ' ' }
+				<a href={ connectorsUrl }>
+					{ __( 'Settings → Connectors', 'openseo' ) }
+				</a>
+			</Notice>
+		);
+	}
+
+	// executeAbility POSTs to /wp-abilities/v1/<namespace>/<ability>/run
+	// with { input: { post_id } } and returns the ability's output object.
+	const onClick = async () => {
+		setBusy( true );
+		setError( '' );
+
+		try {
+			const result = await executeAbility( abilityName, {
+				post_id: postId,
+			} );
+			onResult( result?.[ field ] ?? '' );
+		} catch ( e ) {
+			setError( aiErrorMessage( e ) );
+		} finally {
+			setBusy( false );
+		}
+	};
+
+	return (
+		<>
+			<Button
+				variant="secondary"
+				onClick={ onClick }
+				isBusy={ busy }
+				disabled={ busy }
+			>
+				{ busy
+					? __( 'Generating…', 'openseo' )
+					: __( 'Generate with AI', 'openseo' ) }
+			</Button>
+			{ error && (
+				<Notice status="error" isDismissible={ false }>
+					{ error }
+				</Notice>
+			) }
+		</>
+	);
 }
 
 function GeneralTab() {
@@ -53,11 +122,21 @@ function GeneralTab() {
 				onChange={ setTitle }
 				help={ `${ title.length } / 60` }
 			/>
+			<GenerateButton
+				abilityName="openseo/generate-title"
+				field="title"
+				onResult={ setTitle }
+			/>
 			<TextareaControl
 				label={ __( 'Meta description', 'openseo' ) }
 				value={ description }
 				onChange={ setDescription }
 				help={ `${ description.length } / 160` }
+			/>
+			<GenerateButton
+				abilityName="openseo/generate-meta-description"
+				field="meta_description"
+				onResult={ setDescription }
 			/>
 			{ ( preview.title || preview.description ) && (
 				<div
