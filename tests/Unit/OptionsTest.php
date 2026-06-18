@@ -26,45 +26,53 @@ final class OptionsTest extends TestCase {
 		parent::tearDown();
 	}
 
-	public function test_returns_defaults_when_nothing_is_stored(): void {
+	public function test_returns_on_page_defaults_when_nothing_is_stored(): void {
 		Functions\when( 'get_option' )->justReturn( array() );
 
 		$options = new Options();
 
-		$this->assertTrue( $options->get( 'enable_meta_description' ) );
-		$this->assertSame( '', $options->get( 'default_meta_description' ) );
+		$this->assertSame( '-', $options->get( 'title_separator' ) );
+		$this->assertSame( '%title% %sep% %sitename%', $options->get( 'title_template' ) );
+		$this->assertSame( '%excerpt%', $options->get( 'description_template' ) );
+		$this->assertSame( '', $options->get( 'og_default_image' ) );
 	}
 
 	public function test_stored_values_override_defaults(): void {
 		Functions\when( 'get_option' )->justReturn(
-			array( 'default_meta_description' => 'Stored value' )
+			array( 'title_separator' => '|' )
 		);
 
 		$options = new Options();
 
-		$this->assertSame( 'Stored value', $options->get( 'default_meta_description' ) );
+		$this->assertSame( '|', $options->get( 'title_separator' ) );
 		// Untouched key still falls back to its default.
-		$this->assertTrue( $options->get( 'enable_meta_description' ) );
+		$this->assertSame( '%excerpt%', $options->get( 'description_template' ) );
 	}
 
 	public function test_sanitize_cleans_and_normalizes_input(): void {
 		Functions\when( 'wp_unslash' )->returnArg();
 		Functions\when( 'sanitize_text_field' )->alias(
-			static fn( $value ) => trim( wp_strip_all_tags_stub( (string) $value ) )
+			static fn( $value ) => trim( wp_strip_tags_compat( (string) $value ) )
 		);
+		Functions\when( 'esc_url_raw' )->returnArg();
 
 		$options = new Options();
 
 		$clean = $options->sanitize(
 			array(
-				'enable_meta_description'  => '1',
-				'default_meta_description' => '  <b>Hello</b> world  ',
-				'ai_model'                 => 'claude-opus-4-8',
+				'title_separator'      => '  <b>|</b>  ',
+				'title_template'       => '%title% %sep% %sitename%',
+				'description_template' => '%excerpt%',
+				'home_title'           => '%sitename%',
+				'home_description'     => 'Home desc',
+				'og_default_image'     => 'https://example.com/og.png',
+				'ai_model'             => 'claude-opus-4-8',
 			)
 		);
 
-		$this->assertTrue( $clean['enable_meta_description'] );
-		$this->assertSame( 'Hello world', $clean['default_meta_description'] );
+		$this->assertSame( '|', $clean['title_separator'] );
+		$this->assertSame( '%title% %sep% %sitename%', $clean['title_template'] );
+		$this->assertSame( 'https://example.com/og.png', $clean['og_default_image'] );
 		$this->assertSame( 'claude-opus-4-8', $clean['ai_model'] );
 	}
 
@@ -73,17 +81,11 @@ final class OptionsTest extends TestCase {
 
 		$clean = $options->sanitize( 'not-an-array' );
 
-		$this->assertFalse( $clean['enable_meta_description'] );
-		$this->assertSame( '', $clean['default_meta_description'] );
+		$this->assertSame( '-', $clean['title_separator'] );
+		$this->assertSame( '', $clean['og_default_image'] );
 	}
 }
 
-/**
- * Minimal stand-in for wp_strip_all_tags used by the sanitize alias above.
- */
-function wp_strip_all_tags_stub( string $value ): string {
-	return wp_strip_tags_compat( $value );
-}
 
 /**
  * Strip tags without relying on WordPress being loaded.
