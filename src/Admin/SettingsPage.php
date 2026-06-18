@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Admin;
 
+use OpenSEO\Ai\Connector;
 use OpenSEO\Contracts\Hookable;
 use OpenSEO\Settings\Options;
 
@@ -64,6 +65,7 @@ final class SettingsPage implements Hookable {
 		add_settings_section( 'openseo_general', __( 'General', 'openseo' ), '__return_false', self::MENU_SLUG );
 		add_settings_section( 'openseo_titles', __( 'Titles & Meta', 'openseo' ), '__return_false', self::MENU_SLUG );
 		add_settings_section( 'openseo_social', __( 'Social', 'openseo' ), '__return_false', self::MENU_SLUG );
+		add_settings_section( 'openseo_ai', __( 'AI', 'openseo' ), array( $this, 'render_ai_intro' ), self::MENU_SLUG );
 
 		$this->add_text_field( 'title_separator', __( 'Title separator', 'openseo' ), 'openseo_titles' );
 		$this->add_text_field( 'title_template', __( 'Default title template', 'openseo' ), 'openseo_titles' );
@@ -71,6 +73,7 @@ final class SettingsPage implements Hookable {
 		$this->add_text_field( 'home_title', __( 'Homepage title', 'openseo' ), 'openseo_titles' );
 		$this->add_text_field( 'home_description', __( 'Homepage description', 'openseo' ), 'openseo_titles' );
 		$this->add_text_field( 'og_default_image', __( 'Default social image URL', 'openseo' ), 'openseo_social' );
+		$this->add_text_field( 'ai_model', __( 'AI model (optional override)', 'openseo' ), 'openseo_ai' );
 	}
 
 	/**
@@ -95,6 +98,29 @@ final class SettingsPage implements Hookable {
 			self::MENU_SLUG,
 			$section,
 			array( 'label_for' => 'openseo_' . $key )
+		);
+	}
+
+	/**
+	 * Render the AI section intro: connector status + link.
+	 */
+	public function render_ai_intro(): void {
+		$url = Connector::settings_url();
+
+		if ( Connector::is_text_generation_available() ) {
+			printf(
+				'<p>%s</p>',
+				esc_html__( 'An AI connector is configured. The editor can generate titles and descriptions.', 'openseo' )
+			);
+
+			return;
+		}
+
+		printf(
+			'<p>%s <a href="%s">%s</a></p>',
+			esc_html__( 'No AI connector is configured.', 'openseo' ),
+			esc_url( $url ),
+			esc_html__( 'Settings → Connectors', 'openseo' )
 		);
 	}
 
