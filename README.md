@@ -19,11 +19,22 @@ openseo/
 │   │   └── Hookable.php     # register(): void
 │   ├── Settings/
 │   │   └── Options.php      # Typed read/write + sanitize of the single option
+│   ├── Meta/
+│   │   ├── PostMeta.php     # Registers per-entry _openseo_* meta (REST + auth)
+│   │   ├── Resolver.php     # Effective SEO cascade: override -> template -> fallback
+│   │   └── Variables.php    # Title/description tokens (%title%, %sep%, %sitename%, ...)
 │   ├── Admin/
-│   │   ├── SettingsPage.php # Settings API page (capability + nonce)
-│   │   └── Assets.php       # Enqueues compiled admin bundle
+│   │   ├── SettingsPage.php # Tabbed Settings API page (capability + nonce)
+│   │   ├── Assets.php       # Enqueues compiled admin bundle
+│   │   └── Editor/
+│   │       └── EditorPanel.php # Enqueues the Gutenberg SEO document panel
 │   ├── Frontend/
-│   │   └── MetaTags.php     # wp_head meta description output
+│   │   └── Head/            # wp_head output, one presenter per concern:
+│   │       ├── HeadPrinter.php  # Orchestrates presenters; drops core rel_canonical
+│   │       ├── Presenter.php    # output(): void contract
+│   │       ├── Title.php        # pre_get_document_title filter
+│   │       ├── Description.php  # Robots.php, Canonical.php,
+│   │       └── OpenGraph.php    # Twitter.php
 │   ├── Ai/
 │   │   └── Abilities.php    # wp_register_ability() on wp_abilities_api_init
 │   └── Lifecycle/
