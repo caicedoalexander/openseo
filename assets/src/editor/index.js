@@ -17,7 +17,7 @@ import {
 	TabPanel,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { executeAbility } from '@wordpress/abilities';
+import apiFetch from '@wordpress/api-fetch';
 import { buildSnippetPreview } from './preview';
 import { aiErrorMessage } from './ai';
 
@@ -59,15 +59,15 @@ function GenerateButton( { abilityName, field, onResult } ) {
 		);
 	}
 
-	// executeAbility POSTs to /wp-abilities/v1/<namespace>/<ability>/run
-	// with { input: { post_id } } and returns the ability's output object.
 	const onClick = async () => {
 		setBusy( true );
 		setError( '' );
 
 		try {
-			const result = await executeAbility( abilityName, {
-				post_id: postId,
+			const result = await apiFetch( {
+				path: `/wp-abilities/v1/abilities/${ abilityName }/run`,
+				method: 'POST',
+				data: { input: { post_id: postId } },
 			} );
 			onResult( result?.[ field ] ?? '' );
 		} catch ( e ) {

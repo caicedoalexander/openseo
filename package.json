@@ -25,7 +25,6 @@
         "test:integration": "wp-env run tests-cli --env-cwd=wp-content/plugins/openseo vendor/bin/phpunit -c phpunit-integration.xml.dist"
     },
     "devDependencies": {
-        "@wordpress/abilities": "^0.14.1",
         "@wordpress/env": "^10.10.0",
         "@wordpress/scripts": "^30.0.0"
     }
