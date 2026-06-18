@@ -22,7 +22,7 @@
         "env:stop": "wp-env stop",
         "env:run": "wp-env run",
         "env:clean": "wp-env clean all",
-        "test:integration": "wp-env run tests-cli --env-cwd=wp-content/plugins/openseo composer test:integration"
+        "test:integration": "wp-env run tests-cli --env-cwd=wp-content/plugins/openseo vendor/bin/phpunit -c phpunit-integration.xml.dist"
     },
     "devDependencies": {
         "@wordpress/env": "^10.10.0",
