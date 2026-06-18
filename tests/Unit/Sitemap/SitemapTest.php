@@ -88,5 +88,6 @@ final class SitemapTest extends TestCase {
 		$args = $sitemap->exclude_noindex( null );
 
 		$this->assertArrayHasKey( 'meta_query', $args );
+		$this->assertSame( 'OR', $args['meta_query']['relation'] );
 	}
 }

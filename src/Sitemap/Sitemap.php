@@ -63,7 +63,7 @@ final class Sitemap implements Hookable {
 	 * @param mixed $name     Provider name ("posts" | "taxonomies" | "users").
 	 * @return mixed The provider, or false to skip registering it.
 	 */
-	public function filter_provider( $provider, $name ) {
+	public function filter_provider( $provider, $name ): mixed {
 		if ( 'users' === $name && '1' !== (string) $this->options->get( 'sitemap_include_authors' ) ) {
 			return false;
 		}
