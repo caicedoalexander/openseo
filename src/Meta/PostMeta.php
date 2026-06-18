@@ -37,12 +37,9 @@ final class PostMeta implements Hookable {
 
 	/**
 	 * Hook meta registration onto init (runs for admin, front, and REST requests).
-	 * Also hooks rest_api_init so meta keys survive the WP test framework's
-	 * per-test teardown that unregisters all meta between test methods.
 	 */
 	public function register(): void {
 		add_action( 'init', array( $this, 'register_meta' ) );
-		add_action( 'rest_api_init', array( $this, 'register_meta' ) );
 	}
 
 	/**

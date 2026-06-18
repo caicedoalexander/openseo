@@ -7,6 +7,11 @@ use WP_UnitTestCase;
 
 final class MetaRegistrationTest extends WP_UnitTestCase {
 
+	public function setUp(): void {
+		parent::setUp();
+		( new \OpenSEO\Meta\PostMeta() )->register_meta();
+	}
+
     public function test_seo_meta_keys_are_registered_for_posts(): void {
         $registered = get_registered_meta_keys( 'post', 'post' );
 
