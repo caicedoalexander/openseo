@@ -17,6 +17,7 @@ use OpenSEO\Frontend\Head\Canonical;
 use OpenSEO\Frontend\Head\Description;
 use OpenSEO\Frontend\Head\HeadPrinter;
 use OpenSEO\Frontend\Head\Robots;
+use OpenSEO\Frontend\Head\Title;
 use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\Variables;
@@ -88,6 +89,7 @@ final class Plugin {
 
 		$modules = array(
 			new PostMeta(),
+			new Title( $resolver ),
 			new HeadPrinter(
 				array(
 					new Description( $resolver ),

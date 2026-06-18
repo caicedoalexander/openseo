@@ -50,4 +50,19 @@ final class PluginBootTest extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'content="noindex, follow"', $output );
 	}
+
+	public function test_singular_title_uses_template(): void {
+		$post_id = self::factory()->post->create( array( 'post_title' => 'My Post' ) );
+		$this->go_to( get_permalink( $post_id ) );
+
+		$this->assertStringContainsString( 'My Post', wp_get_document_title() );
+	}
+
+	public function test_per_entry_title_override_wins(): void {
+		$post_id = self::factory()->post->create( array( 'post_title' => 'My Post' ) );
+		update_post_meta( $post_id, '_openseo_title', 'Overridden Title' );
+		$this->go_to( get_permalink( $post_id ) );
+
+		$this->assertSame( 'Overridden Title', wp_get_document_title() );
+	}
 }
