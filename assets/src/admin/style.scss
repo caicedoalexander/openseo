@@ -1,0 +1,11 @@
+/**
+ * OpenSEO admin settings styles.
+ */
+
+.openseo-settings {
+	max-width: 720px;
+
+	.form-table textarea {
+		font-family: var( --wp-admin-theme-font-family, inherit );
+	}
+}

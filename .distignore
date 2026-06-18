@@ -1,0 +1,46 @@
+# Files and directories excluded from the distributed plugin ZIP
+# (used by `wp-scripts plugin-zip`). The compiled vendor/ and assets/build/
+# MUST ship, so they are intentionally NOT listed here.
+
+# VCS and CI
+/.git
+/.github
+/.gitignore
+/.gitattributes
+/.distignore
+
+# Local dev environment
+/.wp-env.json
+/.editorconfig
+/.nvmrc
+/wp-cli.yml
+
+# Sources compiled before release
+/assets/src
+/node_modules
+
+# Tests and static analysis
+/tests
+/stubs
+/phpcs.xml.dist
+/phpstan.neon.dist
+/phpstan.neon
+/phpunit.xml.dist
+/phpunit-integration.xml.dist
+
+# Build tooling and manifests
+/webpack.config.js
+/composer.json
+/composer.lock
+/package.json
+/package-lock.json
+
+# Project docs not needed inside the plugin
+/CONTRIBUTING.md
+/CHANGELOG.md
+/README.md
+
+# Caches
+/.cache
+.phpunit.result.cache
+.phpcs.cache

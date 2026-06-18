@@ -1,0 +1,24 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+        - openseo.php
+        - uninstall.php
+    bootstrapFiles:
+        - stubs/constants.php
+    stubFiles:
+        # Local stubs for the WordPress 7.0 Abilities API in case the installed
+        # wordpress-stubs version does not yet ship them.
+        - stubs/abilities-api.php
+    # Plugin path/version constants vary by install location, so their literal
+    # value must not be assumed during analysis (avoids false require() paths).
+    dynamicConstantNames:
+        - OPENSEO_VERSION
+        - OPENSEO_PLUGIN_FILE
+        - OPENSEO_PLUGIN_DIR
+        - OPENSEO_PLUGIN_URL
+        - OPENSEO_PLUGIN_BASENAME
+    treatPhpDocTypesAsCertain: false

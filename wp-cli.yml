@@ -1,0 +1,19 @@
+# Default WP-CLI configuration for OpenSEO development.
+#
+# The plugin ships no WordPress install of its own, so day-to-day WP-CLI work
+# runs through wp-env, which bundles WP-CLI:
+#
+#   npm run env:start
+#   npm run env:run -- cli wp plugin list
+#   npm run env:run -- cli wp option get openseo_settings
+#
+# This file is picked up automatically when WP-CLI runs from the plugin root
+# (e.g. inside the wp-env container, where the plugin is mounted into the site).
+
+# Suppress the update nag in scripted/CI contexts.
+core update-check:
+  insecure: false
+
+# Helpful defaults for repeatable scripts.
+@all:
+  user: admin

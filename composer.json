@@ -1,0 +1,67 @@
+{
+    "name": "openseo/openseo",
+    "description": "Open-source, AI-native SEO toolkit for WordPress built on the WordPress 7.0 Abilities API.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "keywords": [
+        "wordpress",
+        "plugin",
+        "seo",
+        "ai",
+        "abilities-api"
+    ],
+    "homepage": "https://github.com/openseo/openseo",
+    "require": {
+        "php": ">=8.1",
+        "composer/installers": "^2.0"
+    },
+    "require-dev": {
+        "brain/monkey": "^2.6",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "php-stubs/wordpress-stubs": "^6.7",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^9.6",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "wp-coding-standards/wpcs": "^3.1",
+        "yoast/phpunit-polyfills": "^2.0 || ^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenSEO\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OpenSEO\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "scripts": {
+        "lint": "phpcs",
+        "lint:fix": "phpcbf",
+        "analyze": "phpstan analyse --memory-limit=1G",
+        "test:unit": "phpunit",
+        "test:integration": "phpunit -c phpunit-integration.xml.dist",
+        "check": [
+            "@lint",
+            "@analyze",
+            "@test:unit"
+        ]
+    },
+    "scripts-descriptions": {
+        "lint": "Run PHP_CodeSniffer against the WordPress coding standards.",
+        "lint:fix": "Auto-fix coding standard violations where possible.",
+        "analyze": "Run PHPStan static analysis.",
+        "test:unit": "Run isolated unit tests (Brain Monkey).",
+        "test:integration": "Run WordPress integration tests (requires the WP test suite).",
+        "check": "Run lint, static analysis, and unit tests."
+    }
+}
