@@ -36,7 +36,7 @@ final class ConnectorTest extends TestCase {
 	public function test_settings_url_points_to_the_connectors_screen(): void {
 		Functions\when( 'admin_url' )->returnArg();
 
-		$this->assertStringContainsString( 'page=connectors', Connector::settings_url() );
+		$this->assertStringContainsString( 'options-connectors.php', Connector::settings_url() );
 	}
 
 	public function test_returns_true_when_text_generation_is_supported(): void {

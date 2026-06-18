@@ -32,9 +32,11 @@ final class Connector {
 	 * Admin URL of the Settings → Connectors screen.
 	 *
 	 * Single source of truth so the editor panel and the settings page link to
-	 * the same place. Confirm the page slug against WP 7.0 in wp-env (Task 0).
+	 * the same place. The WP 7.0 Connectors screen is its own page,
+	 * `options-connectors.php` (verified in wp-env), not a sub-page of
+	 * `options-general.php`.
 	 */
 	public static function settings_url(): string {
-		return admin_url( 'options-general.php?page=connectors' );
+		return admin_url( 'options-connectors.php' );
 	}
 }
