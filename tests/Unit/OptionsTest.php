@@ -50,6 +50,7 @@ final class OptionsTest extends TestCase {
 	}
 
 	public function test_sanitize_cleans_and_normalizes_input(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
 		Functions\when( 'wp_unslash' )->returnArg();
 		Functions\when( 'sanitize_text_field' )->alias(
 			static fn( $value ) => trim( wp_strip_tags_compat( (string) $value ) )
@@ -77,12 +78,32 @@ final class OptionsTest extends TestCase {
 	}
 
 	public function test_sanitize_handles_non_array_input(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
 		$options = new Options();
 
 		$clean = $options->sanitize( 'not-an-array' );
 
 		$this->assertSame( '-', $clean['title_separator'] );
 		$this->assertSame( '', $clean['og_default_image'] );
+	}
+
+	public function test_sanitize_preserves_keys_absent_from_a_partial_tab_submission(): void {
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		// A previously saved value from another tab is currently stored.
+		Functions\when( 'get_option' )->justReturn(
+			array( 'title_template' => 'Stored title %sep% %sitename%' )
+		);
+
+		$options = new Options();
+
+		// The AI tab posts only its own field.
+		$clean = $options->sanitize( array( 'ai_model' => 'claude-opus-4-8' ) );
+
+		$this->assertSame( 'claude-opus-4-8', $clean['ai_model'] );
+		// The unrelated tab's saved value survives instead of resetting to default.
+		$this->assertSame( 'Stored title %sep% %sitename%', $clean['title_template'] );
 	}
 }
 

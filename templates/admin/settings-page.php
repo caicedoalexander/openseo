@@ -49,7 +49,7 @@ if ( ! isset( $openseo_tabs[ $openseo_active ] ) ) {
 	<form action="options.php" method="post">
 		<?php
 		settings_fields( \OpenSEO\Settings\Options::OPTION_GROUP );
-		do_settings_sections( 'openseo' );
+		do_settings_sections( 'openseo_' . $openseo_active );
 		submit_button();
 		?>
 	</form>

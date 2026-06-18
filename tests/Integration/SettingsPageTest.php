@@ -24,8 +24,8 @@ final class SettingsPageTest extends WP_UnitTestCase {
 		$page = new SettingsPage( new Options() );
 		$page->register_settings();
 
-		$this->assertArrayHasKey( 'openseo', $wp_settings_fields );
-		$section_fields = $wp_settings_fields['openseo']['openseo_titles'] ?? array();
+		$this->assertArrayHasKey( 'openseo_titles', $wp_settings_fields );
+		$section_fields = $wp_settings_fields['openseo_titles']['openseo_titles'] ?? array();
 		$this->assertArrayHasKey( 'title_template', $section_fields );
 	}
 
@@ -35,7 +35,7 @@ final class SettingsPageTest extends WP_UnitTestCase {
 		$page = new SettingsPage( new Options() );
 		$page->register_settings();
 
-		$section_fields = $wp_settings_fields['openseo']['openseo_ai'] ?? array();
+		$section_fields = $wp_settings_fields['openseo_ai']['openseo_ai'] ?? array();
 		$this->assertArrayHasKey( 'ai_model', $section_fields );
 	}
 }

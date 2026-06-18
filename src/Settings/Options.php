@@ -71,7 +71,10 @@ final class Options {
 	 */
 	public function sanitize( mixed $input ): array {
 		$input = is_array( $input ) ? $input : array();
-		$clean = $this->defaults();
+		// Merge over the currently stored values, not the defaults: each settings
+		// tab posts only its own fields, so keys absent from this submission must
+		// keep their saved value instead of resetting to default.
+		$clean = $this->all();
 
 		foreach ( array( 'title_separator', 'title_template', 'description_template', 'home_title', 'home_description', 'ai_model' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {

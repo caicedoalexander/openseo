@@ -62,10 +62,12 @@ final class SettingsPage implements Hookable {
 			)
 		);
 
-		add_settings_section( 'openseo_general', __( 'General', 'openseo' ), '__return_false', self::MENU_SLUG );
-		add_settings_section( 'openseo_titles', __( 'Titles & Meta', 'openseo' ), '__return_false', self::MENU_SLUG );
-		add_settings_section( 'openseo_social', __( 'Social', 'openseo' ), '__return_false', self::MENU_SLUG );
-		add_settings_section( 'openseo_ai', __( 'AI', 'openseo' ), array( $this, 'render_ai_intro' ), self::MENU_SLUG );
+		// Each section lives under its own page slug (matching its ID) so the
+		// template can render one tab at a time via do_settings_sections().
+		add_settings_section( 'openseo_general', __( 'General', 'openseo' ), '__return_false', 'openseo_general' );
+		add_settings_section( 'openseo_titles', __( 'Titles & Meta', 'openseo' ), '__return_false', 'openseo_titles' );
+		add_settings_section( 'openseo_social', __( 'Social', 'openseo' ), '__return_false', 'openseo_social' );
+		add_settings_section( 'openseo_ai', __( 'AI', 'openseo' ), array( $this, 'render_ai_intro' ), 'openseo_ai' );
 
 		$this->add_text_field( 'title_separator', __( 'Title separator', 'openseo' ), 'openseo_titles' );
 		$this->add_text_field( 'title_template', __( 'Default title template', 'openseo' ), 'openseo_titles' );
@@ -95,7 +97,7 @@ final class SettingsPage implements Hookable {
 					esc_attr( (string) $this->options->get( $key ) )
 				);
 			},
-			self::MENU_SLUG,
+			$section,
 			$section,
 			array( 'label_for' => 'openseo_' . $key )
 		);
