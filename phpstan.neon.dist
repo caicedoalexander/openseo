@@ -13,6 +13,8 @@ parameters:
         # Local stubs for the WordPress 7.0 Abilities API in case the installed
         # wordpress-stubs version does not yet ship them.
         - stubs/abilities-api.php
+        # Local stubs for the WordPress 7.0 AI Client + Connectors API.
+        - stubs/ai-client.php
     # Plugin path/version constants vary by install location, so their literal
     # value must not be assumed during analysis (avoids false require() paths).
     dynamicConstantNames:

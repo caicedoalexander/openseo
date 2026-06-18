@@ -13,6 +13,7 @@ $openseo_tabs = array(
 	'general' => __( 'General', 'openseo' ),
 	'titles'  => __( 'Titles & Meta', 'openseo' ),
 	'social'  => __( 'Social', 'openseo' ),
+	'ai'      => __( 'AI', 'openseo' ),
 );
 
 // Read-only tab selector; the form posts to options.php and saves all sections.

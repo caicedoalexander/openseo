@@ -28,4 +28,14 @@ final class SettingsPageTest extends WP_UnitTestCase {
 		$section_fields = $wp_settings_fields['openseo']['openseo_titles'] ?? array();
 		$this->assertArrayHasKey( 'title_template', $section_fields );
 	}
+
+	public function test_ai_section_and_model_field_register(): void {
+		global $wp_settings_fields;
+
+		$page = new SettingsPage( new Options() );
+		$page->register_settings();
+
+		$section_fields = $wp_settings_fields['openseo']['openseo_ai'] ?? array();
+		$this->assertArrayHasKey( 'ai_model', $section_fields );
+	}
 }

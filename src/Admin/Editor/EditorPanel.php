@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Admin\Editor;
 
+use OpenSEO\Ai\Connector;
 use OpenSEO\Contracts\Hookable;
 
 /**
@@ -43,6 +44,17 @@ final class EditorPanel implements Hookable {
 			$asset['dependencies'] ?? array(),
 			$asset['version'] ?? OPENSEO_VERSION,
 			true
+		);
+
+		wp_add_inline_script(
+			self::HANDLE,
+			'window.openseoEditor = ' . wp_json_encode(
+				array(
+					'aiAvailable'   => Connector::is_text_generation_available(),
+					'connectorsUrl' => Connector::settings_url(),
+				)
+			) . ';',
+			'before'
 		);
 
 		wp_set_script_translations( self::HANDLE, 'openseo' );
