@@ -65,4 +65,23 @@ final class PluginBootTest extends WP_UnitTestCase {
 
 		$this->assertSame( 'Overridden Title', wp_get_document_title() );
 	}
+
+	public function test_singular_head_outputs_open_graph_and_twitter(): void {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_title'   => 'Social Post',
+				'post_excerpt' => 'Shareable summary.',
+			)
+		);
+		$this->go_to( get_permalink( $post_id ) );
+
+		ob_start();
+		do_action( 'wp_head' );
+		$output = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'property="og:title"', $output );
+		$this->assertStringContainsString( 'property="og:type"', $output );
+		$this->assertStringContainsString( 'name="twitter:card"', $output );
+		$this->assertStringContainsString( 'Social Post', $output );
+	}
 }

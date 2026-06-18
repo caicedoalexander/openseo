@@ -16,8 +16,10 @@ use OpenSEO\Contracts\Hookable;
 use OpenSEO\Frontend\Head\Canonical;
 use OpenSEO\Frontend\Head\Description;
 use OpenSEO\Frontend\Head\HeadPrinter;
+use OpenSEO\Frontend\Head\OpenGraph;
 use OpenSEO\Frontend\Head\Robots;
 use OpenSEO\Frontend\Head\Title;
+use OpenSEO\Frontend\Head\Twitter;
 use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\Variables;
@@ -95,6 +97,8 @@ final class Plugin {
 					new Description( $resolver ),
 					new Robots( $resolver ),
 					new Canonical( $resolver ),
+					new OpenGraph( $resolver ),
+					new Twitter( $resolver ),
 				)
 			),
 			new Abilities(),
