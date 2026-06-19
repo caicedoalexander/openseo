@@ -29,7 +29,10 @@
     "autoload": {
         "psr-4": {
             "OpenSEO\\": "src/"
-        }
+        },
+        "files": [
+            "src/template-functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

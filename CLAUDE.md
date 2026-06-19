@@ -111,6 +111,22 @@ and the wp-env integration suite.
 - `Admin/SettingsPage.php` — tabbed Settings API page (General · Titles & Meta · Social).
   `Admin/Editor/EditorPanel.php` enqueues the Gutenberg SEO document panel (React, reads/writes
   the meta via `useEntityProp`). `templates/admin/` holds escaped PHP view partials.
+- `Schema/` — JSON-LD output. `Graph` (Hookable, `wp_head`) assembles small
+  `Piece` objects (`WebSite`, `Organization`/`Person`, `WebPage`, `Article`,
+  `BreadcrumbList`) into one connected `@graph` printed as a single
+  `application/ld+json` script (`JSON_HEX_TAG` for script safety). `Ids`
+  centralizes every `@id`. Pieces reuse the Phase 1 `Resolver` so structured data
+  matches the head tags. The per-entry `_openseo_schema_type` meta (whitelist) and
+  the `openseo/suggest-schema-type` ability drive the editor's type selector.
+- `Breadcrumbs/` — `Trail` (implements `TrailSource`) builds the hierarchy once;
+  `Renderer` turns it into escaped `<nav><ol>`; consumed by the
+  `openseo_breadcrumbs()` template function (`src/template-functions.php`, Composer
+  `autoload.files`), the dynamic `openseo/breadcrumbs` block (`Breadcrumbs\Block`),
+  and the `BreadcrumbList` schema piece. The block is registered from PHP
+  (`register_block_type` with a `render_callback` + a compiled `editor_script`
+  handle) rather than `block.json`/`register_block_type_from_metadata`, because the
+  custom `webpack.config.js` overrides `entry`; its attributes are declared in both
+  PHP and JS (a small, deliberate duplication kept in sync).
 
 ## Conventions & non-obvious gotchas
 

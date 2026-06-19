@@ -14,6 +14,10 @@ module.exports = {
 			'assets/src/admin/index.js'
 		),
 		editor: path.resolve( process.cwd(), 'assets/src/editor/index.js' ),
+		breadcrumbs: path.resolve(
+			process.cwd(),
+			'assets/src/blocks/breadcrumbs/index.js'
+		),
 	},
 	output: {
 		...defaultConfig.output,

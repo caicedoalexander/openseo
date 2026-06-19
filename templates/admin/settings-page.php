@@ -14,6 +14,7 @@ $openseo_tabs = array(
 	'titles'   => __( 'Titles & Meta', 'openseo' ),
 	'social'   => __( 'Social', 'openseo' ),
 	'sitemaps' => __( 'Sitemaps', 'openseo' ),
+	'schema'   => __( 'Schema', 'openseo' ),
 	'ai'       => __( 'AI', 'openseo' ),
 );
 

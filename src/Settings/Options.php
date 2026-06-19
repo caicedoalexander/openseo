@@ -36,6 +36,10 @@ final class Options {
 			'og_default_image'        => '',
 			'sitemap_enabled'         => '1',
 			'sitemap_include_authors' => '',
+			'schema_site_type'        => 'Organization',
+			'schema_site_name'        => '',
+			'schema_logo'             => '',
+			'breadcrumb_separator'    => '›',
 			'ai_model'                => '',
 		);
 	}
@@ -78,7 +82,7 @@ final class Options {
 		// keep their saved value instead of resetting to default.
 		$clean = $this->all();
 
-		foreach ( array( 'title_separator', 'title_template', 'description_template', 'home_title', 'home_description', 'ai_model' ) as $key ) {
+		foreach ( array( 'title_separator', 'title_template', 'description_template', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = sanitize_text_field( wp_unslash( $input[ $key ] ) );
 			}
@@ -92,8 +96,18 @@ final class Options {
 			}
 		}
 
-		if ( isset( $input['og_default_image'] ) ) {
-			$clean['og_default_image'] = esc_url_raw( wp_unslash( $input['og_default_image'] ) );
+		// Whitelisted single-choice value: anything off-list resets to the default.
+		if ( isset( $input['schema_site_type'] ) ) {
+			$type                      = sanitize_text_field( wp_unslash( $input['schema_site_type'] ) );
+			$clean['schema_site_type'] = in_array( $type, array( 'Organization', 'Person' ), true )
+				? $type
+				: 'Organization';
+		}
+
+		foreach ( array( 'og_default_image', 'schema_logo' ) as $key ) {
+			if ( isset( $input[ $key ] ) ) {
+				$clean[ $key ] = esc_url_raw( wp_unslash( $input[ $key ] ) );
+			}
 		}
 
 		return $clean;

@@ -69,6 +69,7 @@ final class SettingsPage implements Hookable {
 		add_settings_section( 'openseo_social', __( 'Social', 'openseo' ), '__return_false', 'openseo_social' );
 		add_settings_section( 'openseo_ai', __( 'AI', 'openseo' ), array( $this, 'render_ai_intro' ), 'openseo_ai' );
 		add_settings_section( 'openseo_sitemaps', __( 'Sitemaps', 'openseo' ), '__return_false', 'openseo_sitemaps' );
+		add_settings_section( 'openseo_schema', __( 'Schema', 'openseo' ), '__return_false', 'openseo_schema' );
 
 		$this->add_text_field( 'title_separator', __( 'Title separator', 'openseo' ), 'openseo_titles' );
 		$this->add_text_field( 'title_template', __( 'Default title template', 'openseo' ), 'openseo_titles' );
@@ -79,6 +80,19 @@ final class SettingsPage implements Hookable {
 		$this->add_text_field( 'ai_model', __( 'AI model (optional override)', 'openseo' ), 'openseo_ai' );
 		$this->add_checkbox_field( 'sitemap_enabled', __( 'Enable XML sitemap', 'openseo' ), 'openseo_sitemaps' );
 		$this->add_checkbox_field( 'sitemap_include_authors', __( 'Include author sitemap', 'openseo' ), 'openseo_sitemaps' );
+
+		$this->add_select_field(
+			'schema_site_type',
+			__( 'Site represents', 'openseo' ),
+			'openseo_schema',
+			array(
+				'Organization' => __( 'Organization', 'openseo' ),
+				'Person'       => __( 'Person', 'openseo' ),
+			)
+		);
+		$this->add_text_field( 'schema_site_name', __( 'Name (defaults to site name)', 'openseo' ), 'openseo_schema' );
+		$this->add_text_field( 'schema_logo', __( 'Logo / image URL', 'openseo' ), 'openseo_schema' );
+		$this->add_text_field( 'breadcrumb_separator', __( 'Breadcrumb separator', 'openseo' ), 'openseo_schema' );
 	}
 
 	/**
@@ -129,6 +143,44 @@ final class SettingsPage implements Hookable {
 					esc_attr( $key ),
 					checked( '1', (string) $this->options->get( $key ), false )
 				);
+			},
+			$section,
+			$section,
+			array( 'label_for' => 'openseo_' . $key )
+		);
+	}
+
+	/**
+	 * Register one select field bound to a single option key.
+	 *
+	 * @param string                $key     Option key name.
+	 * @param string                $label   Field label text.
+	 * @param string                $section Settings section ID.
+	 * @param array<string, string> $choices value => label map.
+	 */
+	private function add_select_field( string $key, string $label, string $section, array $choices ): void {
+		add_settings_field(
+			$key,
+			$label,
+			function () use ( $key, $choices ): void {
+				$current = (string) $this->options->get( $key );
+
+				printf(
+					'<select id="openseo_%1$s" name="%2$s[%1$s]">',
+					esc_attr( $key ),
+					esc_attr( Options::OPTION_KEY )
+				);
+
+				foreach ( $choices as $value => $choice_label ) {
+					printf(
+						'<option value="%1$s"%2$s>%3$s</option>',
+						esc_attr( $value ),
+						selected( $current, $value, false ),
+						esc_html( $choice_label )
+					);
+				}
+
+				echo '</select>';
 			},
 			$section,
 			$section,

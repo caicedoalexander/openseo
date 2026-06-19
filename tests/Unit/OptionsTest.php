@@ -141,6 +141,54 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( '', $off['sitemap_enabled'] );
 		$this->assertSame( '', $off['sitemap_include_authors'] );
 	}
+
+	public function test_schema_defaults(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$options = new Options();
+
+		$this->assertSame( 'Organization', $options->get( 'schema_site_type' ) );
+		$this->assertSame( '', $options->get( 'schema_site_name' ) );
+		$this->assertSame( '', $options->get( 'schema_logo' ) );
+		$this->assertSame( '›', $options->get( 'breadcrumb_separator' ) );
+	}
+
+	public function test_sanitize_normalizes_schema_fields(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+
+		$options = new Options();
+
+		$clean = $options->sanitize(
+			array(
+				'schema_site_type'     => 'Person',
+				'schema_site_name'     => 'Jane Doe',
+				'schema_logo'          => 'https://example.com/logo.png',
+				'breadcrumb_separator' => '/',
+			)
+		);
+
+		$this->assertSame( 'Person', $clean['schema_site_type'] );
+		$this->assertSame( 'Jane Doe', $clean['schema_site_name'] );
+		$this->assertSame( 'https://example.com/logo.png', $clean['schema_logo'] );
+		$this->assertSame( '/', $clean['breadcrumb_separator'] );
+	}
+
+	public function test_sanitize_rejects_unknown_schema_site_type(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+
+		$options = new Options();
+
+		$clean = $options->sanitize( array( 'schema_site_type' => 'Robot' ) );
+
+		// Unknown value falls back to the default, never stored verbatim.
+		$this->assertSame( 'Organization', $clean['schema_site_type'] );
+	}
 }
 
 

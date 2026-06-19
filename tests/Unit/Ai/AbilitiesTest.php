@@ -143,6 +143,62 @@ final class AbilitiesTest extends TestCase {
 		$this->assertSame( array( 'meta_description' => 'Fallback value.' ), $result );
 	}
 
+	public function test_registers_suggest_schema_type_over_rest(): void {
+		$registered = array();
+		Functions\when( 'wp_register_ability' )->alias(
+			static function ( $name, $args ) use ( &$registered ): void {
+				$registered[ $name ] = $args;
+			}
+		);
+
+		$this->abilities()->register_abilities();
+
+		$this->assertArrayHasKey( 'openseo/suggest-schema-type', $registered );
+		$this->assertTrue( $registered['openseo/suggest-schema-type']['meta']['show_in_rest'] );
+	}
+
+	public function test_suggest_schema_type_returns_type_and_reason(): void {
+		Functions\when( 'get_post' )->justReturn( $this->fake_post() );
+		Functions\when( 'wp_strip_all_tags' )->returnArg();
+		Functions\when( 'wp_trim_words' )->returnArg();
+		Functions\when( 'is_wp_error' )->alias( static fn( $v ) => $v instanceof WP_Error );
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_ai_client_prompt' )->justReturn(
+			new FakePromptBuilder( true, '{"type":"FAQPage","reason":"It answers questions."}' )
+		);
+
+		$result = $this->abilities()->suggest_schema_type( array( 'post_id' => 7 ) );
+
+		$this->assertSame( 'FAQPage', $result['type'] );
+		$this->assertSame( 'It answers questions.', $result['reason'] );
+	}
+
+	public function test_suggest_schema_type_defaults_unknown_type(): void {
+		Functions\when( 'get_post' )->justReturn( $this->fake_post() );
+		Functions\when( 'wp_strip_all_tags' )->returnArg();
+		Functions\when( 'wp_trim_words' )->returnArg();
+		Functions\when( 'is_wp_error' )->alias( static fn( $v ) => $v instanceof WP_Error );
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_ai_client_prompt' )->justReturn(
+			new FakePromptBuilder( true, '{"type":"Nonsense","reason":"x"}' )
+		);
+
+		$result = $this->abilities()->suggest_schema_type( array( 'post_id' => 7 ) );
+
+		// Off-list type collapses to the safe default.
+		$this->assertSame( 'Article', $result['type'] );
+	}
+
+	public function test_suggest_schema_type_errors_without_connector(): void {
+		Functions\when( 'get_post' )->justReturn( $this->fake_post() );
+		Functions\when( 'wp_ai_client_prompt' )->justReturn( new FakePromptBuilder( false, '' ) );
+
+		$result = $this->abilities()->suggest_schema_type( array( 'post_id' => 7 ) );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'openseo_no_connector', $result->get_error_code() );
+	}
+
 	public function test_propagates_generation_error(): void {
 		Functions\when( 'get_post' )->justReturn( $this->fake_post() );
 		Functions\when( 'wp_strip_all_tags' )->returnArg();
