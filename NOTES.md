@@ -110,6 +110,25 @@ npm run env:run -- cli wp plugin install ai-provider-for-openai --activate
 Sin conector, el panel del editor muestra "Connect an AI provider… Settings → Connectors" en
 lugar del botón, y la pestaña **Settings → OpenSEO → AI** indica "No AI connector is configured".
 
+### Sitemaps (Fase 3): qué cubre y cómo probar
+
+OpenSEO no genera XML propio: personaliza el sitemap nativo de WordPress
+(`WP_Sitemaps`, URL `wp-sitemap.xml`) vía los filtros `wp_sitemaps_*` desde
+`src/Sitemap/Sitemap.php`. Tres comportamientos:
+
+- **Excluye `noindex`:** las entradas con `_openseo_robots_noindex = '1'` se
+  omiten del sub-sitemap de posts (`wp_sitemaps_posts_query_args`).
+- **Master on/off:** la pestaña *Settings → OpenSEO → Sitemaps* permite
+  desactivar todo el sitemap (`wp_sitemaps_enabled`).
+- **Autores fuera por defecto:** el sub-sitemap de usuarios se quita salvo que se
+  active en esa misma pestaña (`wp_sitemaps_add_provider`).
+
+El descubrimiento ya lo cubre el `robots.txt` virtual de core (`Sitemap:
+…/wp-sitemap.xml`); no hay ping a buscadores (obsoleto). IndexNow queda en "Futuro".
+
+Smoke test manual: publicar una entrada y abrir `/wp-sitemap.xml`; marcar la
+entrada como noindex y confirmar que desaparece del sub-sitemap de posts.
+
 ---
 
 ## 6. WP-CLI (vía wp-env)
