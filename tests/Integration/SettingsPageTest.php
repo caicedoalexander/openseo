@@ -49,4 +49,17 @@ final class SettingsPageTest extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'sitemap_enabled', $section_fields );
 		$this->assertArrayHasKey( 'sitemap_include_authors', $section_fields );
 	}
+
+	public function test_schema_section_and_fields_register(): void {
+		global $wp_settings_fields;
+
+		$page = new SettingsPage( new Options() );
+		$page->register_settings();
+
+		$section_fields = $wp_settings_fields['openseo_schema']['openseo_schema'] ?? array();
+		$this->assertArrayHasKey( 'schema_site_type', $section_fields );
+		$this->assertArrayHasKey( 'schema_site_name', $section_fields );
+		$this->assertArrayHasKey( 'schema_logo', $section_fields );
+		$this->assertArrayHasKey( 'breadcrumb_separator', $section_fields );
+	}
 }
