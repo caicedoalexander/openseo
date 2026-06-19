@@ -81,6 +81,8 @@ final class SitePiecesTest extends TestCase {
 		$this->assertSame( 'Acme Inc', $data['name'] );
 		$this->assertSame( 'ImageObject', $data['logo']['@type'] );
 		$this->assertSame( 'https://example.com/logo.png', $data['logo']['url'] );
+		$this->assertSame( 'https://example.com/#organizationLogo', $data['logo']['@id'] );
+		$this->assertSame( 'https://example.com/#organizationLogo', $data['image']['@id'] );
 	}
 
 	public function test_person_needed_only_for_person_type(): void {
