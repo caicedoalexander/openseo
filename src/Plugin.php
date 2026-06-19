@@ -13,6 +13,7 @@ use OpenSEO\Admin\Assets as AdminAssets;
 use OpenSEO\Admin\Editor\EditorPanel;
 use OpenSEO\Admin\SettingsPage;
 use OpenSEO\Ai\Abilities;
+use OpenSEO\Breadcrumbs\Trail;
 use OpenSEO\Contracts\Hookable;
 use OpenSEO\Frontend\Head\Canonical;
 use OpenSEO\Frontend\Head\Description;
@@ -24,6 +25,13 @@ use OpenSEO\Frontend\Head\Twitter;
 use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\Variables;
+use OpenSEO\Schema\Graph;
+use OpenSEO\Schema\Pieces\Article;
+use OpenSEO\Schema\Pieces\BreadcrumbList;
+use OpenSEO\Schema\Pieces\Organization;
+use OpenSEO\Schema\Pieces\Person;
+use OpenSEO\Schema\Pieces\WebPage as WebPagePiece;
+use OpenSEO\Schema\Pieces\WebSite as WebSitePiece;
 use OpenSEO\Settings\Options;
 use OpenSEO\Sitemap\Sitemap;
 
@@ -91,6 +99,19 @@ final class Plugin {
 		$variables = new Variables( $options );
 		$resolver  = new Resolver( $options, $variables );
 
+		$trail = new Trail();
+
+		$graph = new Graph(
+			array(
+				new WebSitePiece( $options ),
+				new Organization( $options ),
+				new Person( $options ),
+				new WebPagePiece( $resolver ),
+				new Article( $resolver, $options ),
+				new BreadcrumbList( $trail ),
+			)
+		);
+
 		$modules = array(
 			new PostMeta(),
 			new Title( $resolver ),
@@ -105,6 +126,7 @@ final class Plugin {
 			),
 			new Abilities( $options ),
 			new Sitemap( $options ),
+			$graph,
 		);
 
 		if ( is_admin() ) {
