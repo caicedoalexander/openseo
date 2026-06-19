@@ -84,4 +84,32 @@ final class TrailTest extends TestCase {
 
 		$this->assertSame( array( 'Home', 'Travel' ), array_column( $items, 'name' ) );
 	}
+
+	public function test_author_archive_uses_display_name(): void {
+		Functions\when( 'is_author' )->justReturn( true );
+		$user               = new \stdClass();
+		$user->display_name = 'Jane Doe';
+		Functions\when( 'get_queried_object' )->justReturn( $user );
+
+		$items = ( new Trail() )->items();
+
+		$this->assertSame( array( 'Home', 'Jane Doe' ), array_column( $items, 'name' ) );
+		$this->assertSame( '', $items[1]['url'] );
+	}
+
+	public function test_search_trail(): void {
+		Functions\when( 'is_search' )->justReturn( true );
+
+		$items = ( new Trail() )->items();
+
+		$this->assertSame( array( 'Home', 'Search results' ), array_column( $items, 'name' ) );
+	}
+
+	public function test_404_trail(): void {
+		Functions\when( 'is_404' )->justReturn( true );
+
+		$items = ( new Trail() )->items();
+
+		$this->assertSame( array( 'Home', 'Not found' ), array_column( $items, 'name' ) );
+	}
 }

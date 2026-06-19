@@ -37,15 +37,20 @@ final class Trail implements TrailSource {
 		}
 
 		if ( is_category() || is_tag() || is_tax() || is_author() ) {
-			$object  = get_queried_object();
-			$name    = is_object( $object ) && isset( $object->name )
-				? (string) $object->name
-				: (string) get_the_author();
+			$object = get_queried_object();
+			$name   = '';
+			if ( is_object( $object ) ) {
+				// WP_Term carries `name`; WP_User (author archives) carries `display_name`.
+				if ( isset( $object->display_name ) ) {
+					$name = (string) $object->display_name;
+				} elseif ( isset( $object->name ) ) {
+					$name = (string) $object->name;
+				}
+			}
 			$items[] = array(
 				'name' => $name,
 				'url'  => '',
 			);
-
 			return $items;
 		}
 
@@ -63,6 +68,7 @@ final class Trail implements TrailSource {
 				'name' => __( 'Not found', 'openseo' ),
 				'url'  => '',
 			);
+			return $items;
 		}
 
 		return $items;
