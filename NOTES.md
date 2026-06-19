@@ -129,6 +129,26 @@ El descubrimiento ya lo cubre el `robots.txt` virtual de core (`Sitemap:
 Smoke test manual: publicar una entrada y abrir `/wp-sitemap.xml`; marcar la
 entrada como noindex y confirmar que desaparece del sub-sitemap de posts.
 
+### Schema + Breadcrumbs (Fase 4): qué cubre y cómo probar
+
+OpenSEO emite un único `@graph` JSON-LD en `wp_head` (`src/Schema/`): WebSite,
+Organization/Person (identidad configurable en *Settings → OpenSEO → Schema*),
+WebPage, Article (tipo elegible por entrada en el panel del editor), y
+BreadcrumbList. Las piezas reutilizan el `Resolver` de la Fase 1.
+
+Los breadcrumbs (`src/Breadcrumbs/`) tienen una sola fuente (`Trail`), consumida
+por la función de tema `openseo_breadcrumbs()`, el bloque dinámico
+`openseo/breadcrumbs`, y la pieza `BreadcrumbList`.
+
+La ability `openseo/suggest-schema-type` recomienda (no aplica) el tipo más rico
+para una entrada; solo se llama on-demand desde el editor. Como en la Fase 2, CI
+solo ejercita la ruta `openseo_no_connector` y la exposición REST.
+
+Smoke test manual: publicar una entrada y ver el código fuente → un
+`<script type="application/ld+json">` con `@graph`; cambiar el tipo de schema a
+*None* y confirmar que desaparece el nodo Article; añadir el bloque de breadcrumbs
+a una página.
+
 ---
 
 ## 6. WP-CLI (vía wp-env)
