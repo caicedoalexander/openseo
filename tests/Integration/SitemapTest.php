@@ -33,7 +33,7 @@ final class SitemapTest extends WP_UnitTestCase {
 		update_post_meta( $hidden, '_openseo_robots_noindex', '1' );
 
 		$provider = new WP_Sitemaps_Posts();
-		$locs     = wp_list_pluck( $provider->get_url_list( 'post' ), 'loc' );
+		$locs     = wp_list_pluck( $provider->get_url_list( 1, 'post' ), 'loc' );
 
 		$this->assertContains( get_permalink( $visible ), $locs );
 		$this->assertNotContains( get_permalink( $hidden ), $locs );
