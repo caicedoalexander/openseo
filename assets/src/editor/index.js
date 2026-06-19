@@ -11,6 +11,7 @@ import { useState } from '@wordpress/element';
 import {
 	Button,
 	Notice,
+	SelectControl,
 	TextControl,
 	TextareaControl,
 	ToggleControl,
@@ -89,6 +90,98 @@ function GenerateButton( { abilityName, field, onResult } ) {
 					? __( 'Generating…', 'openseo' )
 					: __( 'Generate with AI', 'openseo' ) }
 			</Button>
+			{ error && (
+				<Notice status="error" isDismissible={ false }>
+					{ error }
+				</Notice>
+			) }
+		</>
+	);
+}
+
+const SCHEMA_OPTIONS = [
+	{ label: __( 'Default (automatic)', 'openseo' ), value: '' },
+	{ label: 'Article', value: 'Article' },
+	{ label: 'BlogPosting', value: 'BlogPosting' },
+	{ label: 'NewsArticle', value: 'NewsArticle' },
+	{ label: 'WebPage', value: 'WebPage' },
+	{ label: __( 'None', 'openseo' ), value: 'none' },
+];
+
+const APPLICABLE_TYPES = [ 'Article', 'BlogPosting', 'NewsArticle', 'WebPage' ];
+
+function SchemaField() {
+	const [ type, setType ] = useMeta( '_openseo_schema_type' );
+	const postId = useSelect(
+		( select ) => select( editorStore ).getCurrentPostId(),
+		[]
+	);
+	const [ busy, setBusy ] = useState( false );
+	const [ error, setError ] = useState( '' );
+	const [ suggestion, setSuggestion ] = useState( null );
+
+	const aiAvailable = window.openseoEditor?.aiAvailable ?? false;
+
+	const onRecommend = async () => {
+		setBusy( true );
+		setError( '' );
+		setSuggestion( null );
+
+		try {
+			const result = await apiFetch( {
+				path: '/wp-abilities/v1/abilities/openseo/suggest-schema-type/run',
+				method: 'POST',
+				data: { input: { post_id: postId } },
+			} );
+			setSuggestion( {
+				type: result?.type ?? '',
+				reason: result?.reason ?? '',
+			} );
+		} catch ( e ) {
+			setError( aiErrorMessage( e ) );
+		} finally {
+			setBusy( false );
+		}
+	};
+
+	return (
+		<>
+			<SelectControl
+				label={ __( 'Schema type', 'openseo' ) }
+				value={ type }
+				options={ SCHEMA_OPTIONS }
+				onChange={ setType }
+			/>
+			{ aiAvailable && (
+				<Button
+					variant="secondary"
+					onClick={ onRecommend }
+					isBusy={ busy }
+					disabled={ busy }
+				>
+					{ busy
+						? __( 'Analyzing…', 'openseo' )
+						: __( 'Recommend with AI', 'openseo' ) }
+				</Button>
+			) }
+			{ suggestion && (
+				<Notice status="info" isDismissible={ false }>
+					{ __( 'Recommended:', 'openseo' ) }{ ' ' }
+					<strong>{ suggestion.type }</strong>
+					{ suggestion.reason ? ` — ${ suggestion.reason }` : '' }
+					{ APPLICABLE_TYPES.includes( suggestion.type ) && (
+						<>
+							{ ' ' }
+							<Button
+								variant="link"
+								onClick={ () => setType( suggestion.type ) }
+							>
+								{ __( 'Apply', 'openseo' ) }
+							</Button>
+						</>
+					) }
+				</Notice>
+			) }
 			{ error && (
 				<Notice status="error" isDismissible={ false }>
 					{ error }
@@ -210,6 +303,7 @@ function AdvancedTab() {
 				value={ canonical }
 				onChange={ setCanonical }
 			/>
+			<SchemaField />
 		</>
 	);
 }
