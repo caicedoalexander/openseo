@@ -17,6 +17,13 @@ use OpenSEO\Contracts\Hookable;
 final class PostMeta implements Hookable {
 
 	/**
+	 * Allowed per-entry schema types ('' = automatic, 'none' = suppress).
+	 *
+	 * @var string[]
+	 */
+	public const SCHEMA_TYPES = array( '', 'Article', 'BlogPosting', 'NewsArticle', 'WebPage', 'none' );
+
+	/**
 	 * The meta keys OpenSEO stores per entry.
 	 *
 	 * @var string[]
@@ -33,6 +40,7 @@ final class PostMeta implements Hookable {
 		'_openseo_twitter_title',
 		'_openseo_twitter_description',
 		'_openseo_twitter_image',
+		'_openseo_schema_type',
 	);
 
 	/**
@@ -84,6 +92,12 @@ final class PostMeta implements Hookable {
 	 * @param string $meta_key Meta key being saved.
 	 */
 	public function sanitize_value( mixed $value, string $meta_key ): string {
+		if ( '_openseo_schema_type' === $meta_key ) {
+			$value = (string) $value;
+
+			return in_array( $value, self::SCHEMA_TYPES, true ) ? $value : '';
+		}
+
 		if ( '_openseo_canonical' === $meta_key || str_ends_with( $meta_key, '_image' ) ) {
 			return esc_url_raw( (string) $value );
 		}

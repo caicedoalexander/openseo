@@ -44,4 +44,11 @@ final class MetaRegistrationTest extends WP_UnitTestCase {
         $this->assertSame( 200, $response->get_status() );
         $this->assertSame( 'Via REST', get_post_meta( $post_id, '_openseo_title', true ) );
     }
+
+	public function test_schema_type_meta_is_registered(): void {
+		$registered = get_registered_meta_keys( 'post', 'post' );
+
+		$this->assertArrayHasKey( '_openseo_schema_type', $registered );
+		$this->assertTrue( $registered['_openseo_schema_type']['show_in_rest'] );
+	}
 }
