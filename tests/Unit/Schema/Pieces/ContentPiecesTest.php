@@ -121,4 +121,25 @@ final class ContentPiecesTest extends TestCase {
 
 		$this->assertFalse( ( new Article( $this->resolver(), new Options() ) )->is_needed() );
 	}
+
+	public function test_webpage_front_page_needed_but_has_no_singular_fields(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( true );
+
+		$piece = new WebPage( $this->resolver() );
+
+		$this->assertTrue( $piece->is_needed() );
+
+		$data = $piece->data();
+		$this->assertArrayNotHasKey( 'breadcrumb', $data );
+		$this->assertArrayNotHasKey( 'datePublished', $data );
+		$this->assertArrayNotHasKey( 'dateModified', $data );
+	}
+
+	public function test_article_not_needed_when_not_singular(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( false );
+
+		$this->assertFalse( ( new Article( $this->resolver(), new Options() ) )->is_needed() );
+	}
 }

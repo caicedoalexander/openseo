@@ -61,9 +61,7 @@ final class WebPage implements Piece {
 		// (the front page emits no BreadcrumbList).
 		if ( is_singular() ) {
 			$data['breadcrumb'] = array( '@id' => Ids::breadcrumb( $url ) );
-		}
 
-		if ( is_singular() ) {
 			$id                    = get_queried_object_id();
 			$data['datePublished'] = (string) get_the_date( 'c', $id );
 			$data['dateModified']  = (string) get_the_modified_date( 'c', $id );

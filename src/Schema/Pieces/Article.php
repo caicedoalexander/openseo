@@ -107,6 +107,7 @@ final class Article implements Piece {
 	 * Resolve the effective @type from the per-entry override.
 	 *
 	 * @param string $override Stored per-entry schema type.
+	 * @return string
 	 */
 	private function type( string $override ): string {
 		return in_array( $override, self::ARTICLE_TYPES, true ) ? $override : 'Article';
