@@ -38,6 +38,7 @@ final class RendererTest extends TestCase {
 		$html = ( new Renderer( new Options() ) )->render( $this->items() );
 
 		$this->assertStringContainsString( '<nav class="openseo-breadcrumbs"', $html );
+		$this->assertStringContainsString( 'aria-label="Breadcrumb"', $html );
 		$this->assertStringContainsString( '<a href="https://example.com/">Home</a>', $html );
 		// Last crumb is not a link.
 		$this->assertStringContainsString( '<span aria-current="page">My Post</span>', $html );

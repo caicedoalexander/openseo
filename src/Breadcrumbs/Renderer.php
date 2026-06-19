@@ -42,12 +42,9 @@ final class Renderer {
 		);
 
 		if ( ! (bool) $args['show_home'] ) {
-			$items = array_values(
-				array_filter(
-					$items,
-					static fn( $item ) => __( 'Home', 'openseo' ) !== $item['name']
-				)
-			);
+			// The Home crumb is always first (Trail builds it as crumb 0); drop it
+			// positionally so the Renderer doesn't depend on Trail's label text.
+			$items = array_slice( $items, 1 );
 		}
 
 		if ( empty( $items ) ) {

@@ -27,6 +27,8 @@ final class PostMetaTest extends TestCase {
 
 		$this->assertSame( 'BlogPosting', $meta->sanitize_value( 'BlogPosting', '_openseo_schema_type' ) );
 		$this->assertSame( 'none', $meta->sanitize_value( 'none', '_openseo_schema_type' ) );
+		// Empty string is the "automatic/default" sentinel and must pass through unchanged.
+		$this->assertSame( '', $meta->sanitize_value( '', '_openseo_schema_type' ) );
 	}
 
 	public function test_schema_type_rejects_unknown_value(): void {
