@@ -29,7 +29,8 @@
 - `src/Schema/Ids.php` — centralizes every `@id` + `current_url()`.
 - `src/Schema/Graph.php` — `Hookable`; assembles applicable pieces, prints one `<script>`.
 - `src/Schema/Pieces/WebSite.php`, `Organization.php`, `Person.php`, `WebPage.php`, `Article.php`, `BreadcrumbList.php` — the nodes.
-- `src/Breadcrumbs/Trail.php` — `items(): array<{name,url}>`.
+- `src/Breadcrumbs/TrailSource.php` — interface (`items(): array`).
+- `src/Breadcrumbs/Trail.php` — `final`, implements `TrailSource`; `items(): array<{name,url}>`.
 - `src/Breadcrumbs/Renderer.php` — `render( items, args ): string`.
 - `src/Breadcrumbs/Block.php` — `Hookable`; registers `openseo/breadcrumbs`.
 - `src/template-functions.php` — `openseo_breadcrumbs()`.
@@ -783,13 +784,14 @@ final class Organization implements Piece {
 
 		$logo = (string) $this->options->get( 'schema_logo' );
 		if ( '' !== $logo ) {
-			$data['logo'] = array(
+			// The logo is an inline ImageObject carrying its own @id, so the
+			// `image` mirror references a node that actually exists in the graph.
+			$data['logo']  = array(
 				'@type' => 'ImageObject',
+				'@id'   => $this->id() . 'Logo',
 				'url'   => $logo,
 			);
-			// image mirrors logo so referencing nodes can use either.
 			$data['image'] = array( '@id' => $this->id() . 'Logo' );
-			$data['logo']['@id'] = $this->id() . 'Logo';
 		}
 
 		return $data;
@@ -1072,8 +1074,10 @@ final class WebPage implements Piece {
 			'inLanguage' => (string) get_bloginfo( 'language' ),
 		);
 
-		// A breadcrumb trail only exists away from the home root.
-		if ( ! is_front_page() ) {
+		// Reference the breadcrumb only on singular entries, where the trail
+		// always has at least Home + self, so the @id resolves to a real node
+		// (the front page emits no BreadcrumbList).
+		if ( is_singular() ) {
 			$data['breadcrumb'] = array( '@id' => Ids::breadcrumb( $url ) );
 		}
 
@@ -1222,12 +1226,12 @@ git commit -m "feat(schema): add WebPage and Article pieces"
 ## Task 6: `Breadcrumbs\Trail`
 
 **Files:**
-- Create: `src/Breadcrumbs/Trail.php`
+- Create: `src/Breadcrumbs/TrailSource.php`, `src/Breadcrumbs/Trail.php`
 - Test: `tests/Unit/Breadcrumbs/TrailTest.php`
 
 **Interfaces:**
 - Consumes: WordPress conditionals + getters.
-- Produces: `final class Trail { public function items(): array; }` returning `array<int, array{name: string, url: string}>` — empty on the front-page root; otherwise Home → (page ancestors | post primary category | archive title) → current. Used by the function (Task 9), the block (Task 10), and `BreadcrumbList` (Task 7).
+- Produces: `interface TrailSource { public function items(): array; }` and `final class Trail implements TrailSource` returning `array<int, array{name: string, url: string}>` — empty on the front-page root; otherwise Home → (page ancestors | post primary category | archive title) → current. `Trail` stays `final`; `BreadcrumbList` (Task 7) depends on the `TrailSource` interface so tests can substitute a fixed trail without un-finalizing `Trail`. Used by the function (Task 9), the block (Task 10), and `BreadcrumbList` (Task 7).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1328,7 +1332,39 @@ final class TrailTest extends TestCase {
 Run: `vendor/bin/phpunit --filter TrailTest`
 Expected: FAIL — `Class "OpenSEO\Breadcrumbs\Trail" not found`.
 
-- [ ] **Step 3: Implement `Trail`**
+- [ ] **Step 3: Create the `TrailSource` interface**
+
+Create `src/Breadcrumbs/TrailSource.php`:
+
+```php
+<?php
+/**
+ * Supplies an ordered breadcrumb trail.
+ *
+ * @package OpenSEO
+ */
+
+declare( strict_types=1 );
+
+namespace OpenSEO\Breadcrumbs;
+
+/**
+ * Abstraction over the trail builder so consumers (the BreadcrumbList schema
+ * piece in particular) can depend on the contract, letting tests substitute a
+ * fixed trail without un-finalizing the concrete Trail.
+ */
+interface TrailSource {
+
+	/**
+	 * Ordered crumbs from Home to the current location.
+	 *
+	 * @return array<int, array{name: string, url: string}>
+	 */
+	public function items(): array;
+}
+```
+
+- [ ] **Step 4: Implement `Trail`**
 
 Create `src/Breadcrumbs/Trail.php`:
 
@@ -1348,7 +1384,7 @@ namespace OpenSEO\Breadcrumbs;
  * Single source of truth for the breadcrumb trail. Returns data only — the
  * theme function, the block, and the BreadcrumbList schema piece all consume it.
  */
-final class Trail {
+final class Trail implements TrailSource {
 
 	/**
 	 * Ordered crumbs from Home to the current location.
@@ -1441,16 +1477,16 @@ final class Trail {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [ ] **Step 5: Run the test to verify it passes**
 
 Run: `vendor/bin/phpunit --filter TrailTest`
 Expected: PASS.
 
-- [ ] **Step 5: Lint, analyze, commit**
+- [ ] **Step 6: Lint, analyze, commit**
 
 ```bash
 composer lint && composer analyze
-git add src/Breadcrumbs/Trail.php tests/Unit/Breadcrumbs/TrailTest.php
+git add src/Breadcrumbs/TrailSource.php src/Breadcrumbs/Trail.php tests/Unit/Breadcrumbs/TrailTest.php
 git commit -m "feat(breadcrumbs): add trail builder"
 ```
 
@@ -1463,8 +1499,8 @@ git commit -m "feat(breadcrumbs): add trail builder"
 - Test: `tests/Unit/Schema/Pieces/BreadcrumbListTest.php`
 
 **Interfaces:**
-- Consumes: `Breadcrumbs\Trail` (Task 6), `Schema\Ids` (Task 3).
-- Produces: `final class BreadcrumbList implements Piece` (ctor `Trail`) — needed when the trail has at least two crumbs; `data()` has `@type` `BreadcrumbList`, `@id` `Ids::breadcrumb(current_url)`, `itemListElement` of `ListItem`s with `position`/`name`/`item` (the latter omitted when a crumb has no URL).
+- Consumes: `Breadcrumbs\TrailSource` (Task 6), `Schema\Ids` (Task 3).
+- Produces: `final class BreadcrumbList implements Piece` (ctor `TrailSource`) — needed when the trail has at least two crumbs; `data()` has `@type` `BreadcrumbList`, `@id` `Ids::breadcrumb(current_url)`, `itemListElement` of `ListItem`s with `position`/`name`/`item` (the latter omitted when a crumb has no URL).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1478,7 +1514,7 @@ namespace OpenSEO\Tests\Unit\Schema\Pieces;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use OpenSEO\Breadcrumbs\Trail;
+use OpenSEO\Breadcrumbs\TrailSource;
 use OpenSEO\Schema\Pieces\BreadcrumbList;
 use PHPUnit\Framework\TestCase;
 
@@ -1498,10 +1534,10 @@ final class BreadcrumbListTest extends TestCase {
 	}
 
 	/**
-	 * A Trail double returning a fixed two-crumb list.
+	 * A TrailSource double returning a fixed crumb list.
 	 */
-	private function trail( array $items ): Trail {
-		return new class( $items ) extends Trail {
+	private function trail( array $items ): TrailSource {
+		return new class( $items ) implements TrailSource {
 			/** @param array<int, array{name:string,url:string}> $items */
 			public function __construct( private array $items ) {}
 			public function items(): array {
@@ -1553,21 +1589,12 @@ final class BreadcrumbListTest extends TestCase {
 }
 ```
 
-> Note: `Trail` must not be `final` for the anonymous-class test double to extend
-> it. It is already declared `final` in Task 6 — change that declaration to a
-> plain `class` in Step 3 below (it has no subclasses in production; the only
-> extension is this test double).
-
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run: `vendor/bin/phpunit --filter BreadcrumbListTest`
-Expected: FAIL — class missing (and a fatal if `Trail` is still `final`).
+Expected: FAIL — `Class "OpenSEO\Schema\Pieces\BreadcrumbList" not found`.
 
-- [ ] **Step 3: Make `Trail` extendable for testing**
-
-In `src/Breadcrumbs/Trail.php`, change `final class Trail` to `class Trail` and update the class doc to note it is non-final solely so tests can substitute a fixed trail.
-
-- [ ] **Step 4: Implement `BreadcrumbList`**
+- [ ] **Step 3: Implement `BreadcrumbList`**
 
 Create `src/Schema/Pieces/BreadcrumbList.php`:
 
@@ -1583,19 +1610,19 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Schema\Pieces;
 
-use OpenSEO\Breadcrumbs\Trail;
+use OpenSEO\Breadcrumbs\TrailSource;
 use OpenSEO\Schema\Ids;
 use OpenSEO\Schema\Piece;
 
 /**
- * The BreadcrumbList node, built from the shared breadcrumb Trail.
+ * The BreadcrumbList node, built from the shared breadcrumb trail.
  */
 final class BreadcrumbList implements Piece {
 
 	/**
-	 * @param Trail $trail Shared breadcrumb trail builder.
+	 * @param TrailSource $trail Shared breadcrumb trail source.
 	 */
-	public function __construct( private readonly Trail $trail ) {}
+	public function __construct( private readonly TrailSource $trail ) {}
 
 	public function is_needed(): bool {
 		return count( $this->trail->items() ) >= 2;
@@ -1633,16 +1660,16 @@ final class BreadcrumbList implements Piece {
 }
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [ ] **Step 4: Run the test to verify it passes**
 
 Run: `vendor/bin/phpunit --filter BreadcrumbListTest`
-Expected: PASS. Then `vendor/bin/phpunit --filter TrailTest` — Expected: still PASS (the non-final change is behavior-neutral).
+Expected: PASS.
 
-- [ ] **Step 6: Lint, analyze, commit**
+- [ ] **Step 5: Lint, analyze, commit**
 
 ```bash
 composer lint && composer analyze
-git add src/Schema/Pieces/BreadcrumbList.php src/Breadcrumbs/Trail.php tests/Unit/Schema/Pieces/BreadcrumbListTest.php
+git add src/Schema/Pieces/BreadcrumbList.php tests/Unit/Schema/Pieces/BreadcrumbListTest.php
 git commit -m "feat(schema): add BreadcrumbList piece"
 ```
 
@@ -1794,6 +1821,11 @@ final class Graph implements Hookable {
 		// JSON_HEX_TAG escapes < and > so a value containing </script> cannot
 		// break out of the script element; the JSON itself needs no further esc.
 		$json = wp_json_encode( $graph, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG );
+
+		// wp_json_encode() returns false on failure; never print "false".
+		if ( false === $json ) {
+			return;
+		}
 
 		echo '<script type="application/ld+json">' . $json . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode with JSON_HEX_TAG produces script-safe output.
 	}
@@ -2088,7 +2120,7 @@ final class Renderer {
 			$args
 		);
 
-		if ( ! $args['show_home'] ) {
+		if ( ! (bool) $args['show_home'] ) {
 			$items = array_values(
 				array_filter(
 					$items,
@@ -2359,7 +2391,7 @@ final class Block implements Hookable {
 		return ( new Renderer( $this->options ) )->render(
 			$items,
 			array(
-				'show_home'  => $attributes['showHome'] ?? true,
+				'show_home'  => (bool) ( $attributes['showHome'] ?? true ),
 				'text_align' => (string) ( $attributes['textAlign'] ?? '' ),
 			)
 		);
@@ -2468,6 +2500,10 @@ In `modules()`, append it to the front-end `$modules` array (after `$graph,`):
 npm run build
 ```
 Expected: `assets/build/breadcrumbs.js` + `breadcrumbs.asset.php` are produced.
+`@wordpress/scripts` externalizes the `ServerSideRender` import to the
+`wp-server-side-render` script handle (registered by WordPress core), so confirm
+`breadcrumbs.asset.php` lists `wp-server-side-render` in its `dependencies` array
+(no `npm install` is required — it ships transitively with `@wordpress/scripts`).
 
 Run (wp-env up): `npm run test:integration -- --filter BreadcrumbsBlockTest`
 Expected: PASS.
@@ -2719,9 +2755,12 @@ Add to `tests/Integration/AbilitiesTest.php` (inside the class):
 		wp_set_current_user( $admin );
 		$post_id = self::factory()->post->create( array( 'post_author' => $admin ) );
 
+		// The WP Abilities API REST route is /wp-abilities/v1/abilities/<name>/run
+		// (the namespace segment is literally "abilities", not the category slug) —
+		// matching the existing generate-* test and the editor's apiFetch path.
 		$request = new \WP_REST_Request(
 			'POST',
-			'/wp-abilities/v1/openseo/suggest-schema-type/run'
+			'/wp-abilities/v1/abilities/openseo/suggest-schema-type/run'
 		);
 		$request->set_body_params( array( 'input' => array( 'post_id' => $post_id ) ) );
 		$response = rest_do_request( $request );
@@ -3108,11 +3147,15 @@ In `CLAUDE.md`, under "Key modules", add bullets for the new layers:
   centralizes every `@id`. Pieces reuse the Phase 1 `Resolver` so structured data
   matches the head tags. The per-entry `_openseo_schema_type` meta (whitelist) and
   the `openseo/suggest-schema-type` ability drive the editor's type selector.
-- `Breadcrumbs/` — `Trail` builds the hierarchy once; `Renderer` turns it into
-  escaped `<nav><ol>`; consumed by the `openseo_breadcrumbs()` template function
-  (`src/template-functions.php`, Composer `autoload.files`), the dynamic
-  `openseo/breadcrumbs` block (`Breadcrumbs\Block`), and the `BreadcrumbList`
-  schema piece.
+- `Breadcrumbs/` — `Trail` (implements `TrailSource`) builds the hierarchy once;
+  `Renderer` turns it into escaped `<nav><ol>`; consumed by the
+  `openseo_breadcrumbs()` template function (`src/template-functions.php`, Composer
+  `autoload.files`), the dynamic `openseo/breadcrumbs` block (`Breadcrumbs\Block`),
+  and the `BreadcrumbList` schema piece. The block is registered from PHP
+  (`register_block_type` with a `render_callback` + a compiled `editor_script`
+  handle) rather than `block.json`/`register_block_type_from_metadata`, because the
+  custom `webpack.config.js` overrides `entry`; its attributes are declared in both
+  PHP and JS (a small, deliberate duplication kept in sync).
 ```
 
 In `NOTES.md`, add a subsection under section 5 ("Tests y calidad") titled
@@ -3177,3 +3220,16 @@ robust with the project's custom `webpack.config.js` (which overrides `entry` an
 would not reliably trigger `@wordpress/scripts`' block.json copy step). The block
 attributes are declared in both PHP (Task 10 Step 3) and JS (Task 10 Step 5) to
 keep the server and editor definitions in sync — a small, deliberate duplication.
+
+**Plan-review polish (wp-plan-reviewer, 2026-06-19):** applied the audit fixes —
+(C1) corrected the suggest-schema-type REST test path to include the `abilities/`
+segment, matching the existing generate-* test and the editor; (H1) guard
+`wp_json_encode` against `false` in `Graph::print_graph`; (H2) cast `show_home` to
+`bool` in `Renderer` and `Block`; (H4) introduced the `TrailSource` interface so
+`Trail` stays `final` while `BreadcrumbList` depends on the abstraction (test
+double implements it); (M3) the `WebPage` breadcrumb reference is emitted only on
+singular entries so its `@id` always resolves; (L2) the Organization logo carries
+its own `@id` so the `image` mirror resolves; (M1/M2) documented the
+`wp-server-side-render` handle and the deliberate `block.json` deviation. Verified
+directly: `.distignore` does not exclude `/src`, so `src/template-functions.php`
+ships in the release ZIP (L3).
