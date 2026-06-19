@@ -25,6 +25,7 @@ use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
+use OpenSEO\Sitemap\Sitemap;
 
 /**
  * Wires the plugin's modules into WordPress.
@@ -103,6 +104,7 @@ final class Plugin {
 				)
 			),
 			new Abilities( $options ),
+			new Sitemap( $options ),
 		);
 
 		if ( is_admin() ) {

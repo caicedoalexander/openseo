@@ -84,4 +84,10 @@ final class PluginBootTest extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'name="twitter:card"', $output );
 		$this->assertStringContainsString( 'Social Post', $output );
 	}
+
+	public function test_sitemap_filters_are_registered_after_boot(): void {
+		$this->assertNotFalse( has_filter( 'wp_sitemaps_posts_query_args' ) );
+		$this->assertNotFalse( has_filter( 'wp_sitemaps_add_provider' ) );
+		$this->assertNotFalse( has_filter( 'wp_sitemaps_enabled' ) );
+	}
 }
