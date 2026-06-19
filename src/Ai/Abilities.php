@@ -165,36 +165,7 @@ final class Abilities implements Hookable {
 	 * @return array{type: string, reason: string}|WP_Error
 	 */
 	public function suggest_schema_type( array $input ): array|WP_Error {
-		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
-		$post    = get_post( $post_id );
-
-		if ( ! $post instanceof WP_Post ) {
-			return new WP_Error(
-				'openseo_invalid_post',
-				__( 'A valid post ID is required.', 'openseo' )
-			);
-		}
-
-		if ( ! function_exists( 'wp_ai_client_prompt' ) || ! Connector::is_text_generation_available() ) {
-			return new WP_Error(
-				'openseo_no_connector',
-				__( 'No AI connector is configured. Add one under Settings → Connectors.', 'openseo' )
-			);
-		}
-
-		$content = wp_trim_words( wp_strip_all_tags( $post->post_content ), self::CONTENT_WORDS, '' );
-
-		$builder = wp_ai_client_prompt( Prompts::user_for_post( $post->post_title, $content ) )
-			->using_system_instruction( Prompts::system_schema_type() )
-			->using_max_tokens( self::MAX_TOKENS )
-			->as_json_response( $this->suggestion_output_schema() );
-
-		$model = (string) $this->options->get( 'ai_model' );
-		if ( '' !== $model ) {
-			$builder = $builder->using_model_preference( $model );
-		}
-
-		$generated = $builder->generate_text();
+		$generated = $this->request_generation( $input, Prompts::system_schema_type(), $this->suggestion_output_schema() );
 		if ( is_wp_error( $generated ) ) {
 			return $generated;
 		}
@@ -230,14 +201,14 @@ final class Abilities implements Hookable {
 	}
 
 	/**
-	 * Shared generation flow for the text abilities.
+	 * Run the shared text-generation flow for an ability.
 	 *
-	 * @param array<string, mixed> $input      Ability input.
-	 * @param string               $system     System instruction for the model.
-	 * @param string               $output_key Output schema key to return.
-	 * @return array<string, string>|WP_Error
+	 * @param array<string, mixed> $input         Ability input (expects post_id).
+	 * @param string               $system        System instruction.
+	 * @param array<string, mixed> $output_schema JSON schema for the response.
+	 * @return string|WP_Error Raw generated text, or WP_Error on failure.
 	 */
-	private function generate( array $input, string $system, string $output_key ): array|WP_Error {
+	private function request_generation( array $input, string $system, array $output_schema ): string|WP_Error {
 		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
 		$post    = get_post( $post_id );
 
@@ -260,14 +231,26 @@ final class Abilities implements Hookable {
 		$builder = wp_ai_client_prompt( Prompts::user_for_post( $post->post_title, $content ) )
 			->using_system_instruction( $system )
 			->using_max_tokens( self::MAX_TOKENS )
-			->as_json_response( $this->output_schema( $output_key ) );
+			->as_json_response( $output_schema );
 
 		$model = (string) $this->options->get( 'ai_model' );
 		if ( '' !== $model ) {
 			$builder = $builder->using_model_preference( $model );
 		}
 
-		$generated = $builder->generate_text();
+		return $builder->generate_text();
+	}
+
+	/**
+	 * Shared generation flow for the text abilities.
+	 *
+	 * @param array<string, mixed> $input      Ability input.
+	 * @param string               $system     System instruction for the model.
+	 * @param string               $output_key Output schema key to return.
+	 * @return array<string, string>|WP_Error
+	 */
+	private function generate( array $input, string $system, string $output_key ): array|WP_Error {
+		$generated = $this->request_generation( $input, $system, $this->output_schema( $output_key ) );
 		if ( is_wp_error( $generated ) ) {
 			return $generated;
 		}
