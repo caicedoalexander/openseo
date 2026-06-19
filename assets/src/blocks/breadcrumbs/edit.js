@@ -1,5 +1,10 @@
 import { __ } from '@wordpress/i18n';
-import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import {
+	useBlockProps,
+	InspectorControls,
+	BlockControls,
+	AlignmentControl,
+} from '@wordpress/block-editor';
 import { PanelBody, ToggleControl } from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 
@@ -11,6 +16,14 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	return (
 		<div { ...blockProps }>
+			<BlockControls>
+				<AlignmentControl
+					value={ attributes.textAlign }
+					onChange={ ( textAlign ) =>
+						setAttributes( { textAlign: textAlign || '' } )
+					}
+				/>
+			</BlockControls>
 			<InspectorControls>
 				<PanelBody title={ __( 'Breadcrumbs', 'openseo' ) }>
 					<ToggleControl

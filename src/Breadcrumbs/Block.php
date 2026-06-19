@@ -54,10 +54,12 @@ final class Block implements Hookable {
 			true
 		);
 
+		// wordpress-stubs incorrectly types api_version as string; WP stores it as int.
 		register_block_type(
 			self::NAME,
+			// @phpstan-ignore-next-line argument.type
 			array(
-				'api_version'     => '3',
+				'api_version'     => 3,
 				'title'           => __( 'OpenSEO Breadcrumbs', 'openseo' ),
 				'category'        => 'theme',
 				'icon'            => 'networking',
