@@ -13,6 +13,7 @@ use OpenSEO\Admin\Assets as AdminAssets;
 use OpenSEO\Admin\Editor\EditorPanel;
 use OpenSEO\Admin\SettingsPage;
 use OpenSEO\Ai\Abilities;
+use OpenSEO\Breadcrumbs\Block as BreadcrumbsBlock;
 use OpenSEO\Breadcrumbs\Trail;
 use OpenSEO\Contracts\Hookable;
 use OpenSEO\Frontend\Head\Canonical;
@@ -127,6 +128,7 @@ final class Plugin {
 			new Abilities( $options ),
 			new Sitemap( $options ),
 			$graph,
+			new BreadcrumbsBlock( $options ),
 		);
 
 		if ( is_admin() ) {
