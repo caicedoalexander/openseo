@@ -32,6 +32,13 @@ final class Prompts {
 	}
 
 	/**
+	 * System instruction for the schema-type recommendation ability.
+	 */
+	public static function system_schema_type(): string {
+		return 'You are an SEO expert. Analyze the article below and recommend the single most fitting schema.org type from this list: Article, BlogPosting, NewsArticle, WebPage, FAQPage, HowTo, Recipe, Product. Reply as JSON with two keys: "type" (exactly one value from the list) and "reason" (one short sentence explaining why, in the same language as the article).';
+	}
+
+	/**
 	 * System instruction for the title ability.
 	 */
 	public static function system_title(): string {

@@ -25,4 +25,13 @@ final class PromptsTest extends TestCase {
 		$this->assertStringContainsString( 'Hello World', $user );
 		$this->assertStringContainsString( 'The body text.', $user );
 	}
+
+	public function test_system_schema_type_lists_types_and_json_keys(): void {
+		$system = Prompts::system_schema_type();
+
+		$this->assertStringContainsString( 'FAQPage', $system );
+		$this->assertStringContainsString( 'BlogPosting', $system );
+		$this->assertStringContainsString( 'type', $system );
+		$this->assertStringContainsString( 'reason', $system );
+	}
 }
