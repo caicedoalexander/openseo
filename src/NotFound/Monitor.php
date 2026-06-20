@@ -21,11 +21,11 @@ final class Monitor implements Hookable {
 	/**
 	 * Constructor.
 	 *
-	 * @param LogRepositoryInterface $logs    404 log repository.
-	 * @param Options                $options Plugin settings.
+	 * @param LogRepository $logs    404 log repository.
+	 * @param Options       $options Plugin settings.
 	 */
 	public function __construct(
-		private readonly LogRepositoryInterface $logs,
+		private readonly LogRepository $logs,
 		private readonly Options $options,
 	) {}
 
