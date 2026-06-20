@@ -15,6 +15,8 @@ namespace OpenSEO\Redirects;
 final class MatchResult {
 
 	/**
+	 * Build an immutable match result.
+	 *
 	 * @param int    $id     Matched rule id.
 	 * @param string $target Resolved redirect target.
 	 * @param int    $status HTTP status code.

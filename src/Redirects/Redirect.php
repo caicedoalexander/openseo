@@ -17,6 +17,8 @@ namespace OpenSEO\Redirects;
 final class Redirect {
 
 	/**
+	 * Build an immutable redirect rule.
+	 *
 	 * @param int    $id       Row id (0 for an unsaved rule).
 	 * @param string $source   Source path, or regex pattern when $is_regex.
 	 * @param string $target   Redirect target (empty for a 410).
