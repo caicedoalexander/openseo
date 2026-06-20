@@ -71,10 +71,14 @@ final class Matcher {
 	 * Whether redirecting $path to $target would loop back to $path.
 	 *
 	 * Internal, root-relative targets are normalized the same way the follow-up
-	 * request will be, so a difference that is only a trailing slash (e.g.
-	 * '/x' → '/x/') is recognized as the same resource instead of an infinite
-	 * redirect. External and protocol-relative targets can never normalize to a
-	 * local path, so they are never self-loops.
+	 * request will be, so they are recognized as the same resource instead of an
+	 * infinite redirect. Because {@see Normalizer} strips the query string and
+	 * fragment and collapses the trailing slash, this treats as a self-loop not
+	 * only a trailing-slash-only difference (e.g. '/x' → '/x/') but also a target
+	 * that merely adds a query or fragment to the same path (e.g. '/x' →
+	 * '/x?ref=1'): the follow-up request would normalize back to '/x' and
+	 * re-match the same rule. External and protocol-relative targets can never
+	 * normalize to a local path, so they are never self-loops.
 	 *
 	 * @param string $target Resolved redirect target.
 	 * @param string $path   Normalized request path.

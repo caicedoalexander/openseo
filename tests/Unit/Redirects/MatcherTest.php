@@ -88,4 +88,15 @@ final class MatcherTest extends TestCase {
 		$this->assertFalse( $matcher->is_self_loop( 'https://other.example/x', '/x' ) );
 		$this->assertFalse( $matcher->is_self_loop( '//evil.example', '/x' ) );
 	}
+
+	public function test_is_self_loop_treats_query_or_fragment_only_targets_as_loops(): void {
+		// The matcher strips query and fragment, so a target that only adds a
+		// query or fragment to the same path would loop: the follow-up request
+		// normalizes back to the path and re-matches the same rule. This locks in
+		// that contract (it is not limited to trailing-slash differences).
+		$matcher = new Matcher();
+
+		$this->assertTrue( $matcher->is_self_loop( '/x?ref=1', '/x' ) );
+		$this->assertTrue( $matcher->is_self_loop( '/x#section', '/x' ) );
+	}
 }

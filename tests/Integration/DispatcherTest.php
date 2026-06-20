@@ -79,4 +79,24 @@ final class DispatcherTest extends WP_UnitTestCase {
 
 		$this->assertNull( $result );
 	}
+
+	public function test_resolve_degraded_trailing_slash_self_loop_returns_null(): void {
+		// A degraded-mode rule whose target differs from the source only by a
+		// trailing slash must not redirect: it would loop (/x -> /x/ -> /x -> …)
+		// because Dispatcher@5 exits before redirect_canonical@10 collapses it.
+		$this->repo->create(
+			array( 'source_path' => '/x', 'target' => '/x/', 'status_code' => 301, 'is_regex' => false, 'enabled' => true )
+		);
+
+		// Seed the cached count above the degradation threshold so Cache::is_degraded() returns true.
+		set_transient( 'openseo_redirects_count', Cache::DEGRADE_THRESHOLD + 1 );
+
+		$cache      = new Cache( $this->repo );
+		$dispatcher = new Dispatcher( $cache, new Matcher(), $this->repo, new Options() );
+		$result     = $dispatcher->resolve( '/x' );
+
+		delete_transient( 'openseo_redirects_count' );
+
+		$this->assertNull( $result );
+	}
 }
