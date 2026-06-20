@@ -34,6 +34,9 @@ use OpenSEO\Schema\Pieces\Person;
 use OpenSEO\Schema\Pieces\WebPage as WebPagePiece;
 use OpenSEO\Schema\Pieces\WebSite as WebSitePiece;
 use OpenSEO\Settings\Options;
+use OpenSEO\Redirects\Cache as RedirectsCache;
+use OpenSEO\Redirects\Repository as RedirectsRepository;
+use OpenSEO\Redirects\SlugWatcher;
 use OpenSEO\Sitemap\Sitemap;
 
 /**
@@ -100,6 +103,9 @@ final class Plugin {
 		$variables = new Variables( $options );
 		$resolver  = new Resolver( $options, $variables );
 
+		$redirects_repo  = new RedirectsRepository();
+		$redirects_cache = new RedirectsCache( $redirects_repo );
+
 		$trail = new Trail();
 
 		$graph = new Graph(
@@ -114,6 +120,7 @@ final class Plugin {
 		);
 
 		$modules = array(
+			new SlugWatcher( $redirects_repo, $redirects_cache, $options ),
 			new PostMeta(),
 			new Title( $resolver ),
 			new HeadPrinter(

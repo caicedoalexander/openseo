@@ -16,6 +16,9 @@ if ( ! is_readable( $openseo_autoloader ) ) {
 
 require_once $openseo_autoloader;
 
+// Allow PHPUnit createMock() to double final classes (e.g. Repository, Cache).
+DG\BypassFinals::enable();
+
 /*
  * Minimal polyfills so unit tests can exercise code that returns WP_Error or
  * type-hints WP_Post. WordPress is never loaded for unit tests; wordpress-stubs
