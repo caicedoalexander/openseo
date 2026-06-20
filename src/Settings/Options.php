@@ -28,19 +28,24 @@ final class Options {
 	 */
 	public function defaults(): array {
 		return array(
-			'title_separator'         => '-',
-			'title_template'          => '%title% %sep% %sitename%',
-			'description_template'    => '%excerpt%',
-			'home_title'              => '%sitename% %sep% %tagline%',
-			'home_description'        => '',
-			'og_default_image'        => '',
-			'sitemap_enabled'         => '1',
-			'sitemap_include_authors' => '',
-			'schema_site_type'        => 'Organization',
-			'schema_site_name'        => '',
-			'schema_logo'             => '',
-			'breadcrumb_separator'    => '›',
-			'ai_model'                => '',
+			'title_separator'          => '-',
+			'title_template'           => '%title% %sep% %sitename%',
+			'description_template'     => '%excerpt%',
+			'home_title'               => '%sitename% %sep% %tagline%',
+			'home_description'         => '',
+			'og_default_image'         => '',
+			'sitemap_enabled'          => '1',
+			'sitemap_include_authors'  => '',
+			'schema_site_type'         => 'Organization',
+			'schema_site_name'         => '',
+			'schema_logo'              => '',
+			'breadcrumb_separator'     => '›',
+			'ai_model'                 => '',
+			'redirects_auto_slug'      => '1',
+			'redirects_default_status' => '301',
+			'redirects_track_hits'     => '1',
+			'notfound_monitor_enabled' => '',
+			'notfound_retention_days'  => '30',
 		);
 	}
 
@@ -90,7 +95,7 @@ final class Options {
 
 		// Checkboxes: a hidden companion field guarantees the key is present (0 or
 		// 1) when its tab is submitted, so an explicit '1' check turns it on/off.
-		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors' ) as $key ) {
+		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors', 'redirects_auto_slug', 'redirects_track_hits', 'notfound_monitor_enabled' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = '1' === $input[ $key ] ? '1' : '';
 			}
@@ -108,6 +113,16 @@ final class Options {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = esc_url_raw( wp_unslash( $input[ $key ] ) );
 			}
+		}
+
+		if ( isset( $input['redirects_default_status'] ) ) {
+			$status                            = sanitize_text_field( wp_unslash( $input['redirects_default_status'] ) );
+			$clean['redirects_default_status'] = in_array( $status, array( '301', '302', '307' ), true ) ? $status : '301';
+		}
+
+		if ( isset( $input['notfound_retention_days'] ) ) {
+			$days                             = absint( wp_unslash( $input['notfound_retention_days'] ) );
+			$clean['notfound_retention_days'] = (string) max( 1, $days );
 		}
 
 		return $clean;

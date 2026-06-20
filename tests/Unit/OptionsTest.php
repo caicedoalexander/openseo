@@ -189,6 +189,36 @@ final class OptionsTest extends TestCase {
 		// Unknown value falls back to the default, never stored verbatim.
 		$this->assertSame( 'Organization', $clean['schema_site_type'] );
 	}
+
+	public function test_defaults_include_redirect_keys(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		$options = new Options();
+
+		$this->assertSame( '1', $options->get( 'redirects_auto_slug' ) );
+		$this->assertSame( '301', $options->get( 'redirects_default_status' ) );
+		$this->assertSame( '', $options->get( 'notfound_monitor_enabled' ) );
+		$this->assertSame( '30', $options->get( 'notfound_retention_days' ) );
+	}
+
+	public function test_sanitize_clamps_retention_and_status(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'absint' )->alias( static fn ( $v ) => abs( (int) $v ) );
+		$options = new Options();
+
+		$clean = $options->sanitize(
+			array(
+				'redirects_default_status' => '999',
+				'notfound_retention_days'  => '0',
+				'notfound_monitor_enabled' => '1',
+			)
+		);
+
+		$this->assertSame( '301', $clean['redirects_default_status'] ); // Off-list resets.
+		$this->assertSame( '1', $clean['notfound_retention_days'] );    // Clamped to minimum 1.
+		$this->assertSame( '1', $clean['notfound_monitor_enabled'] );
+	}
 }
 
 
