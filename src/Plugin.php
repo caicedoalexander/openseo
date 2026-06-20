@@ -34,6 +34,16 @@ use OpenSEO\Schema\Pieces\Person;
 use OpenSEO\Schema\Pieces\WebPage as WebPagePiece;
 use OpenSEO\Schema\Pieces\WebSite as WebSitePiece;
 use OpenSEO\Settings\Options;
+use OpenSEO\Lifecycle\Schema;
+use OpenSEO\Redirects\Admin\RedirectsPage;
+use OpenSEO\Redirects\Cache as RedirectsCache;
+use OpenSEO\Redirects\Dispatcher;
+use OpenSEO\Redirects\Matcher;
+use OpenSEO\Redirects\Repository as RedirectsRepository;
+use OpenSEO\NotFound\LogRepository as NotFoundLog;
+use OpenSEO\NotFound\Monitor as NotFoundMonitor;
+use OpenSEO\NotFound\Pruner as NotFoundPruner;
+use OpenSEO\Redirects\SlugWatcher;
 use OpenSEO\Sitemap\Sitemap;
 
 /**
@@ -88,6 +98,15 @@ final class Plugin {
 		foreach ( $this->modules() as $module ) {
 			$module->register();
 		}
+
+		add_action(
+			'admin_init',
+			static function (): void {
+				if ( Schema::current_version() !== Schema::VERSION ) {
+					Schema::install();
+				}
+			}
+		);
 	}
 
 	/**
@@ -99,6 +118,10 @@ final class Plugin {
 		$options   = new Options();
 		$variables = new Variables( $options );
 		$resolver  = new Resolver( $options, $variables );
+
+		$not_found_log   = new NotFoundLog();
+		$redirects_repo  = new RedirectsRepository();
+		$redirects_cache = new RedirectsCache( $redirects_repo );
 
 		$trail = new Trail();
 
@@ -114,6 +137,10 @@ final class Plugin {
 		);
 
 		$modules = array(
+			new NotFoundMonitor( $not_found_log, $options ),
+			new NotFoundPruner( $not_found_log, $options ),
+			new Dispatcher( $redirects_cache, new Matcher(), $redirects_repo, $options ),
+			new SlugWatcher( $redirects_repo, $redirects_cache, $options ),
 			new PostMeta(),
 			new Title( $resolver ),
 			new HeadPrinter(
@@ -135,6 +162,7 @@ final class Plugin {
 			$modules[] = new SettingsPage( $options );
 			$modules[] = new AdminAssets();
 			$modules[] = new EditorPanel();
+			$modules[] = new RedirectsPage( $redirects_repo, $redirects_cache, $options );
 		}
 
 		return $modules;

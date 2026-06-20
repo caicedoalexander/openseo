@@ -23,5 +23,6 @@ final class Deactivator {
 	public static function deactivate(): void {
 		// Clear any scheduled events the plugin may register in the future.
 		wp_clear_scheduled_hook( 'openseo_daily_scan' );
+		wp_clear_scheduled_hook( 'openseo_404_prune' );
 	}
 }

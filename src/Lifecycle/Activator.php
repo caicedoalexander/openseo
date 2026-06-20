@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Lifecycle;
 
+use OpenSEO\Lifecycle\Schema;
 use OpenSEO\Settings\Options;
 
 /**
@@ -25,6 +26,8 @@ final class Activator {
 		if ( false === get_option( Options::OPTION_KEY, false ) ) {
 			add_option( Options::OPTION_KEY, ( new Options() )->defaults() );
 		}
+
+		Schema::install();
 
 		update_option( 'openseo_version', OPENSEO_VERSION );
 	}
