@@ -16,6 +16,8 @@ namespace OpenSEO\Redirects;
 final class Normalizer {
 
 	/**
+	 * Constructor.
+	 *
 	 * @param string $home_path Path component of home_url() (e.g. '/wp'), or ''.
 	 */
 	public function __construct( private readonly string $home_path = '' ) {}
@@ -26,13 +28,14 @@ final class Normalizer {
 	 * @param string $request_uri Raw REQUEST_URI.
 	 */
 	public function normalize( string $request_uri ): string {
-		// Drop the query string and fragment.
-		$path = (string) strtok( $request_uri, '?' );
-		$path = (string) strtok( $path, '#' );
+		// Strip query string and fragment by position (not strtok, which skips leading delimiters).
+		$cut  = strcspn( $request_uri, '?#' );
+		$path = substr( $request_uri, 0, $cut );
 		$path = rawurldecode( $path );
 
-		// Remove the home subdirectory prefix on subdir installs.
-		if ( '' !== $this->home_path && str_starts_with( $path, $this->home_path ) ) {
+		// Remove the home subdirectory prefix on subdir installs (respect segment boundary).
+		if ( '' !== $this->home_path
+			&& ( $path === $this->home_path || str_starts_with( $path, $this->home_path . '/' ) ) ) {
 			$path = substr( $path, strlen( $this->home_path ) );
 		}
 

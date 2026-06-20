@@ -31,4 +31,22 @@ final class NormalizerTest extends TestCase {
 
 		$this->assertSame( '/about', $normalizer->normalize( '/wp/about/' ) );
 	}
+
+	public function test_does_not_strip_partial_home_prefix(): void {
+		$normalizer = new Normalizer( '/wp' );
+
+		$this->assertSame( '/wpadmin/page', $normalizer->normalize( '/wpadmin/page' ) );
+	}
+
+	public function test_home_path_equal_to_request_yields_root(): void {
+		$normalizer = new Normalizer( '/wp' );
+
+		$this->assertSame( '/', $normalizer->normalize( '/wp/' ) );
+	}
+
+	public function test_collapses_multiple_trailing_slashes(): void {
+		$normalizer = new Normalizer();
+
+		$this->assertSame( '/a', $normalizer->normalize( '/a///' ) );
+	}
 }
