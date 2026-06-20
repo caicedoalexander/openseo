@@ -127,6 +127,31 @@ and the wp-env integration suite.
   handle) rather than `block.json`/`register_block_type_from_metadata`, because the
   custom `webpack.config.js` overrides `entry`; its attributes are declared in both
   PHP and JS (a small, deliberate duplication kept in sync).
+- `Redirects/` — redirect engine. `Dispatcher` (Hookable, `template_redirect`
+  priority **5**, before core `redirect_canonical`@10; defers hit-count writes to
+  `shutdown`). Pure, WP-free units: `Normalizer` (request path), `Regex`
+  (plugin-controlled delimiter), `Ruleset` (exact O(1) map + ordered regex list),
+  `Matcher` (exact-wins-then-regex, `$1` substitution, anti-loop). `Repository`
+  (all `$wpdb` SQL for `{prefix}openseo_redirects`). `Cache` (ruleset in object
+  cache → transient fallback; dual-store invalidation; cached active-count avoids
+  per-request COUNT; degrades to indexed lookups above threshold). `SlugWatcher`
+  (auto-301 on permalink change via `pre_post_update`+`post_updated`; on by default
+  for all public CPTs). Admin surface under Tools → OpenSEO Redirects
+  (`Admin/RedirectsListTable` + `Admin/RedirectsPage`, `WP_List_Table`, nonce +
+  capability CRUD). New `openseo_settings` keys: `redirects_auto_slug`,
+  `redirects_default_status`, `redirects_track_hits`. New "Redirects" tab in
+  Settings → OpenSEO.
+- `NotFound/` — 404 monitor (opt-in via `notfound_monitor_enabled`). `Monitor`
+  (Hookable, `template_redirect` priority **99**; aggregated logging). `LogRepository`
+  (aggregated `INSERT … ON DUPLICATE KEY UPDATE` upsert keyed by `url_hash`; UTC
+  datetimes; no IP stored — the plugin's only raw SQL). `Pruner` (daily
+  `openseo_404_prune` cron; retention via `notfound_retention_days`, default 30).
+  `Admin/NotFoundListTable` lists hits with a "create redirect from 404" link. New
+  `openseo_settings` keys: `notfound_monitor_enabled`, `notfound_retention_days`.
+- `Lifecycle/Schema.php` — creates the plugin's **first custom tables**
+  (`openseo_redirects`, `openseo_404_logs`) via `dbDelta()` behind an
+  `openseo_db_version` gate checked on `admin_init`; both tables are dropped on
+  uninstall.
 
 ## Conventions & non-obvious gotchas
 

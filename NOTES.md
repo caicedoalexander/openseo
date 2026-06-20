@@ -149,6 +149,48 @@ Smoke test manual: publicar una entrada y ver el código fuente → un
 *None* y confirmar que desaparece el nodo Article; añadir el bloque de breadcrumbs
 a una página.
 
+### Redirecciones + 404 (Fase 5): qué cubre y cómo probar
+
+**Tablas propias.** `src/Lifecycle/Schema.php` crea las dos primeras tablas
+personalizadas del plugin (`{prefix}openseo_redirects` y
+`{prefix}openseo_404_logs`) con `dbDelta()` detrás de un gate `openseo_db_version`
+comprobado en `admin_init`; se borran al desinstalar.
+
+**Motor de redirecciones (`src/Redirects/`).** `Dispatcher` se engancha a
+`template_redirect` con prioridad **5** (antes que `redirect_canonical` en @10) y
+difiere la escritura del contador de hits a `shutdown`. Las unidades centrales son
+puras (sin WP): `Normalizer` (path de la petición), `Regex` (delimitador
+controlado por el plugin), `Ruleset` (mapa exacto O(1) + lista regex ordenada),
+`Matcher` (exacto gana sobre regex, sustitución `$1`, protección anti-bucle).
+`Repository` encapsula todo el SQL sobre `{prefix}openseo_redirects`. `Cache`
+almacena el ruleset en el object cache con caída a transient; invalidación
+dual-store; cuenta activa cacheada para evitar COUNT por petición; modo degradado
+por encima de un umbral. `SlugWatcher` crea automáticamente un 301 cuando cambia
+el permalink de una entrada publicada (`pre_post_update` + `post_updated`; activo
+por defecto para todos los CPTs públicos). El gestor de admin está bajo *Herramientas
+→ OpenSEO Redirects* (`WP_List_Table`, nonce + capability CRUD). Nuevas keys en
+`openseo_settings`: `redirects_auto_slug`, `redirects_default_status`,
+`redirects_track_hits`. Nueva pestaña *Redirects* en *Settings → OpenSEO*.
+
+**Monitor de 404 (`src/NotFound/`).** `Monitor` se carga en `template_redirect`
+con prioridad **99** y es opt-in vía `notfound_monitor_enabled`. `LogRepository`
+hace un upsert agregado (`INSERT … ON DUPLICATE KEY UPDATE` con clave `url_hash`;
+fechas en UTC; sin IP almacenada). `Pruner` programa el cron diario
+`openseo_404_prune`; la retención se controla con `notfound_retention_days`
+(por defecto 30 días). `Admin/NotFoundListTable` lista los hits con un enlace
+"crear redirect desde este 404". Nuevas keys: `notfound_monitor_enabled`,
+`notfound_retention_days`.
+
+Smoke test manual:
+
+1. **Redirect manual:** ir a *Herramientas → OpenSEO Redirects*, crear una regla
+   `/old-url → /new-url` (301), visitar `/old-url` y confirmar la redirección.
+2. **Auto-slug:** renombrar el slug de una entrada publicada → debe aparecer un 301
+   automático en el gestor apuntando de la URL antigua a la nueva.
+3. **Monitor 404:** activar *notfound_monitor_enabled* en *Settings → OpenSEO →
+   Redirects*, visitar una URL inexistente, y confirmar que aparece en la lista de
+   *Herramientas → OpenSEO 404s*.
+
 ---
 
 ## 6. WP-CLI (vía wp-env)
