@@ -52,7 +52,8 @@ final class EditorPanel implements Hookable {
 				array(
 					'aiAvailable'   => Connector::is_text_generation_available(),
 					'connectorsUrl' => Connector::settings_url(),
-				)
+				),
+				JSON_HEX_TAG
 			) . ';',
 			'before'
 		);

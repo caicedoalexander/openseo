@@ -32,18 +32,16 @@ if ( ! isset( $openseo_tabs[ $openseo_active ] ) ) {
 	<nav class="nav-tab-wrapper">
 		<?php foreach ( $openseo_tabs as $openseo_slug => $openseo_label ) : ?>
 			<?php
-			$openseo_tab_url   = esc_url(
-				add_query_arg(
-					array(
-						'page' => 'openseo',
-						'tab'  => $openseo_slug,
-					),
-					admin_url( 'options-general.php' )
-				)
+			$openseo_tab_url   = add_query_arg(
+				array(
+					'page' => 'openseo',
+					'tab'  => $openseo_slug,
+				),
+				admin_url( 'options-general.php' )
 			);
 			$openseo_tab_class = 'nav-tab' . ( $openseo_active === $openseo_slug ? ' nav-tab-active' : '' );
 			?>
-			<a href="<?php echo $openseo_tab_url; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped above. ?>" class="<?php echo esc_attr( $openseo_tab_class ); ?>">
+			<a href="<?php echo esc_url( $openseo_tab_url ); ?>" class="<?php echo esc_attr( $openseo_tab_class ); ?>">
 				<?php echo esc_html( $openseo_label ); ?>
 			</a>
 		<?php endforeach; ?>

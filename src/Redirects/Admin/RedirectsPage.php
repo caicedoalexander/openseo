@@ -81,8 +81,10 @@ final class RedirectsPage implements Hookable {
 		$relative = isset( $_POST['target'] ) ? sanitize_text_field( wp_unslash( $_POST['target'] ) ) : '';
 		$status   = isset( $_POST['status_code'] ) ? absint( wp_unslash( $_POST['status_code'] ) ) : 301;
 
-		// Relative targets fail esc_url_raw; keep the sanitized relative path.
-		if ( '' === $target && '' !== $relative ) {
+		// Relative targets fail esc_url_raw; accept a genuine root-relative path
+		// only (must start with '/' and not smuggle a scheme like 'javascript:').
+		if ( '' === $target && '' !== $relative
+			&& str_starts_with( $relative, '/' ) && ! str_contains( $relative, '://' ) ) {
 			$target = $relative;
 		}
 
