@@ -18,7 +18,7 @@ use OpenSEO\Lifecycle\Schema;
  *
  * phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
  */
-final class LogRepository {
+final class LogRepository implements LogRepositoryInterface {
 
 	/**
 	 * Upsert a 404 hit, aggregating by URL.

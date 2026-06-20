@@ -21,6 +21,23 @@ require_once $openseo_autoloader;
  * type-hints WP_Post. WordPress is never loaded for unit tests; wordpress-stubs
  * only feeds PHPStan, not the runtime.
  */
+/*
+ * WordPress time constants used in production code (wp-settings.php defines them
+ * before any plugin boots; they are never provided by the WP stubs for PHPStan).
+ */
+if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+	define( 'DAY_IN_SECONDS', 86400 );
+}
+if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
+	define( 'HOUR_IN_SECONDS', 3600 );
+}
+if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
+	define( 'MINUTE_IN_SECONDS', 60 );
+}
+if ( ! defined( 'WEEK_IN_SECONDS' ) ) {
+	define( 'WEEK_IN_SECONDS', 604800 );
+}
+
 if ( ! class_exists( 'WP_Error' ) ) {
 	class WP_Error {
 

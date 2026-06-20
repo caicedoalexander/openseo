@@ -40,6 +40,9 @@ use OpenSEO\Redirects\Cache as RedirectsCache;
 use OpenSEO\Redirects\Dispatcher;
 use OpenSEO\Redirects\Matcher;
 use OpenSEO\Redirects\Repository as RedirectsRepository;
+use OpenSEO\NotFound\LogRepository as NotFoundLog;
+use OpenSEO\NotFound\Monitor as NotFoundMonitor;
+use OpenSEO\NotFound\Pruner as NotFoundPruner;
 use OpenSEO\Redirects\SlugWatcher;
 use OpenSEO\Sitemap\Sitemap;
 
@@ -116,6 +119,7 @@ final class Plugin {
 		$variables = new Variables( $options );
 		$resolver  = new Resolver( $options, $variables );
 
+		$not_found_log   = new NotFoundLog();
 		$redirects_repo  = new RedirectsRepository();
 		$redirects_cache = new RedirectsCache( $redirects_repo );
 
@@ -133,6 +137,8 @@ final class Plugin {
 		);
 
 		$modules = array(
+			new NotFoundMonitor( $not_found_log, $options ),
+			new NotFoundPruner( $not_found_log, $options ),
 			new Dispatcher( $redirects_cache, new Matcher(), $redirects_repo, $options ),
 			new SlugWatcher( $redirects_repo, $redirects_cache, $options ),
 			new PostMeta(),
