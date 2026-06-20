@@ -10,6 +10,8 @@ declare( strict_types=1 );
 namespace OpenSEO\Redirects\Admin;
 
 use OpenSEO\Contracts\Hookable;
+use OpenSEO\NotFound\Admin\NotFoundListTable;
+use OpenSEO\NotFound\LogRepository;
 use OpenSEO\Redirects\Cache;
 use OpenSEO\Redirects\Normalizer;
 use OpenSEO\Redirects\Regex;
@@ -29,14 +31,16 @@ final class RedirectsPage implements Hookable {
 	/**
 	 * Constructor.
 	 *
-	 * @param Repository $repo    Redirect rule repository.
-	 * @param Cache      $cache   Redirect ruleset cache.
-	 * @param Options    $options Plugin settings.
+	 * @param Repository    $repo          Redirect rule repository.
+	 * @param Cache         $cache         Redirect ruleset cache.
+	 * @param Options       $options       Plugin settings.
+	 * @param LogRepository $not_found_log 404 log (for the 404 monitor sub-tab).
 	 */
 	public function __construct(
 		private readonly Repository $repo,
 		private readonly Cache $cache,
 		private readonly Options $options,
+		private readonly LogRepository $not_found_log,
 	) {}
 
 	/**
@@ -77,8 +81,10 @@ final class RedirectsPage implements Hookable {
 		$relative = isset( $_POST['target'] ) ? sanitize_text_field( wp_unslash( $_POST['target'] ) ) : '';
 		$status   = isset( $_POST['status_code'] ) ? absint( wp_unslash( $_POST['status_code'] ) ) : 301;
 
-		// Relative targets fail esc_url_raw; keep the sanitized relative path.
-		if ( '' === $target && '' !== $relative ) {
+		// Relative targets fail esc_url_raw; accept a genuine root-relative path
+		// only (must start with '/' and not smuggle a scheme like 'javascript:').
+		if ( '' === $target && '' !== $relative
+			&& str_starts_with( $relative, '/' ) && ! str_contains( $relative, '://' ) ) {
 			$target = $relative;
 		}
 
@@ -96,6 +102,12 @@ final class RedirectsPage implements Hookable {
 		}
 		if ( 410 !== $status && '' === $target ) {
 			$this->redirect_back( 'invalid' );
+		}
+
+		// Reject a direct 2-rule cycle (source → target where target → source
+		// already exists): the browser would bounce between them forever.
+		if ( ! $is_regex && $this->creates_cycle( $id, $source, $target ) ) {
+			$this->redirect_back( 'cycle' );
 		}
 
 		$data = array(
@@ -164,7 +176,38 @@ final class RedirectsPage implements Hookable {
 		$openseo_repo    = $this->repo;
 		$openseo_options = $this->options;
 
+		// Build the 404 sub-tab's list table here so the view stays free of `new`.
+		$openseo_notfound_table = new NotFoundListTable( $this->not_found_log );
+		$openseo_notfound_table->prepare_items();
+
 		require OPENSEO_PLUGIN_DIR . 'templates/admin/redirects-page.php';
+	}
+
+	/**
+	 * Whether saving an exact internal rule (source → target) would form a direct
+	 * 2-rule cycle with an existing active rule (target → source).
+	 *
+	 * Only internal, root-relative targets can cycle; the existing rule's target
+	 * is normalized before comparing so a trailing-slash-only difference still
+	 * counts. $source is already normalized by the caller.
+	 *
+	 * @param int    $id     Row id being saved (0 for a new rule), excluded from the lookup.
+	 * @param string $source Normalized source path of the rule being saved.
+	 * @param string $target Target of the rule being saved (stored verbatim).
+	 */
+	private function creates_cycle( int $id, string $source, string $target ): bool {
+		if ( ! str_starts_with( $target, '/' ) || str_starts_with( $target, '//' ) ) {
+			return false; // External / protocol-relative target cannot cycle internally.
+		}
+
+		$normalizer = new Normalizer();
+		$back       = $this->repo->find_active_by_source( $normalizer->normalize( $target ) );
+
+		if ( null === $back || $back->id === $id ) {
+			return false;
+		}
+
+		return $normalizer->normalize( $back->target ) === $source;
 	}
 
 	/**

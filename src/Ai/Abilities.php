@@ -105,7 +105,7 @@ final class Abilities implements Hookable {
 			'openseo/suggest-schema-type',
 			array(
 				'label'               => __( 'Suggest schema type', 'openseo' ),
-				'description'         => __( 'Analyzes a post and recommends the most fitting schema.org type. Read-only; consumes provider credits.', 'openseo' ),
+				'description'         => __( 'Analyzes a post and recommends the most fitting schema.org type without modifying it. Consumes provider credits and is not idempotent.', 'openseo' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => $this->post_id_input_schema(),
 				'output_schema'       => $this->suggestion_output_schema(),
@@ -290,14 +290,16 @@ final class Abilities implements Hookable {
 	 */
 	private function post_id_input_schema(): array {
 		return array(
-			'type'       => 'object',
-			'properties' => array(
+			'type'                 => 'object',
+			'properties'           => array(
 				'post_id' => array(
 					'type'        => 'integer',
 					'description' => __( 'The ID of the post to summarize.', 'openseo' ),
 				),
 			),
-			'required'   => array( 'post_id' ),
+			'required'             => array( 'post_id' ),
+			// Reject unknown keys so a typo'd argument fails loudly instead of being ignored.
+			'additionalProperties' => false,
 		);
 	}
 

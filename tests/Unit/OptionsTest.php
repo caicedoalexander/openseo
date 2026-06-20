@@ -26,6 +26,19 @@ final class OptionsTest extends TestCase {
 		parent::tearDown();
 	}
 
+	public function test_all_reads_the_stored_option_only_once_per_instance(): void {
+		// all() is called on most reads (and on every wp_head presenter); the
+		// stored option must be fetched and merged once per request, not on
+		// every access.
+		Functions\expect( 'get_option' )->once()->andReturn( array( 'title_separator' => '|' ) );
+
+		$options = new Options();
+
+		$this->assertSame( '|', $options->get( 'title_separator' ) );
+		$this->assertSame( '|', $options->get( 'title_separator' ) );
+		$options->all();
+	}
+
 	public function test_returns_on_page_defaults_when_nothing_is_stored(): void {
 		Functions\when( 'get_option' )->justReturn( array() );
 

@@ -140,7 +140,7 @@ final class SlugWatcher implements Hookable {
 	 *
 	 * @param string|false $permalink Permalink URL.
 	 */
-	private function path_of( $permalink ): string {
+	private function path_of( string|false $permalink ): string {
 		if ( ! is_string( $permalink ) || '' === $permalink ) {
 			return '';
 		}

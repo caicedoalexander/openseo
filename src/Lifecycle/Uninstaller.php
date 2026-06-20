@@ -20,6 +20,10 @@ final class Uninstaller {
 
 	/**
 	 * Delete all options and tables created by the plugin.
+	 *
+	 * Keep in sync with the autoloader-less fallback in uninstall.php, which
+	 * replicates this cleanup inline for the case where the Composer autoloader
+	 * (and therefore this class) is unavailable at uninstall time.
 	 */
 	public static function uninstall(): void {
 		global $wpdb;
@@ -36,5 +40,9 @@ final class Uninstaller {
 		delete_option( 'openseo_db_version' );
 		delete_option( Options::OPTION_KEY );
 		delete_option( 'openseo_version' );
+
+		// Regenerable cache transients (no user data), removed for a clean uninstall.
+		delete_transient( 'openseo_redirects_ruleset' );
+		delete_transient( 'openseo_redirects_count' );
 	}
 }

@@ -162,7 +162,7 @@ final class Plugin {
 			$modules[] = new SettingsPage( $options );
 			$modules[] = new AdminAssets();
 			$modules[] = new EditorPanel();
-			$modules[] = new RedirectsPage( $redirects_repo, $redirects_cache, $options );
+			$modules[] = new RedirectsPage( $redirects_repo, $redirects_cache, $options, $not_found_log );
 		}
 
 		return $modules;

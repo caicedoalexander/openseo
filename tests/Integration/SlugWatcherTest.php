@@ -78,6 +78,24 @@ final class SlugWatcherTest extends WP_UnitTestCase {
 		$this->assertTrue( $this->repo->exists_for_source( '/b' ), '/b → /a should exist' );
 	}
 
+	public function test_existing_redirect_for_old_slug_is_not_duplicated(): void {
+		$post_id = $this->publish( 'dup-slug' );
+
+		// Pre-seed a manual redirect for the old slug before renaming.
+		$this->repo->create(
+			array( 'source_path' => '/dup-slug', 'target' => '/elsewhere', 'status_code' => 301, 'is_regex' => false, 'enabled' => true )
+		);
+
+		$this->rename( $post_id, 'dup-renamed' );
+
+		// The duplicate guard (exists_for_source) must prevent a second /dup-slug rule.
+		$rules = array_filter(
+			$this->repo->all( 100, 0 ),
+			static fn( array $row ): bool => '/dup-slug' === $row['source_path']
+		);
+		$this->assertCount( 1, $rules );
+	}
+
 	private function publish( string $slug ): int {
 		return self::factory()->post->create(
 			array(

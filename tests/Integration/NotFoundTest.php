@@ -35,6 +35,24 @@ final class NotFoundTest extends WP_UnitTestCase {
 		$this->assertSame( 'https://ref2', $second['referrer'] );
 	}
 
+	public function test_delete_removes_a_single_logged_url(): void {
+		$this->logs->record( '/gone' );
+		$id = (int) $this->logs->all( 10, 0 )[0]['id'];
+
+		$this->assertTrue( $this->logs->delete( $id ) );
+		$this->assertSame( 0, $this->logs->count_all() );
+	}
+
+	public function test_clear_empties_the_whole_log(): void {
+		$this->logs->record( '/a' );
+		$this->logs->record( '/b' );
+		$this->assertSame( 2, $this->logs->count_all() );
+
+		$this->logs->clear();
+
+		$this->assertSame( 0, $this->logs->count_all() );
+	}
+
 	public function test_prune_removes_old_rows(): void {
 		global $wpdb;
 		$this->logs->record( '/old' );
