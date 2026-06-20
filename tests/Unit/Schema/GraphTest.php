@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace OpenSEO\Tests\Unit\Schema;
 
 use Brain\Monkey;
+use Brain\Monkey\Functions;
 use OpenSEO\Schema\Graph;
 use OpenSEO\Schema\Piece;
 use PHPUnit\Framework\TestCase;
@@ -50,5 +51,44 @@ final class GraphTest extends TestCase {
 		$this->assertSame( 'https://schema.org', $built['@context'] );
 		$this->assertCount( 2, $built['@graph'] );
 		$this->assertSame( array( 'WebSite', 'WebPage' ), array_column( $built['@graph'], '@type' ) );
+	}
+
+	public function test_print_graph_hex_escapes_a_script_close_tag_in_a_value(): void {
+		Functions\when( 'wp_json_encode' )->alias(
+			static fn( $data, $flags = 0 ) => json_encode( $data, $flags )
+		);
+
+		$graph = new Graph(
+			array(
+				$this->piece(
+					true,
+					array( '@type' => 'WebPage', '@id' => 'a', 'name' => 'Hi </script><script>alert(1)</script>' ),
+				),
+			)
+		);
+
+		ob_start();
+		$graph->print_graph();
+		$output = (string) ob_get_clean();
+
+		$this->assertStringContainsString( '<script type="application/ld+json">', $output );
+		// The dangerous markup from the value must be hex-escaped, never emitted raw.
+		$this->assertStringNotContainsString( '</script><script>', $output );
+		// JSON_HEX_TAG encodes '<' as the 6-char escape <; build the needle
+		// without writing the escape literally so it is not misread as Unicode.
+		$hex_lt = '\\' . 'u003C';
+		$this->assertStringContainsString( $hex_lt, $output );
+	}
+
+	public function test_print_graph_outputs_nothing_when_no_piece_is_needed(): void {
+		$graph = new Graph(
+			array( $this->piece( false, array( '@type' => 'Article', '@id' => 'a' ) ) )
+		);
+
+		ob_start();
+		$graph->print_graph();
+		$output = (string) ob_get_clean();
+
+		$this->assertSame( '', $output );
 	}
 }
