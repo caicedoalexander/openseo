@@ -1220,7 +1220,7 @@ final class Repository {
 				'status_code' => (int) $data['status_code'],
 				'is_regex'    => ! empty( $data['is_regex'] ) ? 1 : 0,
 				'enabled'     => ! empty( $data['enabled'] ) ? 1 : 0,
-				'created_at'  => current_time( 'mysql' ),
+				'created_at'  => current_time( 'mysql', true ),
 			),
 			array( '%s', '%s', '%d', '%d', '%d', '%s' )
 		);
@@ -1292,7 +1292,7 @@ final class Repository {
 		$table = Schema::redirects_table();
 		$wpdb->query(
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->prepare( "UPDATE {$table} SET hits = hits + 1, last_accessed = %s WHERE id = %d", current_time( 'mysql' ), $id )
+			$wpdb->prepare( "UPDATE {$table} SET hits = hits + 1, last_accessed = %s WHERE id = %d", current_time( 'mysql', true ), $id )
 		);
 	}
 
@@ -1382,7 +1382,11 @@ final class Cache {
 
 	private const KEY = 'ruleset';
 
+	private const COUNT_KEY = 'active_count';
+
 	private const TRANSIENT = 'openseo_redirects_ruleset';
+
+	private const COUNT_TRANSIENT = 'openseo_redirects_count';
 
 	/**
 	 * Above this many active rules, caching the whole set is wasteful.
@@ -1415,18 +1419,45 @@ final class Cache {
 	}
 
 	/**
-	 * Invalidate BOTH stores. Called on every write.
+	 * Invalidate BOTH stores (ruleset and count). Called on every write.
 	 */
 	public function flush(): void {
 		wp_cache_delete( self::KEY, self::GROUP );
+		wp_cache_delete( self::COUNT_KEY, self::GROUP );
 		delete_transient( self::TRANSIENT );
+		delete_transient( self::COUNT_TRANSIENT );
 	}
 
 	/**
-	 * Whether the active rule count exceeds the cache threshold.
+	 * Whether the active rule count exceeds the cache threshold. The count is
+	 * cached (object cache → transient) so the hot path never issues a per-request
+	 * COUNT(*); it is rebuilt only on a cache miss, like the ruleset itself.
 	 */
 	public function is_degraded(): bool {
-		return $this->repo->count_active() > self::DEGRADE_THRESHOLD;
+		return $this->active_count() > self::DEGRADE_THRESHOLD;
+	}
+
+	/**
+	 * Cached count of active rules.
+	 */
+	private function active_count(): int {
+		$cached = wp_cache_get( self::COUNT_KEY, self::GROUP );
+		if ( false !== $cached ) {
+			return (int) $cached;
+		}
+
+		$stored = get_transient( self::COUNT_TRANSIENT );
+		if ( false !== $stored ) {
+			wp_cache_set( self::COUNT_KEY, (int) $stored, self::GROUP );
+
+			return (int) $stored;
+		}
+
+		$count = $this->repo->count_active();
+		wp_cache_set( self::COUNT_KEY, $count, self::GROUP );
+		set_transient( self::COUNT_TRANSIENT, $count );
+
+		return $count;
 	}
 }
 ```
@@ -1913,16 +1944,16 @@ final class RedirectsListTable extends WP_List_Table {
 	 * @param array<string, mixed> $item Row.
 	 */
 	public function column_source_path( $item ): string {
-		$id       = (int) $item['id'];
-		$base     = admin_url( 'tools.php?page=openseo-redirects' );
-		$edit_url = add_query_arg( array( 'action' => 'edit', 'id' => $id ), $base );
+		$id          = (int) $item['id'];
+		$action_base = admin_url( 'admin-post.php?action=openseo_redirect_row_action' );
 
-		$toggle      = (int) $item['enabled'] === 1 ? 'disable' : 'enable';
-		$toggle_url  = wp_nonce_url( add_query_arg( array( 'action' => $toggle, 'id' => $id ), $base ), 'openseo_redirect_' . $toggle . '_' . $id );
-		$delete_url  = wp_nonce_url( add_query_arg( array( 'action' => 'delete', 'id' => $id ), $base ), 'openseo_redirect_delete_' . $id );
+		// Toggle/delete hit admin-post.php; edit-in-place is a documented follow-up,
+		// so no "Edit" action is shown (no dead links).
+		$toggle     = (int) $item['enabled'] === 1 ? 'disable' : 'enable';
+		$toggle_url = wp_nonce_url( add_query_arg( array( 'do' => $toggle, 'id' => $id ), $action_base ), 'openseo_redirect_' . $toggle . '_' . $id );
+		$delete_url = wp_nonce_url( add_query_arg( array( 'do' => 'delete', 'id' => $id ), $action_base ), 'openseo_redirect_delete_' . $id );
 
 		$actions = array(
-			'edit'   => sprintf( '<a href="%s">%s</a>', esc_url( $edit_url ), esc_html__( 'Edit', 'openseo' ) ),
 			'toggle' => sprintf( '<a href="%s">%s</a>', esc_url( $toggle_url ), 'disable' === $toggle ? esc_html__( 'Disable', 'openseo' ) : esc_html__( 'Enable', 'openseo' ) ),
 			'delete' => sprintf( '<a href="%s" onclick="return confirm(\'%s\')">%s</a>', esc_url( $delete_url ), esc_js( __( 'Delete this redirect?', 'openseo' ) ), esc_html__( 'Delete', 'openseo' ) ),
 		);
@@ -2095,6 +2126,9 @@ final class RedirectsPage implements Hookable {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- GET prefill only; the save POST is nonce-protected.
 		$prefill = isset( $_GET['source'] ) ? ( new Normalizer() )->normalize( sanitize_text_field( wp_unslash( $_GET['source'] ) ) ) : '';
 
+		// Inject the page's collaborators into the template (no `new` in the view).
+		$openseo_repo = $this->repo;
+
 		require OPENSEO_PLUGIN_DIR . 'templates/admin/redirects-page.php';
 	}
 
@@ -2119,16 +2153,14 @@ Create `templates/admin/redirects-page.php`:
  *
  * @package OpenSEO
  *
- * @var string                       $tab     Active sub-tab.
- * @var string                       $prefill Pre-filled source path.
- * @var \OpenSEO\Redirects\Repository $repo   Provided by the page controller.
+ * @var string                        $tab          Active sub-tab.
+ * @var string                        $prefill      Pre-filled source path.
+ * @var \OpenSEO\Redirects\Repository $openseo_repo Injected by the page controller.
  */
 
 declare( strict_types=1 );
 
 defined( 'ABSPATH' ) || exit;
-
-$openseo_repo = new \OpenSEO\Redirects\Repository();
 ?>
 <div class="wrap">
 	<h1><?php echo esc_html__( 'OpenSEO Redirects', 'openseo' ); ?></h1>
@@ -2185,30 +2217,31 @@ $openseo_repo = new \OpenSEO\Redirects\Repository();
 </div>
 ```
 
-> Note: the `notfound-panel.php` include is created in Part B (Task 16). Until then, create a one-line placeholder file `templates/admin/notfound-panel.php` containing `<?php // Filled in Part B.` so the redirects tab renders. Replace it in Task 16.
+> Note: the `notfound-panel.php` include is created in Part B (Task 16). Until then, create a **lint-valid** placeholder at `templates/admin/notfound-panel.php` (PHPCS scans `templates/`), replaced in Task 16:
+>
+> ```php
+> <?php
+> /**
+>  * 404 monitor panel placeholder (filled in Part B, Task 16).
+>  *
+>  * @package OpenSEO
+>  */
+>
+> declare( strict_types=1 );
+>
+> defined( 'ABSPATH' ) || exit;
+> ```
 
-- [ ] **Step 4: Wire the row-action URLs to admin-post**
-
-The list table links use `tools.php?...` for edit (a GET view) but enable/disable/delete must hit `admin-post.php`. Update `RedirectsListTable::column_source_path()` action URLs to point at `admin-post.php`:
-
-```php
-		$action_base = admin_url( 'admin-post.php?action=openseo_redirect_row_action' );
-		$toggle_url  = wp_nonce_url( add_query_arg( array( 'do' => $toggle, 'id' => $id ), $action_base ), 'openseo_redirect_' . $toggle . '_' . $id );
-		$delete_url  = wp_nonce_url( add_query_arg( array( 'do' => 'delete', 'id' => $id ), $action_base ), 'openseo_redirect_delete_' . $id );
-```
-
-(The `handle_row_action()` reads `$_GET['do']`; keep edit pointing at the `tools.php` page with `action=edit` for the in-page editor — out of scope detail: the add form doubles as editor when `id` is present, a follow-up enhancement.)
-
-- [ ] **Step 5: Static analysis + lint**
+- [ ] **Step 4: Static analysis + lint**
 
 Run: `composer lint && composer analyze`
 Expected: no errors.
 
-- [ ] **Step 6: Manual smoke test**
+- [ ] **Step 5: Manual smoke test**
 
 Run: `npm run env:start`, log in at http://localhost:8888/wp-admin (admin/password), open **Tools → OpenSEO Redirects**, add a redirect `/old → /new`, visit `http://localhost:8888/old`, confirm a 301 to `/new`. Toggle and delete from the list.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add src/Redirects/Admin/ templates/admin/redirects-page.php templates/admin/notfound-panel.php
@@ -2446,6 +2479,11 @@ final class SlugWatcherTest extends WP_UnitTestCase {
 		Schema::install();
 		update_option( 'openseo_settings', array( 'redirects_auto_slug' => '1' ) );
 
+		// The test bench starts with plain permalinks (?p=N); without a pretty
+		// structure, old and new permalinks both normalize to '/' and no
+		// redirect is ever created. set_permalink_structure() flushes rules.
+		$this->set_permalink_structure( '/%postname%/' );
+
 		$repo    = new Repository();
 		$watcher = new SlugWatcher( $repo, new Cache( $repo ), new Options() );
 		$watcher->register();
@@ -2547,13 +2585,19 @@ In `Plugin::boot()`, after the module loop, register the upgrade gate:
 
 - [ ] **Step 3: Extend the boot test**
 
-Add to `tests/Integration/PluginBootTest.php` a check that `template_redirect` has the dispatcher hooked at priority 5:
+Add to `tests/Integration/PluginBootTest.php` a check that the dispatcher is hooked at the exact priority 5 (asserting the priority, not just "some callback"):
 
 ```php
-	public function test_dispatcher_registered_on_template_redirect(): void {
-		$this->assertNotFalse( has_action( 'template_redirect' ) );
+	public function test_dispatcher_registered_at_priority_5(): void {
+		global $wp_filter;
+
+		$this->assertArrayHasKey( 'template_redirect', $wp_filter );
+		$priorities = array_keys( $wp_filter['template_redirect']->callbacks );
+		$this->assertContains( 5, $priorities, 'Dispatcher must run before redirect_canonical@10.' );
 	}
 ```
+
+> Dependency note: Part B (Task 16) also edits `Plugin.php` to register `Monitor`/`Pruner`. Part B must run after this task — `Monitor@99` and the `openseo_404_prune` cron are asserted by a sibling test added in Task 16, Step 4.
 
 - [ ] **Step 4: Run tests + gates**
 
@@ -2612,14 +2656,17 @@ final class NotFoundTest extends WP_UnitTestCase {
 
 	public function test_record_aggregates_by_url(): void {
 		$this->logs->record( '/missing', 'https://ref', 'UA' );
-		$this->logs->record( '/missing', 'https://ref2', 'UA2' );
+		$first = $this->logs->all( 10, 0 )[0];
 
-		$rows = $this->logs->all( 10, 0 );
-		$this->assertCount( 1, $rows );
-		$this->assertSame( '2', $rows[0]['hits'] );
-		$this->assertSame( '/missing', $rows[0]['url'] );
-		// first_seen is preserved across the second hit.
-		$this->assertSame( $rows[0]['first_seen'], $rows[0]['first_seen'] );
+		$this->logs->record( '/missing', 'https://ref2', 'UA2' );
+		$second = $this->logs->all( 10, 0 )[0];
+
+		$this->assertCount( 1, $this->logs->all( 10, 0 ) );
+		$this->assertSame( '2', $second['hits'] );
+		$this->assertSame( '/missing', $second['url'] );
+		// The upsert must NOT touch first_seen; it must update referrer/UA.
+		$this->assertSame( $first['first_seen'], $second['first_seen'] );
+		$this->assertSame( 'https://ref2', $second['referrer'] );
 	}
 
 	public function test_prune_removes_old_rows(): void {
@@ -2674,7 +2721,8 @@ final class LogRepository {
 		$url_hash   = md5( $url );
 		$referrer   = '' === $referrer ? null : $this->trim( $referrer, 255 );
 		$user_agent = '' === $user_agent ? null : $this->trim( $user_agent, 255 );
-		$now        = current_time( 'mysql' );
+		// UTC, so prune()'s gmdate() cutoff compares correctly on any timezone.
+		$now        = current_time( 'mysql', true );
 		$table      = Schema::logs_table();
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -3039,6 +3087,9 @@ declare( strict_types=1 );
 
 defined( 'ABSPATH' ) || exit;
 
+// The 404 panel self-constructs its (stateless) collaborators on purpose: this
+// keeps the Part A RedirectsPage constructor free of the Part B LogRepository,
+// so redirects work even if the 404 monitor is never built.
 $openseo_logs  = new \OpenSEO\NotFound\LogRepository();
 $openseo_table = new \OpenSEO\NotFound\Admin\NotFoundListTable( $openseo_logs );
 $openseo_table->prepare_items();
@@ -3080,16 +3131,33 @@ Add to the front `$modules` array:
 			new Pruner( $logs, $options ),
 ```
 
-- [ ] **Step 4: Static analysis + lint**
+- [ ] **Step 4: Assert Monitor@99 and the prune cron in the boot test**
+
+Add to `tests/Integration/PluginBootTest.php`:
+
+```php
+	public function test_monitor_registered_at_priority_99_and_cron_scheduled(): void {
+		global $wp_filter;
+
+		$priorities = array_keys( $wp_filter['template_redirect']->callbacks );
+		$this->assertContains( 99, $priorities, 'Monitor must run after the Dispatcher.' );
+		$this->assertNotFalse( wp_next_scheduled( 'openseo_404_prune' ) );
+	}
+```
+
+Run: `npm run test:integration -- --filter PluginBootTest`
+Expected: PASS.
+
+- [ ] **Step 5: Static analysis + lint**
 
 Run: `composer lint && composer analyze`
 Expected: no errors.
 
-- [ ] **Step 5: Manual smoke test**
+- [ ] **Step 6: Manual smoke test**
 
 `npm run env:start`; enable the monitor in **Settings → OpenSEO → Redirects**; visit a non-existent URL (e.g. `/does-not-exist`); open **Tools → OpenSEO Redirects → 404 Monitor** and confirm the row with hits; click **Create redirect** and confirm the source is pre-filled. Disable the monitor and confirm new 404s stop logging.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add src/NotFound/Admin/ templates/admin/notfound-panel.php src/Plugin.php
