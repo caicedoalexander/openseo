@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/review-reminder.js",
+            "statusMessage": "Checking for review triggers"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/review-reminder.js",
+            "if": "Bash(git *)",
+            "statusMessage": "Checking for review triggers"
+          }
+        ]
+      }
+    ]
+  }
+}
