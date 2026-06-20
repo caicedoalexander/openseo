@@ -25,6 +25,7 @@ defined( 'ABSPATH' ) || exit;
 		'saved'         => array( 'success', __( 'Redirect saved.', 'openseo' ) ),
 		'invalid'       => array( 'error', __( 'Could not save: check the source, target, and type.', 'openseo' ) ),
 		'invalid_regex' => array( 'error', __( 'Could not save: the regex pattern is invalid.', 'openseo' ) ),
+		'cycle'         => array( 'error', __( 'Could not save: this would create a redirect loop with an existing rule.', 'openseo' ) ),
 		'delete'        => array( 'success', __( 'Redirect deleted.', 'openseo' ) ),
 		'enable'        => array( 'success', __( 'Redirect enabled.', 'openseo' ) ),
 		'disable'       => array( 'success', __( 'Redirect disabled.', 'openseo' ) ),

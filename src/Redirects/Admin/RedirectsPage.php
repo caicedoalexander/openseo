@@ -98,6 +98,12 @@ final class RedirectsPage implements Hookable {
 			$this->redirect_back( 'invalid' );
 		}
 
+		// Reject a direct 2-rule cycle (source → target where target → source
+		// already exists): the browser would bounce between them forever.
+		if ( ! $is_regex && $this->creates_cycle( $id, $source, $target ) ) {
+			$this->redirect_back( 'cycle' );
+		}
+
 		$data = array(
 			'source_path' => $source,
 			'target'      => 410 === $status ? '' : $target,
@@ -165,6 +171,33 @@ final class RedirectsPage implements Hookable {
 		$openseo_options = $this->options;
 
 		require OPENSEO_PLUGIN_DIR . 'templates/admin/redirects-page.php';
+	}
+
+	/**
+	 * Whether saving an exact internal rule (source → target) would form a direct
+	 * 2-rule cycle with an existing active rule (target → source).
+	 *
+	 * Only internal, root-relative targets can cycle; the existing rule's target
+	 * is normalized before comparing so a trailing-slash-only difference still
+	 * counts. $source is already normalized by the caller.
+	 *
+	 * @param int    $id     Row id being saved (0 for a new rule), excluded from the lookup.
+	 * @param string $source Normalized source path of the rule being saved.
+	 * @param string $target Target of the rule being saved (stored verbatim).
+	 */
+	private function creates_cycle( int $id, string $source, string $target ): bool {
+		if ( ! str_starts_with( $target, '/' ) || str_starts_with( $target, '//' ) ) {
+			return false; // External / protocol-relative target cannot cycle internally.
+		}
+
+		$normalizer = new Normalizer();
+		$back       = $this->repo->find_active_by_source( $normalizer->normalize( $target ) );
+
+		if ( null === $back || $back->id === $id ) {
+			return false;
+		}
+
+		return $normalizer->normalize( $back->target ) === $source;
 	}
 
 	/**
