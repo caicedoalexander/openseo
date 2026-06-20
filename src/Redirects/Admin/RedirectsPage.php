@@ -10,6 +10,8 @@ declare( strict_types=1 );
 namespace OpenSEO\Redirects\Admin;
 
 use OpenSEO\Contracts\Hookable;
+use OpenSEO\NotFound\Admin\NotFoundListTable;
+use OpenSEO\NotFound\LogRepository;
 use OpenSEO\Redirects\Cache;
 use OpenSEO\Redirects\Normalizer;
 use OpenSEO\Redirects\Regex;
@@ -29,14 +31,16 @@ final class RedirectsPage implements Hookable {
 	/**
 	 * Constructor.
 	 *
-	 * @param Repository $repo    Redirect rule repository.
-	 * @param Cache      $cache   Redirect ruleset cache.
-	 * @param Options    $options Plugin settings.
+	 * @param Repository    $repo          Redirect rule repository.
+	 * @param Cache         $cache         Redirect ruleset cache.
+	 * @param Options       $options       Plugin settings.
+	 * @param LogRepository $not_found_log 404 log (for the 404 monitor sub-tab).
 	 */
 	public function __construct(
 		private readonly Repository $repo,
 		private readonly Cache $cache,
 		private readonly Options $options,
+		private readonly LogRepository $not_found_log,
 	) {}
 
 	/**
@@ -169,6 +173,10 @@ final class RedirectsPage implements Hookable {
 		// Inject the page's collaborators into the template (no `new` in the view).
 		$openseo_repo    = $this->repo;
 		$openseo_options = $this->options;
+
+		// Build the 404 sub-tab's list table here so the view stays free of `new`.
+		$openseo_notfound_table = new NotFoundListTable( $this->not_found_log );
+		$openseo_notfound_table->prepare_items();
 
 		require OPENSEO_PLUGIN_DIR . 'templates/admin/redirects-page.php';
 	}
