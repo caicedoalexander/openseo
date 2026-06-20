@@ -44,4 +44,39 @@ final class DispatcherTest extends WP_UnitTestCase {
 	public function test_resolve_returns_null_for_unknown_path(): void {
 		$this->assertNull( $this->dispatcher->resolve( '/nothing' ) );
 	}
+
+	public function test_resolve_uses_degraded_path_when_cache_degraded(): void {
+		$this->repo->create(
+			array( 'source_path' => '/deg', 'target' => '/dest', 'status_code' => 301, 'is_regex' => false, 'enabled' => true )
+		);
+
+		// Seed the cached count above the degradation threshold so Cache::is_degraded() returns true.
+		set_transient( 'openseo_redirects_count', Cache::DEGRADE_THRESHOLD + 1 );
+
+		$cache      = new Cache( $this->repo );
+		$dispatcher = new Dispatcher( $cache, new Matcher(), $this->repo, new Options() );
+		$result     = $dispatcher->resolve( '/deg' );
+
+		delete_transient( 'openseo_redirects_count' );
+
+		$this->assertNotNull( $result );
+		$this->assertSame( '/dest', $result->target );
+	}
+
+	public function test_resolve_degraded_self_loop_returns_null(): void {
+		$this->repo->create(
+			array( 'source_path' => '/loop', 'target' => '/loop', 'status_code' => 301, 'is_regex' => false, 'enabled' => true )
+		);
+
+		// Seed the cached count above the degradation threshold so Cache::is_degraded() returns true.
+		set_transient( 'openseo_redirects_count', Cache::DEGRADE_THRESHOLD + 1 );
+
+		$cache      = new Cache( $this->repo );
+		$dispatcher = new Dispatcher( $cache, new Matcher(), $this->repo, new Options() );
+		$result     = $dispatcher->resolve( '/loop' );
+
+		delete_transient( 'openseo_redirects_count' );
+
+		$this->assertNull( $result );
+	}
 }

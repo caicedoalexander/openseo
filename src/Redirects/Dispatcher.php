@@ -152,7 +152,12 @@ final class Dispatcher implements Hookable {
 	 */
 	private function is_external( string $target ): bool {
 		$host = wp_parse_url( $target, PHP_URL_HOST );
+		if ( ! is_string( $host ) || '' === $host ) {
+			return false; // Relative target → internal.
+		}
 
-		return is_string( $host ) && '' !== $host;
+		$home_host = wp_parse_url( home_url(), PHP_URL_HOST );
+
+		return ! is_string( $home_host ) || $host !== $home_host;
 	}
 }
