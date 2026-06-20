@@ -40,5 +40,9 @@ final class Uninstaller {
 		delete_option( 'openseo_db_version' );
 		delete_option( Options::OPTION_KEY );
 		delete_option( 'openseo_version' );
+
+		// Regenerable cache transients (no user data), removed for a clean uninstall.
+		delete_transient( 'openseo_redirects_ruleset' );
+		delete_transient( 'openseo_redirects_count' );
 	}
 }

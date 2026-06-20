@@ -24,7 +24,9 @@ final class Activator {
 	 */
 	public static function activate(): void {
 		if ( false === get_option( Options::OPTION_KEY, false ) ) {
-			add_option( Options::OPTION_KEY, ( new Options() )->defaults() );
+			// Autoload: this small option is read on every front-end request
+			// (wp_head presenters, the Resolver), so eager loading is correct.
+			add_option( Options::OPTION_KEY, ( new Options() )->defaults(), '', true );
 		}
 
 		Schema::install();

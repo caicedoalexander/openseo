@@ -34,6 +34,13 @@ final class Dispatcher implements Hookable {
 	private int $pending_hit = 0;
 
 	/**
+	 * Request path normalizer, built once per request (home_path is stable).
+	 *
+	 * @var Normalizer|null
+	 */
+	private ?Normalizer $normalizer = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param Cache      $cache   Ruleset cache.
@@ -102,8 +109,8 @@ final class Dispatcher implements Hookable {
 	 * @param string $request_uri Raw request URI (may include query string).
 	 */
 	public function resolve( string $request_uri ): ?MatchResult {
-		$normalizer = new Normalizer( $this->home_path() );
-		$path       = $normalizer->normalize( $request_uri );
+		$this->normalizer ??= new Normalizer( $this->home_path() );
+		$path               = $this->normalizer->normalize( $request_uri );
 
 		if ( $this->cache->is_degraded() ) {
 			// Exact rules win and are O(1) via an indexed lookup (mirrors the
