@@ -56,4 +56,36 @@ final class MatcherTest extends TestCase {
 
 		$this->assertNull( $matcher->match( $ruleset, '/loop' ) );
 	}
+
+	public function test_returns_null_when_internal_target_loops_via_trailing_slash(): void {
+		// The source normalizes to '/x'; the target was stored verbatim as '/x/'.
+		// Both address the same resource, so matching must not redirect (which
+		// would loop: /x → /x/ → /x → /x/ …).
+		$matcher = new Matcher();
+		$ruleset = $this->ruleset( new Redirect( 1, '/x', '/x/', 301, false, true ) );
+
+		$this->assertNull( $matcher->match( $ruleset, '/x' ) );
+	}
+
+	public function test_returns_null_when_regex_target_loops_via_trailing_slash(): void {
+		// A regex whose substituted target differs from the path only by a
+		// trailing slash still loops back to the same resource.
+		$matcher = new Matcher();
+		$ruleset = $this->ruleset( new Redirect( 1, '^(/loop)$', '$1/', 301, true, true ) );
+
+		$this->assertNull( $matcher->match( $ruleset, '/loop' ) );
+	}
+
+	public function test_is_self_loop_normalizes_internal_targets_and_ignores_external(): void {
+		$matcher = new Matcher();
+
+		// Internal, root-relative targets that resolve to the same path loop.
+		$this->assertTrue( $matcher->is_self_loop( '/x', '/x' ) );
+		$this->assertTrue( $matcher->is_self_loop( '/x/', '/x' ) );
+
+		// Different internal target, or external / protocol-relative target: no loop.
+		$this->assertFalse( $matcher->is_self_loop( '/y', '/x' ) );
+		$this->assertFalse( $matcher->is_self_loop( 'https://other.example/x', '/x' ) );
+		$this->assertFalse( $matcher->is_self_loop( '//evil.example', '/x' ) );
+	}
 }

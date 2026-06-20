@@ -102,7 +102,7 @@ final class Dispatcher implements Hookable {
 
 		if ( $this->cache->is_degraded() ) {
 			$rule = $this->repo->find_active_by_source( $path );
-			if ( null === $rule || $rule->target === $path ) {
+			if ( null === $rule || $this->matcher->is_self_loop( $rule->target, $path ) ) {
 				return null;
 			}
 
