@@ -59,6 +59,17 @@ final class RedirectsRepositoryTest extends WP_UnitTestCase {
 		$this->assertNull( $this->repo->find( $id ) );
 	}
 
+	public function test_all_count_all_and_count_active(): void {
+		$this->repo->create( array( 'source_path' => '/alpha', 'target' => '/x', 'status_code' => 301, 'is_regex' => false, 'enabled' => true ) );
+		$this->repo->create( array( 'source_path' => '/beta', 'target' => '/y', 'status_code' => 301, 'is_regex' => false, 'enabled' => true ) );
+		$this->repo->create( array( 'source_path' => '/gamma', 'target' => '/z', 'status_code' => 301, 'is_regex' => false, 'enabled' => false ) );
+
+		$this->assertCount( 2, $this->repo->all( 2, 0 ) );
+		$this->assertSame( 3, $this->repo->count_all() );
+		$this->assertSame( 1, $this->repo->count_all( 'alpha' ) );
+		$this->assertSame( 2, $this->repo->count_active() );
+	}
+
 	public function test_find_active_by_source_skips_disabled(): void {
 		$id = $this->repo->create(
 			array(

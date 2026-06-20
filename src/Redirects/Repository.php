@@ -13,8 +13,10 @@ use OpenSEO\Lifecycle\Schema;
 
 /**
  * Encapsulates every SQL statement touching {prefix}openseo_redirects. The
- * table name comes from $wpdb->prefix (never user input); all values are
- * parameterized with $wpdb->prepare.
+ * table name comes from $wpdb->prefix (never user input); all user-supplied
+ * values are parameterized with $wpdb->prepare; static queries with no bound
+ * values use literal strings (the table name comes from $wpdb->prefix, never
+ * user input).
  *
  * phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
  */
