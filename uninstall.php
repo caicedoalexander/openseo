@@ -38,3 +38,6 @@ $wpdb->query( "DROP TABLE IF EXISTS {$openseo_logs}" );
 delete_option( 'openseo_db_version' );
 delete_option( 'openseo_settings' );
 delete_option( 'openseo_version' );
+
+delete_transient( 'openseo_redirects_ruleset' );
+delete_transient( 'openseo_redirects_count' );
