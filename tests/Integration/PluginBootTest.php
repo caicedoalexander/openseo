@@ -98,4 +98,12 @@ final class PluginBootTest extends WP_UnitTestCase {
 		$priorities = array_keys( $wp_filter['template_redirect']->callbacks );
 		$this->assertContains( 5, $priorities, 'Dispatcher must run before redirect_canonical@10.' );
 	}
+
+	public function test_monitor_registered_at_priority_99_and_cron_scheduled(): void {
+		global $wp_filter;
+
+		$priorities = array_keys( $wp_filter['template_redirect']->callbacks );
+		$this->assertContains( 99, $priorities, 'Monitor must run after the Dispatcher.' );
+		$this->assertNotFalse( wp_next_scheduled( 'openseo_404_prune' ) );
+	}
 }
