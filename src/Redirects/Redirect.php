@@ -16,6 +16,14 @@ namespace OpenSEO\Redirects;
  */
 final class Redirect {
 
+	/**
+	 * @param int    $id       Row id (0 for an unsaved rule).
+	 * @param string $source   Source path, or regex pattern when $is_regex.
+	 * @param string $target   Redirect target (empty for a 410).
+	 * @param int    $status   HTTP status code (301, 302, 307, 410).
+	 * @param bool   $is_regex Whether $source is a regex pattern.
+	 * @param bool   $enabled  Whether the rule is active.
+	 */
 	public function __construct(
 		public readonly int $id,
 		public readonly string $source,

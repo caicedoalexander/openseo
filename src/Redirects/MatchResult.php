@@ -14,6 +14,11 @@ namespace OpenSEO\Redirects;
  */
 final class MatchResult {
 
+	/**
+	 * @param int    $id     Matched rule id.
+	 * @param string $target Resolved redirect target.
+	 * @param int    $status HTTP status code.
+	 */
 	public function __construct(
 		public readonly int $id,
 		public readonly string $target,
