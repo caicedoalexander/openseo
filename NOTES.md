@@ -191,6 +191,26 @@ Smoke test manual:
    Redirects*, visitar una URL inexistente, y confirmar que aparece en la lista de
    *Herramientas → OpenSEO 404s*.
 
+> **Gotcha de wp-env (importante para el smoke test).** El motor (Dispatcher@5) y
+> el monitor (Monitor@99) solo actúan si la petición llega a WordPress, lo que
+> exige permalinks "bonitos" con el rewrite de Apache funcionando. En wp-env,
+> `wp rewrite structure '/%postname%/'` actualiza la opción pero **no siempre
+> regenera el `.htaccess`**, así que una ruta arbitraria como `/old-url` la
+> contesta **Apache con su propio 404** (charset `iso-8859-1`, sin cabeceras de WP)
+> antes de que `template_redirect` corra — y parece que el redirect "no funciona"
+> cuando en realidad el plugin nunca se ejecutó. Solución: forzar el flush duro una
+> vez por entorno:
+>
+> ```bash
+> npm run env:run -- cli wp rewrite flush --hard
+> ```
+>
+> Para distinguir un fallo de entorno de uno del plugin, comprobar la respuesta
+> cruda: `curl -sI http://localhost:8888/old-url`. Un **301 con `X-Redirect-By:
+> WordPress`** es el plugin; un **404 de Apache** (sin cabeceras WP) es el rewrite.
+> El motor se puede verificar en aislamiento aunque el rewrite falle:
+> `wp eval` instanciando `Repository::find_active_ruleset()` + `Matcher`.
+
 ---
 
 ## 6. WP-CLI (vía wp-env)
