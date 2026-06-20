@@ -17,6 +17,28 @@ defined( 'ABSPATH' ) || exit;
 <div class="wrap">
 	<h1><?php echo esc_html__( 'OpenSEO Redirects', 'openseo' ); ?></h1>
 
+	<?php
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only status flag.
+	$openseo_msg = isset( $_GET['openseo_msg'] ) ? sanitize_key( wp_unslash( $_GET['openseo_msg'] ) ) : '';
+
+	$openseo_notices = array(
+		'saved'         => array( 'success', __( 'Redirect saved.', 'openseo' ) ),
+		'invalid'       => array( 'error', __( 'Could not save: check the source, target, and type.', 'openseo' ) ),
+		'invalid_regex' => array( 'error', __( 'Could not save: the regex pattern is invalid.', 'openseo' ) ),
+		'delete'        => array( 'success', __( 'Redirect deleted.', 'openseo' ) ),
+		'enable'        => array( 'success', __( 'Redirect enabled.', 'openseo' ) ),
+		'disable'       => array( 'success', __( 'Redirect disabled.', 'openseo' ) ),
+	);
+
+	if ( isset( $openseo_notices[ $openseo_msg ] ) ) {
+		printf(
+			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+			esc_attr( $openseo_notices[ $openseo_msg ][0] ),
+			esc_html( $openseo_notices[ $openseo_msg ][1] )
+		);
+	}
+	?>
+
 	<nav class="nav-tab-wrapper">
 		<a href="<?php echo esc_url( admin_url( 'tools.php?page=openseo-redirects&tab=redirects' ) ); ?>" class="<?php echo esc_attr( 'nav-tab ' . ( 'redirects' === $tab ? 'nav-tab-active' : '' ) ); ?>"><?php echo esc_html__( 'Redirections', 'openseo' ); ?></a>
 		<a href="<?php echo esc_url( admin_url( 'tools.php?page=openseo-redirects&tab=notfound' ) ); ?>" class="<?php echo esc_attr( 'nav-tab ' . ( 'notfound' === $tab ? 'nav-tab-active' : '' ) ); ?>"><?php echo esc_html__( '404 Monitor', 'openseo' ); ?></a>
