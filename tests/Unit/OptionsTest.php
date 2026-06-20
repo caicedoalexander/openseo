@@ -195,6 +195,7 @@ final class OptionsTest extends TestCase {
 		$options = new Options();
 
 		$this->assertSame( '1', $options->get( 'redirects_auto_slug' ) );
+		$this->assertSame( '1', $options->get( 'redirects_track_hits' ) );
 		$this->assertSame( '301', $options->get( 'redirects_default_status' ) );
 		$this->assertSame( '', $options->get( 'notfound_monitor_enabled' ) );
 		$this->assertSame( '30', $options->get( 'notfound_retention_days' ) );
@@ -218,6 +219,9 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( '301', $clean['redirects_default_status'] ); // Off-list resets.
 		$this->assertSame( '1', $clean['notfound_retention_days'] );    // Clamped to minimum 1.
 		$this->assertSame( '1', $clean['notfound_monitor_enabled'] );
+
+		$valid = $options->sanitize( array( 'redirects_default_status' => '307' ) );
+		$this->assertSame( '307', $valid['redirects_default_status'] );
 	}
 }
 

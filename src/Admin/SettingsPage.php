@@ -190,8 +190,8 @@ final class SettingsPage implements Hookable {
 				foreach ( $choices as $value => $choice_label ) {
 					printf(
 						'<option value="%1$s"%2$s>%3$s</option>',
-						esc_attr( $value ),
-						selected( $current, $value, false ),
+						esc_attr( (string) $value ),
+						selected( $current, (string) $value, false ),
 						esc_html( $choice_label )
 					);
 				}
