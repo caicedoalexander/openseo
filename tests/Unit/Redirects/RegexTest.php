@@ -37,4 +37,18 @@ final class RegexTest extends TestCase {
 		$this->assertSame( '/news/42', Regex::substitute( '/news/$1', $matches ) );
 		$this->assertSame( '/news/42', Regex::substitute( '/news/${1}', $matches ) );
 	}
+
+	public function test_delimiter_in_pattern_is_escaped(): void {
+		// A '#' inside the user pattern must be treated as a literal, never as
+		// the delimiter (which would let the user inject flags). So 'foo#i'
+		// matches the literal string "foo#i", not "foo" case-insensitively.
+		$this->assertNull( Regex::match( 'foo#i', 'FOO' ) );
+		$this->assertSame( array( 'foo#i' ), Regex::match( 'foo#i', 'foo#i' ) );
+	}
+
+	public function test_substitute_missing_group_yields_empty_string(): void {
+		$matches = array( '/blog/42', '42' ); // Only groups 0 and 1 exist.
+
+		$this->assertSame( '/news//item', Regex::substitute( '/news/$2/item', $matches ) );
+	}
 }
