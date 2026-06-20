@@ -22,17 +22,6 @@ final class Options {
 	public const OPTION_GROUP = 'openseo';
 
 	/**
-	 * Merged settings memoized for this request, or null until first read.
-	 *
-	 * Writes go through the Settings API (core update_option) or the Activator,
-	 * never through this instance, so there is nothing to invalidate within a
-	 * request.
-	 *
-	 * @var array<string, mixed>|null
-	 */
-	private ?array $cache = null;
-
-	/**
 	 * Default settings used as a base for reads and sanitization.
 	 *
 	 * @return array<string, mixed>
@@ -66,19 +55,13 @@ final class Options {
 	 * @return array<string, mixed>
 	 */
 	public function all(): array {
-		if ( null !== $this->cache ) {
-			return $this->cache;
-		}
-
 		$stored = get_option( self::OPTION_KEY, array() );
 
 		if ( ! is_array( $stored ) ) {
 			$stored = array();
 		}
 
-		$this->cache = array_merge( $this->defaults(), $stored );
-
-		return $this->cache;
+		return array_merge( $this->defaults(), $stored );
 	}
 
 	/**

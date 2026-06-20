@@ -34,9 +34,9 @@ final class Pruner implements Hookable {
 	 * Register WordPress hooks.
 	 */
 	public function register(): void {
-		// Ensure the cron on admin_init, not on every front-end request: the
-		// retention job is housekeeping and never needs the front-end hot path.
-		add_action( 'admin_init', array( $this, 'schedule' ) );
+		// Schedule on init so the daily event exists after boot (self-healing if
+		// the cron entry is ever cleared), independent of admin page loads.
+		add_action( 'init', array( $this, 'schedule' ) );
 		add_action( self::HOOK, array( $this, 'run' ) );
 	}
 
