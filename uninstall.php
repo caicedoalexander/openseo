@@ -22,5 +22,19 @@ if ( is_readable( $openseo_autoloader ) ) {
 }
 
 // Fallback cleanup if the autoloader is unavailable at uninstall time.
+// Mirrors Uninstaller::uninstall() without relying on the Composer autoloader,
+// so plugin data is never left orphaned in the database.
+global $wpdb;
+
+// Table names are built from $wpdb->prefix (not user input); interpolation is safe.
+$openseo_redirects = $wpdb->prefix . 'openseo_redirects';
+$openseo_logs      = $wpdb->prefix . 'openseo_404_logs';
+
+// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
+$wpdb->query( "DROP TABLE IF EXISTS {$openseo_redirects}" );
+$wpdb->query( "DROP TABLE IF EXISTS {$openseo_logs}" );
+// phpcs:enable
+
+delete_option( 'openseo_db_version' );
 delete_option( 'openseo_settings' );
 delete_option( 'openseo_version' );
