@@ -127,6 +127,10 @@ final class RedirectsPage implements Hookable {
 		$action = isset( $_GET['do'] ) ? sanitize_key( wp_unslash( $_GET['do'] ) ) : '';
 		$id     = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
 
+		if ( ! in_array( $action, array( 'enable', 'disable', 'delete' ), true ) ) {
+			wp_die( esc_html__( 'Invalid action.', 'openseo' ) );
+		}
+
 		check_admin_referer( 'openseo_redirect_' . $action . '_' . $id );
 
 		if ( 'delete' === $action ) {
@@ -167,8 +171,9 @@ final class RedirectsPage implements Hookable {
 	 * Redirect back to the manager with a status flag.
 	 *
 	 * @param string $flag Query-string status flag appended to the redirect URL.
+	 * @return never
 	 */
-	private function redirect_back( string $flag ): void {
+	private function redirect_back( string $flag ): never {
 		wp_safe_redirect( add_query_arg( 'openseo_msg', $flag, admin_url( 'tools.php?page=' . self::SLUG ) ) );
 		exit;
 	}

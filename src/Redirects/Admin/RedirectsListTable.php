@@ -125,7 +125,7 @@ final class RedirectsListTable extends WP_List_Table {
 		);
 
 		$source = 1 === (int) $item['is_regex']
-			? esc_html( $item['source_path'] ) . ' <em>(regex)</em>'
+			? esc_html( $item['source_path'] ) . ' <em>' . esc_html__( 'regex', 'openseo' ) . '</em>'
 			: esc_html( $item['source_path'] );
 
 		return $source . $this->row_actions( $actions );

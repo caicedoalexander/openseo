@@ -18,8 +18,8 @@ defined( 'ABSPATH' ) || exit;
 	<h1><?php echo esc_html__( 'OpenSEO Redirects', 'openseo' ); ?></h1>
 
 	<nav class="nav-tab-wrapper">
-		<a href="<?php echo esc_url( admin_url( 'tools.php?page=openseo-redirects&tab=redirects' ) ); ?>" class="nav-tab <?php echo 'redirects' === $tab ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( 'Redirections', 'openseo' ); ?></a>
-		<a href="<?php echo esc_url( admin_url( 'tools.php?page=openseo-redirects&tab=notfound' ) ); ?>" class="nav-tab <?php echo 'notfound' === $tab ? 'nav-tab-active' : ''; ?>"><?php echo esc_html__( '404 Monitor', 'openseo' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'tools.php?page=openseo-redirects&tab=redirects' ) ); ?>" class="<?php echo esc_attr( 'nav-tab ' . ( 'redirects' === $tab ? 'nav-tab-active' : '' ) ); ?>"><?php echo esc_html__( 'Redirections', 'openseo' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'tools.php?page=openseo-redirects&tab=notfound' ) ); ?>" class="<?php echo esc_attr( 'nav-tab ' . ( 'notfound' === $tab ? 'nav-tab-active' : '' ) ); ?>"><?php echo esc_html__( '404 Monitor', 'openseo' ); ?></a>
 	</nav>
 
 	<?php if ( 'redirects' === $tab ) : ?>
