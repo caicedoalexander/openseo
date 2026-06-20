@@ -63,11 +63,16 @@ final class Dispatcher implements Hookable {
 			return;
 		}
 
-		$request_uri = isset( $_SERVER['REQUEST_URI'] )
-			? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) )
+		// REQUEST_URI is used only for matching: resolve() normalizes it
+		// (rawurldecode + slash/query handling) and any emitted target is escaped
+		// at output (esc_url_raw / wp_safe_redirect). sanitize_text_field() would
+		// corrupt valid paths (strip tags, collapse whitespace, decode entities)
+		// without adding safety here, so only unslash.
+		$raw_uri = isset( $_SERVER['REQUEST_URI'] )
+			? wp_unslash( $_SERVER['REQUEST_URI'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- normalized in resolve(); never echoed raw.
 			: '';
 
-		$result = $this->resolve( $request_uri );
+		$result = $this->resolve( is_string( $raw_uri ) ? $raw_uri : '' );
 		if ( null === $result ) {
 			return;
 		}
@@ -101,12 +106,18 @@ final class Dispatcher implements Hookable {
 		$path       = $normalizer->normalize( $request_uri );
 
 		if ( $this->cache->is_degraded() ) {
+			// Exact rules win and are O(1) via an indexed lookup (mirrors the
+			// Matcher: an exact self-loop means "no redirect", not "fall through").
 			$rule = $this->repo->find_active_by_source( $path );
-			if ( null === $rule || $this->matcher->is_self_loop( $rule->target, $path ) ) {
-				return null;
+			if ( null !== $rule ) {
+				return $this->matcher->is_self_loop( $rule->target, $path )
+					? null
+					: new MatchResult( $rule->id, $rule->target, $rule->status );
 			}
 
-			return new MatchResult( $rule->id, $rule->target, $rule->status );
+			// No exact match: regex rules (normally few) are still evaluated so
+			// they are not silently dropped above the threshold.
+			return $this->matcher->match( $this->repo->find_active_regex_ruleset(), $path );
 		}
 
 		return $this->matcher->match( $this->cache->get(), $path );

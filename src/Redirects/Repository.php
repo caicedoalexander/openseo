@@ -41,6 +41,28 @@ final class Repository {
 	}
 
 	/**
+	 * Build a ruleset of the active regex rules only (degraded-path fallback).
+	 *
+	 * Above DEGRADE_THRESHOLD the Dispatcher resolves exact rules with an indexed
+	 * lookup, but regex rules (normally few) still have to be evaluated so they
+	 * are not silently dropped.
+	 */
+	public function find_active_regex_ruleset(): Ruleset {
+		global $wpdb;
+
+		$table = Schema::redirects_table();
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $wpdb->get_results( "SELECT id, source_path, target, status_code, is_regex, enabled FROM {$table} WHERE enabled = 1 AND is_regex = 1", ARRAY_A );
+
+		$ruleset = new Ruleset();
+		foreach ( (array) $rows as $row ) {
+			$ruleset->add( $this->to_redirect( $row ) );
+		}
+
+		return $ruleset;
+	}
+
+	/**
 	 * Find one active exact rule by source path (degraded-path lookup).
 	 *
 	 * @param string $path Normalized source path to look up.
