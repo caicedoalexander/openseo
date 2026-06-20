@@ -66,9 +66,12 @@ final class SlugWatcher implements Hookable {
 	 */
 	public function maybe_create( int $post_id, WP_Post $post_after, WP_Post $post_before ): void {
 		$old = $this->old_paths[ $post_id ] ?? '';
+		unset( $this->old_paths[ $post_id ] );
 		$new = $this->path_of( get_permalink( $post_id ) );
 
-		$decide = $this->should_create(
+		// Require the entry to remain published after the update: a rename that also
+		// unpublishes the post would otherwise point a 301 at a non-public URL.
+		$decide = 'publish' === (string) $post_after->post_status && $this->should_create(
 			$old,
 			$new,
 			(string) $post_before->post_status,
@@ -79,6 +82,14 @@ final class SlugWatcher implements Hookable {
 
 		if ( ! $decide || $this->repo->exists_for_source( $old ) ) {
 			return;
+		}
+
+		// Collapse a rename-back: if a prior rule already routes the *new* path
+		// elsewhere (e.g. an earlier /a → /b when /b is now renamed to /a), delete
+		// it so we never end up with a mutually-pointing /a → /b and /b → /a pair.
+		$reverse = $this->repo->find_active_by_source( $new );
+		if ( null !== $reverse ) {
+			$this->repo->delete( $reverse->id );
 		}
 
 		$this->repo->create(
