@@ -34,7 +34,11 @@ use OpenSEO\Schema\Pieces\Person;
 use OpenSEO\Schema\Pieces\WebPage as WebPagePiece;
 use OpenSEO\Schema\Pieces\WebSite as WebSitePiece;
 use OpenSEO\Settings\Options;
+use OpenSEO\Lifecycle\Schema;
+use OpenSEO\Redirects\Admin\RedirectsPage;
 use OpenSEO\Redirects\Cache as RedirectsCache;
+use OpenSEO\Redirects\Dispatcher;
+use OpenSEO\Redirects\Matcher;
 use OpenSEO\Redirects\Repository as RedirectsRepository;
 use OpenSEO\Redirects\SlugWatcher;
 use OpenSEO\Sitemap\Sitemap;
@@ -91,6 +95,15 @@ final class Plugin {
 		foreach ( $this->modules() as $module ) {
 			$module->register();
 		}
+
+		add_action(
+			'admin_init',
+			static function (): void {
+				if ( Schema::current_version() !== Schema::VERSION ) {
+					Schema::install();
+				}
+			}
+		);
 	}
 
 	/**
@@ -120,6 +133,7 @@ final class Plugin {
 		);
 
 		$modules = array(
+			new Dispatcher( $redirects_cache, new Matcher(), $redirects_repo, $options ),
 			new SlugWatcher( $redirects_repo, $redirects_cache, $options ),
 			new PostMeta(),
 			new Title( $resolver ),
@@ -142,6 +156,7 @@ final class Plugin {
 			$modules[] = new SettingsPage( $options );
 			$modules[] = new AdminAssets();
 			$modules[] = new EditorPanel();
+			$modules[] = new RedirectsPage( $redirects_repo, $redirects_cache, $options );
 		}
 
 		return $modules;

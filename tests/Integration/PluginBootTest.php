@@ -90,4 +90,12 @@ final class PluginBootTest extends WP_UnitTestCase {
 		$this->assertNotFalse( has_filter( 'wp_sitemaps_add_provider' ) );
 		$this->assertNotFalse( has_filter( 'wp_sitemaps_enabled' ) );
 	}
+
+	public function test_dispatcher_registered_at_priority_5(): void {
+		global $wp_filter;
+
+		$this->assertArrayHasKey( 'template_redirect', $wp_filter );
+		$priorities = array_keys( $wp_filter['template_redirect']->callbacks );
+		$this->assertContains( 5, $priorities, 'Dispatcher must run before redirect_canonical@10.' );
+	}
 }
