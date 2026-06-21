@@ -90,10 +90,9 @@ final class NotFoundListTable extends WP_List_Table {
 		$create = add_query_arg(
 			array(
 				'page'   => 'openseo-redirects',
-				'tab'    => 'redirects',
 				'source' => rawurlencode( (string) $item['url'] ),
 			),
-			admin_url( 'tools.php' )
+			admin_url( 'admin.php' )
 		);
 
 		$actions = array(

@@ -11,7 +11,10 @@ namespace OpenSEO;
 
 use OpenSEO\Admin\Assets as AdminAssets;
 use OpenSEO\Admin\Editor\EditorPanel;
-use OpenSEO\Admin\SettingsPage;
+use OpenSEO\Admin\Menu;
+use OpenSEO\NotFound\Admin\NotFoundPage;
+use OpenSEO\Rest\SettingsController;
+use OpenSEO\Settings\BehaviorSettings;
 use OpenSEO\Ai\Abilities;
 use OpenSEO\Breadcrumbs\Block as BreadcrumbsBlock;
 use OpenSEO\Breadcrumbs\Trail;
@@ -158,11 +161,25 @@ final class Plugin {
 			new BreadcrumbsBlock( $options ),
 		);
 
+		$modules[] = new SettingsController( $options );
+
 		if ( is_admin() ) {
-			$modules[] = new SettingsPage( $options );
-			$modules[] = new AdminAssets();
+			$behavior       = new BehaviorSettings( $options );
+			$redirects_page = new RedirectsPage( $redirects_repo, $redirects_cache, $behavior );
+			$notfound_page  = new NotFoundPage( $not_found_log, $options, $behavior );
+
+			$menu = new Menu(
+				array(
+					'openseo-redirects' => array( $redirects_page, 'render' ),
+					'openseo-404s'      => array( $notfound_page, 'render' ),
+				)
+			);
+
+			$modules[] = $menu;
+			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log );
+			$modules[] = $behavior;
 			$modules[] = new EditorPanel();
-			$modules[] = new RedirectsPage( $redirects_repo, $redirects_cache, $options, $not_found_log );
+			$modules[] = $redirects_page;
 		}
 
 		return $modules;

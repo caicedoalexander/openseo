@@ -76,7 +76,7 @@ and the wp-env integration suite.
   registers activation/deactivation hooks at the top level, and boots `Plugin` on
   `plugins_loaded`. No heavy work happens at file-load time.
 - `src/Plugin.php` is a tiny composition root (singleton). `Plugin::modules()` builds the list
-  of modules for the request; admin-only modules (`SettingsPage`, `Admin\Assets`) are gated
+  of modules for the request; admin-only modules (`Menu`, `Admin\Assets`) are gated
   behind `is_admin()`. `boot()` calls `register()` on each, exactly once.
 - Every feature is a class implementing `Contracts\Hookable` (`register(): void`) that wires its
   own WordPress hooks. **To add a feature: create the `Hookable` class under `src/` and add it to
@@ -108,9 +108,16 @@ and the wp-env integration suite.
 - `Frontend/Head/` — `wp_head` output. `HeadPrinter` orchestrates small presenters
   (`Description`, `Robots`, `Canonical`, `OpenGraph`, `Twitter`) and removes core's
   `rel_canonical` to avoid duplicates; `Title` filters `pre_get_document_title`.
-- `Admin/SettingsPage.php` — tabbed Settings API page (General · Titles & Meta · Social).
-  `Admin/Editor/EditorPanel.php` enqueues the Gutenberg SEO document panel (React, reads/writes
-  the meta via `useEntityProp`). `templates/admin/` holds escaped PHP view partials.
+- `Admin/Menu.php` — the single registrar of the **top-level OpenSEO menu** and all
+  submenus (Dashboard · General · Titles & Meta · Social · Sitemaps · Schema ·
+  Redirects · 404s · AI). React pages render `templates/admin/app-page.php` (a
+  `#openseo-app[data-view]` mount + shared `templates/admin/header.php`); the React
+  app lives in `assets/src/admin/` and reads/writes `openseo_settings` via the
+  `Rest/SettingsController` route `openseo/v1/settings` (apiFetch, partial-merge
+  through `Options::sanitize`). `Settings/BehaviorSettings` keeps the redirect/404
+  behavior toggles on the (PHP) Redirects/404 pages via the Settings API. `Admin/Assets`
+  enqueues the chrome CSS on every OpenSEO screen and the React bundle + a
+  `window.openseoAdmin` bootstrap on React screens only.
 - `Schema/` — JSON-LD output. `Graph` (Hookable, `wp_head`) assembles small
   `Piece` objects (`WebSite`, `Organization`/`Person`, `WebPage`, `Article`,
   `BreadcrumbList`) into one connected `@graph` printed as a single
