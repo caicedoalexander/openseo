@@ -30,6 +30,7 @@ use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\TypeTemplates;
+use OpenSEO\Meta\VariableCatalog;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Schema\Graph;
 use OpenSEO\Schema\Pieces\Article;
@@ -176,7 +177,7 @@ final class Plugin {
 			$menu = new Menu();
 
 			$modules[] = $menu;
-			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log, new ContentTypes(), new TemplateDefaults() );
+			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log, new ContentTypes(), new TemplateDefaults(), new VariableCatalog() );
 			$modules[] = new EditorPanel( $options, $type_templates );
 		}
 
