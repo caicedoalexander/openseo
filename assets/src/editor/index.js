@@ -19,8 +19,12 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { buildSnippetPreview } from './preview';
+import { resolveSnippet, deriveExcerpt, formatBreadcrumb } from './preview';
 import { aiErrorMessage } from './ai';
+import { LengthIndicator } from './components/LengthIndicator';
+import { PreviewDevices } from './components/PreviewDevices';
+import { SerpPreview } from './components/SerpPreview';
+import './editor.scss';
 
 function useMeta( key ) {
 	const postType = useSelect(
@@ -194,26 +198,66 @@ function SchemaField() {
 function GeneralTab() {
 	const [ title, setTitle ] = useMeta( '_openseo_title' );
 	const [ description, setDescription ] = useMeta( '_openseo_description' );
+	const [ noindex ] = useMeta( '_openseo_robots_noindex' );
+	const [ device, setDevice ] = useState( 'desktop' );
 
-	const siteName = useSelect(
-		( select ) => select( 'core' ).getSite?.()?.title ?? '',
+	const { postTitle, excerpt, content, permalink } = useSelect(
+		( select ) => {
+			const editor = select( editorStore );
+			return {
+				postTitle: editor.getEditedPostAttribute( 'title' ) || '',
+				excerpt: editor.getEditedPostAttribute( 'excerpt' ) || '',
+				content: editor.getEditedPostContent() || '',
+				permalink: editor.getPermalink() || '',
+			};
+		},
 		[]
 	);
 
-	const preview = buildSnippetPreview( {
-		title,
-		description,
-		separator: '-',
-		siteName,
+	const cfg = window.openseoEditor ?? {};
+	const tokens = {
+		'%title%': postTitle,
+		'%excerpt%': excerpt || deriveExcerpt( content ),
+		'%sitename%': cfg.siteName ?? '',
+		'%tagline%': cfg.tagline ?? '',
+		'%sep%': cfg.separator ?? '-',
+		'%currentyear%': String( new Date().getUTCFullYear() ),
+	};
+
+	const resolvedTitle = resolveSnippet( {
+		override: title,
+		template: cfg.titleTemplate ?? '',
+		tokens,
 	} );
+	const resolvedDescription = resolveSnippet( {
+		override: description,
+		template: cfg.descriptionTemplate ?? '',
+		tokens,
+	} );
+	const breadcrumb = formatBreadcrumb( permalink || cfg.siteUrl || '' );
 
 	return (
 		<>
+			<PreviewDevices device={ device } onChange={ setDevice } />
+			<SerpPreview
+				title={ resolvedTitle }
+				description={ resolvedDescription }
+				url={ breadcrumb }
+				favicon={ cfg.siteIcon ?? '' }
+				device={ device }
+				isNoindex={ noindex === '1' }
+			/>
+
 			<TextControl
 				label={ __( 'SEO title', 'openseo' ) }
 				value={ title }
 				onChange={ setTitle }
-				help={ `${ title.length } / 60` }
+			/>
+			<LengthIndicator
+				value={ title }
+				min={ 30 }
+				max={ 60 }
+				hardMax={ 70 }
 			/>
 			<GenerateButton
 				abilityName="openseo/generate-title"
@@ -224,31 +268,18 @@ function GeneralTab() {
 				label={ __( 'Meta description', 'openseo' ) }
 				value={ description }
 				onChange={ setDescription }
-				help={ `${ description.length } / 160` }
+			/>
+			<LengthIndicator
+				value={ description }
+				min={ 120 }
+				max={ 160 }
+				hardMax={ 180 }
 			/>
 			<GenerateButton
 				abilityName="openseo/generate-meta-description"
 				field="meta_description"
 				onResult={ setDescription }
 			/>
-			{ ( preview.title || preview.description ) && (
-				<div
-					style={ {
-						marginTop: '8px',
-						padding: '8px',
-						background: '#f6f7f7',
-						borderLeft: '3px solid #007cba',
-						fontSize: '12px',
-					} }
-				>
-					<strong style={ { display: 'block', color: '#1a0dab' } }>
-						{ preview.title }
-					</strong>
-					<span style={ { color: '#545454' } }>
-						{ preview.description }
-					</span>
-				</div>
-			) }
 		</>
 	);
 }

@@ -1,31 +1,3 @@
-const MAX_DESCRIPTION = 160;
-
-/**
- * @param {Object} input
- * @param {string} input.title
- * @param {string} input.description
- * @param {string} input.separator
- * @param {string} input.siteName
- * @return {{ title: string, description: string }} Formatted snippet preview with full title and truncated description.
- */
-export function buildSnippetPreview( {
-	title,
-	description,
-	separator,
-	siteName,
-} ) {
-	const fullTitle = title
-		? `${ title } ${ separator } ${ siteName }`
-		: siteName;
-
-	const trimmed =
-		description.length > MAX_DESCRIPTION
-			? `${ description.slice( 0, MAX_DESCRIPTION ) }…`
-			: description;
-
-	return { title: fullTitle, description: trimmed };
-}
-
 /**
  * Pure helpers for the editor SERP preview. expandTokens mirrors
  * Variables::replace (PHP): substitute tokens, collapse whitespace, then strip
@@ -81,7 +53,7 @@ export function truncate( text, max ) {
  * get_the_excerpt): strip block comments and tags, collapse whitespace.
  *
  * @param {string} content
- * @return {string}
+ * @return {string} Plain text excerpt with HTML and block comments stripped.
  */
 export function deriveExcerpt( content ) {
 	return content
@@ -95,10 +67,12 @@ export function deriveExcerpt( content ) {
  * Format a URL as a Google-style breadcrumb (host › segment › segment).
  *
  * @param {string} url
- * @return {string}
+ * @return {string} Breadcrumb-style path string (e.g. "example.com › slug").
  */
 export function formatBreadcrumb( url ) {
-	const noProtocol = String( url ).replace( /^[a-z]+:\/\//i, '' ).replace( /\/+$/, '' );
+	const noProtocol = String( url )
+		.replace( /^[a-z]+:\/\//i, '' )
+		.replace( /\/+$/, '' );
 	const parts = noProtocol.split( '/' ).filter( Boolean );
 	return parts.join( ' › ' );
 }

@@ -23,38 +23,53 @@ describe( 'expandTokens', () => {
 	} );
 
 	it( 'strips a dangling separator left by an empty token', () => {
-		expect( expandTokens( '%title% %sep%', { ...tokens, '%title%': '' } ) ).toBe(
-			''
-		);
+		expect(
+			expandTokens( '%title% %sep%', { ...tokens, '%title%': '' } )
+		).toBe( '' );
 	} );
 
 	it( 'collapses whitespace from empty tokens mid-template', () => {
 		expect(
-			expandTokens( '%title% %sep% %sitename%', { ...tokens, '%title%': '' } )
+			expandTokens( '%title% %sep% %sitename%', {
+				...tokens,
+				'%title%': '',
+			} )
 		).toBe( 'My Site' );
 	} );
 
 	it( 'treats a multi-character separator as a whole string', () => {
 		const multi = { ...tokens, '%sep%': '—', '%title%': '' };
-		expect( expandTokens( '%title% %sep% %sitename%', multi ) ).toBe( 'My Site' );
+		expect( expandTokens( '%title% %sep% %sitename%', multi ) ).toBe(
+			'My Site'
+		);
 	} );
 
 	it( 'escapes regex metacharacters in the separator', () => {
 		const meta = { ...tokens, '%sep%': '|', '%title%': '' };
-		expect( expandTokens( '%title% %sep% %sitename%', meta ) ).toBe( 'My Site' );
+		expect( expandTokens( '%title% %sep% %sitename%', meta ) ).toBe(
+			'My Site'
+		);
 	} );
 } );
 
 describe( 'resolveSnippet', () => {
 	it( 'uses the override when present', () => {
 		expect(
-			resolveSnippet( { override: 'Manual', template: '%title%', tokens } )
+			resolveSnippet( {
+				override: 'Manual',
+				template: '%title%',
+				tokens,
+			} )
 		).toBe( 'Manual' );
 	} );
 
 	it( 'expands the template when there is no override', () => {
 		expect(
-			resolveSnippet( { override: '', template: '%title% %sep% %sitename%', tokens } )
+			resolveSnippet( {
+				override: '',
+				template: '%title% %sep% %sitename%',
+				tokens,
+			} )
 		).toBe( 'Hello - My Site' );
 	} );
 } );
@@ -85,6 +100,8 @@ describe( 'formatBreadcrumb', () => {
 	} );
 
 	it( 'shows just the host for a root URL', () => {
-		expect( formatBreadcrumb( 'https://example.com/' ) ).toBe( 'example.com' );
+		expect( formatBreadcrumb( 'https://example.com/' ) ).toBe(
+			'example.com'
+		);
 	} );
 } );
