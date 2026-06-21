@@ -9,14 +9,13 @@ import {
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
-const PER_PAGE = 20;
-
 export function DataTable( {
 	columns,
 	items,
 	total,
 	page,
 	loading,
+	perPage = 20,
 	searchable = false,
 	search = '',
 	onSearch,
@@ -28,7 +27,7 @@ export function DataTable( {
 	bulkActions = [],
 	emptyLabel = __( 'Nothing here yet.', 'openseo' ),
 } ) {
-	const totalPages = Math.max( 1, Math.ceil( total / PER_PAGE ) );
+	const totalPages = Math.max( 1, Math.ceil( total / perPage ) );
 	const allChecked = items.length > 0 && selected.length === items.length;
 
 	const toggleAll = ( on ) =>
