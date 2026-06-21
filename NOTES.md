@@ -230,6 +230,25 @@ propia URL (`admin.php?page=openseo-*`); cambiar un campo en *General* y Guardar
 recargar y confirmar persistencia; *404s* muestra el toggle del monitor arriba y el
 log abajo.
 
+### Redirec./404 a React + REST (Fase 7): qué cubre y cómo probar
+
+Redirecciones y 404 pasaron de `WP_List_Table` (PHP) + `admin-post` CRUD + toggles Settings API a
+**vistas React** sobre REST: `Rest\RedirectsController` (`openseo/v1/redirects`: GET/POST,
+PUT/DELETE `/<id>`, POST `/bulk`) y `Rest\NotFoundController` (`openseo/v1/notfound`). La validación
+(normalización/regex/target/whitelist/anti-bucle) vive en `Redirects\RuleValidator` sobre la interfaz
+`Redirects\RedirectLookup` (testeable; `Repository` la implementa). La UI es un `DataTable` propio
+(`assets/src/admin/components/DataTable.js`) con CRUD completo, edición en `Modal` y acciones masivas.
+Los 5 toggles migraron a las vistas React (vía `openseo/v1/settings`); `Settings\BehaviorSettings` y
+las páginas/tablas PHP se eliminaron. El motor (Dispatcher/Monitor/Pruner/SlugWatcher/Repository/
+Cache) no cambió.
+
+CI ejercita: `RuleValidatorTest` (unit), `RedirectsRestTest`/`NotFoundRestTest` (integración:
+CRUD, bulk, búsqueda, anti-bucle 400, permisos 401), y el reducer JS `listReducer`.
+
+Smoke test manual: *OpenSEO → Redirecciones* → "Add redirect" → crear `/old → /new` (301) → Guardar;
+editar, desactivar y borrar; seleccionar varias y borrar en masa. *OpenSEO → 404s* → activar el
+monitor, visitar una URL inexistente, "Create redirect" desde la fila, y "Clear log".
+
 ---
 
 ## 6. WP-CLI (vía wp-env)

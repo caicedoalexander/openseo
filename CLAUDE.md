@@ -76,8 +76,9 @@ and the wp-env integration suite.
   registers activation/deactivation hooks at the top level, and boots `Plugin` on
   `plugins_loaded`. No heavy work happens at file-load time.
 - `src/Plugin.php` is a tiny composition root (singleton). `Plugin::modules()` builds the list
-  of modules for the request; admin-only modules (`Menu`, `Admin\Assets`) are gated
-  behind `is_admin()`. `boot()` calls `register()` on each, exactly once.
+  of modules for the request; `Rest\RedirectsController` and `Rest\NotFoundController` are
+  always-on (registered outside `is_admin()`); admin-only modules (`Menu`, `Admin\Assets`,
+  `EditorPanel`) are gated behind `is_admin()`. `boot()` calls `register()` on each, exactly once.
 - Every feature is a class implementing `Contracts\Hookable` (`register(): void`) that wires its
   own WordPress hooks. **To add a feature: create the `Hookable` class under `src/` and add it to
   `Plugin::modules()`** — nothing else discovers modules.
@@ -109,15 +110,20 @@ and the wp-env integration suite.
   (`Description`, `Robots`, `Canonical`, `OpenGraph`, `Twitter`) and removes core's
   `rel_canonical` to avoid duplicates; `Title` filters `pre_get_document_title`.
 - `Admin/Menu.php` — the single registrar of the **top-level OpenSEO menu** and all
-  submenus (Dashboard · General · Titles & Meta · Social · Sitemaps · Schema ·
-  Redirects · 404s · AI). React pages render `templates/admin/app-page.php` (a
-  `#openseo-app[data-view]` mount + shared `templates/admin/header.php`); the React
-  app lives in `assets/src/admin/` and reads/writes `openseo_settings` via the
-  `Rest/SettingsController` route `openseo/v1/settings` (apiFetch, partial-merge
-  through `Options::sanitize`). `Settings/BehaviorSettings` keeps the redirect/404
-  behavior toggles on the (PHP) Redirects/404 pages via the Settings API. `Admin/Assets`
-  enqueues the chrome CSS on every OpenSEO screen and the React bundle + a
-  `window.openseoAdmin` bootstrap on React screens only.
+  9 submenus (Dashboard · General · Titles & Meta · Social · Sitemaps · Schema ·
+  Redirects · 404s · AI). All submenus are React — every screen renders
+  `templates/admin/app-page.php` (a `#openseo-app[data-view]` mount + shared
+  `templates/admin/header.php`); the React app lives in `assets/src/admin/` and
+  reads/writes `openseo_settings` via the `Rest/SettingsController` route
+  `openseo/v1/settings` (apiFetch, partial-merge through `Options::sanitize`).
+  `Redirects/404` are now React views too: `Rest/RedirectsController`
+  (`openseo/v1/redirects`, CRUD + bulk, validating through `Redirects/RuleValidator`
+  over the `Redirects/RedirectLookup` interface) and `Rest/NotFoundController`
+  (`openseo/v1/notfound`) back the `DataTable`-based `views/Redirects.js` /
+  `views/NotFound.js`; the behavior toggles save via `openseo/v1/settings`.
+  The tabbed Settings API surface is fully retired (no `BehaviorSettings`, no
+  `WP_List_Table`). `Admin/Assets` enqueues the CSS + React bundle +
+  `window.openseoAdmin` bootstrap on every OpenSEO screen.
 - `Schema/` — JSON-LD output. `Graph` (Hookable, `wp_head`) assembles small
   `Piece` objects (`WebSite`, `Organization`/`Person`, `WebPage`, `Article`,
   `BreadcrumbList`) into one connected `@graph` printed as a single
@@ -139,21 +145,24 @@ and the wp-env integration suite.
   `shutdown`). Pure, WP-free units: `Normalizer` (request path), `Regex`
   (plugin-controlled delimiter), `Ruleset` (exact O(1) map + ordered regex list),
   `Matcher` (exact-wins-then-regex, `$1` substitution, anti-loop). `Repository`
-  (all `$wpdb` SQL for `{prefix}openseo_redirects`). `Cache` (ruleset in object
-  cache → transient fallback; dual-store invalidation; cached active-count avoids
-  per-request COUNT; degrades to indexed lookups above threshold). `SlugWatcher`
-  (auto-301 on permalink change via `pre_post_update`+`post_updated`; on by default
-  for all public CPTs). Admin surface under Tools → OpenSEO Redirects
-  (`Admin/RedirectsListTable` + `Admin/RedirectsPage`, `WP_List_Table`, nonce +
-  capability CRUD). New `openseo_settings` keys: `redirects_auto_slug`,
-  `redirects_default_status`, `redirects_track_hits`. New "Redirects" tab in
-  Settings → OpenSEO.
+  (all `$wpdb` SQL for `{prefix}openseo_redirects`; implements `RedirectLookup`).
+  `Cache` (ruleset in object cache → transient fallback; dual-store invalidation;
+  cached active-count avoids per-request COUNT; degrades to indexed lookups above
+  threshold). `SlugWatcher` (auto-301 on permalink change via
+  `pre_post_update`+`post_updated`; on by default for all public CPTs).
+  `RuleValidator` (normalisation/regex/target/whitelist/anti-loop validation over
+  the `RedirectLookup` interface). Admin surface: React `views/Redirects.js` backed
+  by `Rest/RedirectsController` (`openseo/v1/redirects`: GET/POST, PUT/DELETE
+  `/<id>`, POST `/bulk`; always-on, registered outside `is_admin()`). `openseo_settings`
+  keys: `redirects_auto_slug`, `redirects_default_status`, `redirects_track_hits`.
 - `NotFound/` — 404 monitor (opt-in via `notfound_monitor_enabled`). `Monitor`
   (Hookable, `template_redirect` priority **99**; aggregated logging). `LogRepository`
   (aggregated `INSERT … ON DUPLICATE KEY UPDATE` upsert keyed by `url_hash`; UTC
   datetimes; no IP stored — the plugin's only raw SQL). `Pruner` (daily
   `openseo_404_prune` cron; retention via `notfound_retention_days`, default 30).
-  `Admin/NotFoundListTable` lists hits with a "create redirect from 404" link. New
+  Admin surface: React `views/NotFound.js` backed by `Rest/NotFoundController`
+  (`openseo/v1/notfound`: GET list, DELETE one, DELETE all; always-on, registered
+  outside `is_admin()`). "Create redirect from 404" links into the Redirects view.
   `openseo_settings` keys: `notfound_monitor_enabled`, `notfound_retention_days`.
 - `Lifecycle/Schema.php` — creates the plugin's **first custom tables**
   (`openseo_redirects`, `openseo_404_logs`) via `dbDelta()` behind an

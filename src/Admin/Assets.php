@@ -16,9 +16,9 @@ use OpenSEO\Redirects\Repository;
 use OpenSEO\Settings\Options;
 
 /**
- * Enqueues the shared chrome CSS on every OpenSEO screen and the React app
- * (plus the window.openseoAdmin bootstrap) on React screens only. Screen
- * targeting uses the hook suffixes Menu captured at registration.
+ * Enqueues the CSS + React app + window.openseoAdmin bootstrap on every
+ * OpenSEO admin screen. Screen targeting uses the hook suffixes Menu
+ * captured at registration; all screens are React.
  */
 final class Assets implements Hookable {
 
@@ -48,7 +48,7 @@ final class Assets implements Hookable {
 	}
 
 	/**
-	 * Enqueue CSS on all OpenSEO screens, JS + bootstrap on React screens.
+	 * Enqueue CSS + JS + bootstrap on all OpenSEO screens (all screens are React).
 	 *
 	 * @param string $hook_suffix Current admin screen hook suffix.
 	 */
@@ -74,11 +74,6 @@ final class Assets implements Hookable {
 				array(),
 				$version
 			);
-		}
-
-		// PHP screens (Redirects/404) get the chrome CSS only.
-		if ( ! in_array( $hook_suffix, $this->menu->react_screen_hooks(), true ) ) {
-			return;
 		}
 
 		wp_enqueue_script(

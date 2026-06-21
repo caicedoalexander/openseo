@@ -26,6 +26,7 @@
     },
     "devDependencies": {
         "@wordpress/env": "^10.10.0",
-        "@wordpress/scripts": "^30.0.0"
+        "@wordpress/scripts": "^30.0.0",
+        "@wordpress/url": "^4.48.1"
     }
 }

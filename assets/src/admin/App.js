@@ -5,6 +5,8 @@ import { Social } from './views/Social';
 import { Sitemaps } from './views/Sitemaps';
 import { Schema } from './views/Schema';
 import { Ai } from './views/Ai';
+import { Redirects } from './views/Redirects';
+import { NotFound } from './views/NotFound';
 
 const VIEWS = {
 	dashboard: Dashboard,
@@ -13,6 +15,8 @@ const VIEWS = {
 	social: Social,
 	sitemaps: Sitemaps,
 	schema: Schema,
+	redirects: Redirects,
+	notfound: NotFound,
 	ai: Ai,
 };
 

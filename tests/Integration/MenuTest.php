@@ -1,6 +1,6 @@
 <?php
 /**
- * Integration tests for the OpenSEO top-level admin menu.
+ * Integration tests for the OpenSEO top-level admin menu (all-React).
  *
  * @package OpenSEO
  */
@@ -20,19 +20,10 @@ final class MenuTest extends WP_UnitTestCase {
 		set_current_screen( 'dashboard' );
 	}
 
-	private function build(): Menu {
-		return new Menu(
-			array(
-				'openseo-redirects' => '__return_true',
-				'openseo-404s'      => '__return_true',
-			)
-		);
-	}
-
 	public function test_registers_parent_and_all_submenus(): void {
 		global $submenu;
 
-		$this->build()->add_menu();
+		( new Menu() )->add_menu();
 
 		$this->assertArrayHasKey( Menu::PARENT_SLUG, $submenu );
 		$slugs = wp_list_pluck( $submenu[ Menu::PARENT_SLUG ], 2 );
@@ -54,28 +45,18 @@ final class MenuTest extends WP_UnitTestCase {
 		}
 	}
 
-	public function test_php_pages_are_excluded_from_react_hooks(): void {
-		$menu = $this->build();
+	public function test_all_screens_are_react(): void {
+		$menu = new Menu();
 		$menu->add_menu();
 
-		$this->assertNotEmpty( $menu->react_screen_hooks() );
-		// Every screen has a hook; the two PHP pages are not React hooks.
-		$this->assertGreaterThan(
-			count( $menu->react_screen_hooks() ),
-			count( $menu->screen_hooks() )
-		);
+		// Every OpenSEO screen now mounts the React app.
+		$this->assertSame( $menu->screen_hooks(), $menu->react_screen_hooks() );
 	}
 
 	public function test_dashboard_hook_is_the_top_level_hook(): void {
-		$menu = $this->build();
+		$menu = new Menu();
 		$menu->add_menu();
 
-		// Asset gating + the dashboard counters bootstrap depend on this exact value.
 		$this->assertSame( 'toplevel_page_openseo', $menu->dashboard_hook() );
-		// The Dashboard submenu reuses the parent slug, so it is not double-counted.
-		$this->assertSame(
-			1,
-			count( array_keys( $menu->react_screen_hooks(), 'toplevel_page_openseo', true ) )
-		);
 	}
 }
