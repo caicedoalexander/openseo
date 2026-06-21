@@ -24,13 +24,13 @@ final class TemplateContextTest extends TestCase {
 	public function test_for_post_reads_primitives(): void {
 		Functions\when( 'get_the_title' )->justReturn( 'Hello World' );
 		Functions\when( 'get_the_excerpt' )->justReturn( '<p>Summary.</p>' );
-		Functions\when( 'wp_strip_all_tags' )->returnArg();
+		Functions\when( 'wp_strip_all_tags' )->alias( static fn( $s ) => strip_tags( $s ) );
 
 		$ctx = TemplateContext::for_post( 42 );
 
 		$this->assertSame( 42, $ctx->post_id );
 		$this->assertSame( 'Hello World', $ctx->title );
-		$this->assertSame( '<p>Summary.</p>', $ctx->excerpt );
+		$this->assertSame( 'Summary.', $ctx->excerpt );
 		$this->assertSame( '', $ctx->term_name );
 	}
 
@@ -55,5 +55,7 @@ final class TemplateContextTest extends TestCase {
 		$this->assertSame( 0, $ctx->post_id );
 		$this->assertSame( '', $ctx->title );
 		$this->assertSame( '', $ctx->term_name );
+		$this->assertSame( '', $ctx->excerpt );
+		$this->assertSame( '', $ctx->term_description );
 	}
 }
