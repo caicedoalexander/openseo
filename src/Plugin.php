@@ -177,7 +177,7 @@ final class Plugin {
 
 			$modules[] = $menu;
 			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log, new ContentTypes(), new TemplateDefaults() );
-			$modules[] = new EditorPanel();
+			$modules[] = new EditorPanel( $options, $type_templates );
 		}
 
 		return $modules;
