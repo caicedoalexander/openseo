@@ -15,7 +15,11 @@ export function Dashboard() {
 					) : (
 						<>
 							{ __( 'Not configured.', 'openseo' ) }{ ' ' }
-							<a href={ c.url }>{ __( 'Connect', 'openseo' ) }</a>
+							{ c.url && (
+								<a href={ c.url }>
+									{ __( 'Connect', 'openseo' ) }
+								</a>
+							) }
 						</>
 					) }
 				</CardBody>

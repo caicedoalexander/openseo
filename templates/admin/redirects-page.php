@@ -4,9 +4,10 @@
  *
  * @package OpenSEO
  *
- * @var \OpenSEO\Redirects\Repository      $openseo_repo     Injected by the page controller.
- * @var string                             $prefill          Pre-filled source path.
- * @var \OpenSEO\Settings\BehaviorSettings $openseo_behavior Renders the toggle form.
+ * @var \OpenSEO\Redirects\Repository             $openseo_repo     Injected by the page controller.
+ * @var string                                    $prefill          Pre-filled source path.
+ * @var \OpenSEO\Settings\BehaviorSettings        $openseo_behavior Renders the toggle form.
+ * @var \OpenSEO\Redirects\Admin\RedirectsListTable $openseo_table  Prepared list table.
  */
 
 declare( strict_types=1 );
@@ -74,10 +75,6 @@ defined( 'ABSPATH' ) || exit;
 		<?php submit_button( __( 'Save redirect', 'openseo' ) ); ?>
 	</form>
 
-	<?php
-	$openseo_table = new \OpenSEO\Redirects\Admin\RedirectsListTable( $openseo_repo );
-	$openseo_table->prepare_items();
-	?>
 	<form method="get">
 		<input type="hidden" name="page" value="openseo-redirects" />
 		<?php

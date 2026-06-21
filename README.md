@@ -18,16 +18,22 @@ openseo/
 │   ├── Contracts/
 │   │   └── Hookable.php     # register(): void
 │   ├── Settings/
-│   │   └── Options.php      # Typed read/write + sanitize of the single option
+│   │   ├── Options.php          # Typed read/write + sanitize of the single option
+│   │   └── BehaviorSettings.php # Redirect/404 toggles (Settings API registration)
 │   ├── Meta/
 │   │   ├── PostMeta.php     # Registers per-entry _openseo_* meta (REST + auth)
 │   │   ├── Resolver.php     # Effective SEO cascade: override -> template -> fallback
 │   │   └── Variables.php    # Title/description tokens (%title%, %sep%, %sitename%, ...)
 │   ├── Admin/
-│   │   ├── SettingsPage.php # Tabbed Settings API page (capability + nonce)
+│   │   ├── Menu.php         # Top-level menu + submenus (Settings, Redirects, 404s)
 │   │   ├── Assets.php       # Enqueues compiled admin bundle
 │   │   └── Editor/
 │   │       └── EditorPanel.php # Enqueues the Gutenberg SEO document panel
+│   ├── Rest/
+│   │   └── SettingsController.php # GET/POST openseo/v1/settings (manage_options)
+│   ├── NotFound/
+│   │   └── Admin/
+│   │       └── NotFoundPage.php # 404 log list table page (Tools → OpenSEO 404s)
 │   ├── Frontend/
 │   │   └── Head/            # wp_head output, one presenter per concern:
 │   │       ├── HeadPrinter.php  # Orchestrates presenters; drops core rel_canonical
@@ -43,7 +49,9 @@ openseo/
 │       └── Uninstaller.php
 ├── templates/admin/         # PHP view partials (escaped output)
 ├── assets/
-│   ├── src/                 # JS/SCSS source (built with @wordpress/scripts)
+│   ├── src/
+│   │   ├── admin/           # React settings app (views/ per tab, components/, hooks/)
+│   │   └── editor/          # Gutenberg panel source
 │   └── build/               # Compiled output (git-ignored, shipped in release)
 ├── tests/
 │   ├── Unit/                # Brain Monkey, no WordPress

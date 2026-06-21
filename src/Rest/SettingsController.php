@@ -89,8 +89,9 @@ final class SettingsController implements Hookable {
 		// so slash first to keep wp_unslash() a no-op and preserve literal backslashes.
 		$clean = $this->options->sanitize( wp_slash( is_array( $input ) ? $input : array() ) );
 
-		update_option( Options::OPTION_KEY, $clean );
+		$saved  = update_option( Options::OPTION_KEY, $clean );
+		$status = ( false !== $saved || get_option( Options::OPTION_KEY ) === $clean ) ? 200 : 500;
 
-		return new WP_REST_Response( $this->options->all(), 200 );
+		return new WP_REST_Response( $this->options->all(), $status );
 	}
 }

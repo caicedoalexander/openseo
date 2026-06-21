@@ -27,9 +27,14 @@ export function Ai() {
 									'No AI connector is configured.',
 									'openseo'
 								) }{ ' ' }
-								<a href={ connector.url }>
-									{ __( 'Settings → Connectors', 'openseo' ) }
-								</a>
+								{ connector.url && (
+									<a href={ connector.url }>
+										{ __(
+											'Settings → Connectors',
+											'openseo'
+										) }
+									</a>
+								) }
 							</>
 						) }
 					</Notice>

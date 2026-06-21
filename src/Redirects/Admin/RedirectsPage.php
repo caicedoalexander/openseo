@@ -148,6 +148,9 @@ final class RedirectsPage implements Hookable {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- GET prefill only; the save POST is nonce-protected.
 		$prefill = isset( $_GET['source'] ) ? ( new Normalizer() )->normalize( sanitize_text_field( wp_unslash( $_GET['source'] ) ) ) : '';
 
+		$openseo_table = new RedirectsListTable( $this->repo );
+		$openseo_table->prepare_items();
+
 		$openseo_repo     = $this->repo;
 		$openseo_behavior = $this->behavior;
 

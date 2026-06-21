@@ -31,6 +31,7 @@ final class BehaviorSettingsTest extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'redirects_auto_slug', $redirects );
 		$this->assertArrayHasKey( 'redirects_default_status', $redirects );
+		$this->assertArrayHasKey( 'redirects_track_hits', $redirects );
 		$this->assertArrayHasKey( 'notfound_monitor_enabled', $notfound );
 		$this->assertArrayHasKey( 'notfound_retention_days', $notfound );
 	}
