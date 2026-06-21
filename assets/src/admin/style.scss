@@ -1,11 +1,37 @@
-/**
- * OpenSEO admin settings styles.
- */
+.openseo-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 16px 0;
+	margin-bottom: 16px;
+	border-bottom: 1px solid #dcdcde;
 
-.openseo-settings {
-	max-width: 720px;
-
-	.form-table textarea {
-		font-family: var(--wp-admin-theme-font-family, inherit);
+	&__logo {
+		color: #2271b1;
 	}
+
+	&__title {
+		font-size: 18px;
+		font-weight: 600;
+	}
+
+	&__version {
+		color: #646970;
+		font-size: 12px;
+	}
+}
+
+.openseo-panel {
+	max-width: 720px;
+}
+
+.openseo-savebar {
+	margin-top: 16px;
+}
+
+.openseo-dashboard {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 16px;
+	max-width: 960px;
 }

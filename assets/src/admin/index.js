@@ -1,17 +1,17 @@
 /**
- * OpenSEO admin settings entry point.
- *
- * Loaded only on the OpenSEO settings screen. @wordpress/scripts externalizes
- * the @wordpress/* imports to the global `wp` object and records them as script
- * dependencies in the generated admin-settings.asset.php.
+ * OpenSEO admin app entry. Mounts the React view named by the server-set
+ * #openseo-app[data-view] node on each OpenSEO settings screen.
  */
 import domReady from '@wordpress/dom-ready';
+import { createRoot } from '@wordpress/element';
+import { App } from './App';
 
 import './style.scss';
 
 domReady( () => {
-	// Progressive enhancement for the settings screen will live here
-	// (e.g. an "Generate with AI" button wired to the Abilities REST route).
-	// eslint-disable-next-line no-console
-	console.debug( 'OpenSEO admin assets loaded.' );
+	const el = document.getElementById( 'openseo-app' );
+	if ( ! el ) {
+		return;
+	}
+	createRoot( el ).render( <App view={ el.dataset.view || 'dashboard' } /> );
 } );
