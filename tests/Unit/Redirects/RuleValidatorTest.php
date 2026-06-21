@@ -146,4 +146,22 @@ final class RuleValidatorTest extends TestCase {
 
 		$this->assertIsArray( $result );
 	}
+
+	public function test_editing_a_different_row_still_detects_cycle(): void {
+		// Blocking active rule is row 99 (/new -> /old). Editing row 7 to add
+		// /old -> /new still closes the loop, so the exclusion guard (id === id)
+		// must NOT suppress it.
+		$back   = new Redirect( 99, '/new', '/old', 301, false, true );
+		$result = $this->validator( $back )->validate(
+			array(
+				'source_path' => '/old',
+				'target'      => '/new',
+				'status_code' => 301,
+			),
+			7
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'openseo_cycle', $result->get_error_code() );
+	}
 }
