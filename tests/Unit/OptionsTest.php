@@ -323,6 +323,22 @@ final class OptionsTest extends TestCase {
 
 		$this->assertSame( 'Cat', $clean['taxonomies']['category']['title'] );
 	}
+
+	public function test_sanitize_per_field_merge_keeps_unsent_field(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'post' => array( 'title' => 'Stored T', 'description' => 'Stored D' ) ) )
+		);
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		// Input submits only 'title' for 'post' — 'description' is absent from the field set.
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'post' => array( 'title' => 'New T' ) ) )
+		);
+
+		$this->assertSame( 'New T', $clean['post_types']['post']['title'] );
+		$this->assertSame( 'Stored D', $clean['post_types']['post']['description'] );
+	}
 }
 
 
