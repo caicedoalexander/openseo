@@ -122,8 +122,8 @@ final class Plugin {
 	 * @return array<int, Hookable>
 	 */
 	private function modules(): array {
-		$options   = new Options();
-		$variables = new Variables( $options );
+		$options        = new Options();
+		$variables      = new Variables( $options );
 		$defaults       = new TemplateDefaults();
 		$type_templates = new TypeTemplates( $options, $defaults );
 		$resolver       = new Resolver( $options, $variables, $defaults, $type_templates );

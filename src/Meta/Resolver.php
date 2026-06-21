@@ -24,11 +24,12 @@ use WP_Term;
 final class Resolver {
 
 	/**
-	 * Initializes the Resolver with settings, template variable replacer, and template defaults.
+	 * Initializes the Resolver with settings, variables, defaults, and per-type templates.
 	 *
-	 * @param Options          $options   Settings accessor.
-	 * @param Variables        $variables Template variable replacer.
-	 * @param TemplateDefaults $defaults  Default templates for each content surface.
+	 * @param Options          $options        Settings accessor.
+	 * @param Variables        $variables      Template variable replacer.
+	 * @param TemplateDefaults $defaults       Default templates for each content surface.
+	 * @param TypeTemplates    $type_templates Effective per-type singular templates.
 	 */
 	public function __construct(
 		private readonly Options $options,
