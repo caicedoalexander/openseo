@@ -11,7 +11,6 @@ namespace OpenSEO\Tests\Integration;
 
 use OpenSEO\Lifecycle\Schema;
 use OpenSEO\NotFound\LogRepository;
-use OpenSEO\Rest\NotFoundController;
 use WP_REST_Request;
 use WP_UnitTestCase;
 
@@ -22,9 +21,7 @@ final class NotFoundRestTest extends WP_UnitTestCase {
 	public function set_up(): void {
 		parent::set_up();
 		Schema::install();
-		$this->log  = new LogRepository();
-		$controller = new NotFoundController( $this->log );
-		add_action( 'rest_api_init', array( $controller, 'register_routes' ) );
+		$this->log = new LogRepository();
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 	}
 

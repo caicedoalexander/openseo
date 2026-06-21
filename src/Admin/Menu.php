@@ -14,8 +14,8 @@ use OpenSEO\Contracts\Hookable;
 /**
  * Registers the top-level menu and every submenu in one ordered pass, so the
  * order is deterministic (add_submenu_page $position is unreliable across
- * separately-hooked classes). React pages render a mount node; PHP pages
- * (Redirects/404) render via callbacks injected by the composition root.
+ * separately-hooked classes). All 9 submenus are React — every screen mounts
+ * the React app via render_view().
  */
 final class Menu implements Hookable {
 
@@ -26,7 +26,7 @@ final class Menu implements Hookable {
 	private const ICON = 'dashicons-search';
 
 	/**
-	 * All OpenSEO screen hook suffixes (React + PHP).
+	 * All OpenSEO screen hook suffixes.
 	 *
 	 * @var array<int, string>
 	 */
@@ -48,10 +48,8 @@ final class Menu implements Hookable {
 
 	/**
 	 * Constructor.
-	 *
-	 * @param array<string, callable> $php_pages Map of submenu slug => render callback.
 	 */
-	public function __construct( private readonly array $php_pages = array() ) {}
+	public function __construct() {}
 
 	/**
 	 * Register the admin_menu hook.
@@ -79,23 +77,18 @@ final class Menu implements Hookable {
 		$this->track( $this->dashboard_hook, true );
 
 		foreach ( $this->pages() as $page ) {
-			$is_react = isset( $page['view'] );
-			$callback = $is_react
-				? function () use ( $page ): void {
-					$this->render_view( $page['view'] );
-				}
-				: ( $this->php_pages[ $page['slug'] ] ?? '__return_false' );
-
 			$hook = (string) add_submenu_page(
 				self::PARENT_SLUG,
 				$page['title'],
 				$page['title'],
 				self::CAP,
 				$page['slug'],
-				$callback
+				function () use ( $page ): void {
+					$this->render_view( $page['view'] );
+				}
 			);
 
-			$this->track( $hook, $is_react );
+			$this->track( $hook, true );
 		}
 	}
 
@@ -104,8 +97,10 @@ final class Menu implements Hookable {
 	 * its returned hook equals the top-level hook ('toplevel_page_openseo'); dedup
 	 * avoids double-counting it in either list.
 	 *
+	 * All screens mount React, so both lists always receive the hook.
+	 *
 	 * @param string $hook     Hook suffix returned by add_*_page().
-	 * @param bool   $is_react Whether the screen mounts the React app.
+	 * @param bool   $is_react Whether the screen mounts the React app (always true).
 	 */
 	private function track( string $hook, bool $is_react ): void {
 		if ( '' === $hook ) {
@@ -120,9 +115,9 @@ final class Menu implements Hookable {
 	}
 
 	/**
-	 * Ordered page descriptors. React pages carry a 'view'; PHP pages do not.
+	 * Ordered page descriptors. Every entry carries a 'view' — all screens are React.
 	 *
-	 * @return array<int, array{slug: string, title: string, view?: string}>
+	 * @return array<int, array{slug: string, title: string, view: string}>
 	 */
 	private function pages(): array {
 		return array(
@@ -159,10 +154,12 @@ final class Menu implements Hookable {
 			array(
 				'slug'  => 'openseo-redirects',
 				'title' => __( 'Redirects', 'openseo' ),
+				'view'  => 'redirects',
 			),
 			array(
 				'slug'  => 'openseo-404s',
 				'title' => __( '404s', 'openseo' ),
+				'view'  => 'notfound',
 			),
 			array(
 				'slug'  => 'openseo-ai',

@@ -24,12 +24,7 @@ final class MenuWiringTest extends WP_UnitTestCase {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 		set_current_screen( 'dashboard' );
 
-		$menu = new Menu(
-			array(
-				'openseo-redirects' => '__return_true',
-				'openseo-404s'      => '__return_true',
-			)
-		);
+		$menu = new Menu();
 		$menu->add_menu();
 
 		global $admin_page_hooks;

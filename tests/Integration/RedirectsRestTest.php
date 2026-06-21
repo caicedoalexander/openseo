@@ -10,10 +10,7 @@ declare( strict_types=1 );
 namespace OpenSEO\Tests\Integration;
 
 use OpenSEO\Lifecycle\Schema;
-use OpenSEO\Redirects\Cache;
 use OpenSEO\Redirects\Repository;
-use OpenSEO\Redirects\RuleValidator;
-use OpenSEO\Rest\RedirectsController;
 use WP_REST_Request;
 use WP_UnitTestCase;
 
@@ -25,9 +22,6 @@ final class RedirectsRestTest extends WP_UnitTestCase {
 		parent::set_up();
 		Schema::install();
 		$this->repo = new Repository();
-		$cache      = new Cache( $this->repo );
-		$controller = new RedirectsController( $this->repo, $cache, new RuleValidator( $this->repo ) );
-		add_action( 'rest_api_init', array( $controller, 'register_routes' ) );
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 	}
 

@@ -12,9 +12,9 @@ namespace OpenSEO;
 use OpenSEO\Admin\Assets as AdminAssets;
 use OpenSEO\Admin\Editor\EditorPanel;
 use OpenSEO\Admin\Menu;
-use OpenSEO\NotFound\Admin\NotFoundPage;
+use OpenSEO\Rest\NotFoundController;
+use OpenSEO\Rest\RedirectsController;
 use OpenSEO\Rest\SettingsController;
-use OpenSEO\Settings\BehaviorSettings;
 use OpenSEO\Ai\Abilities;
 use OpenSEO\Breadcrumbs\Block as BreadcrumbsBlock;
 use OpenSEO\Breadcrumbs\Trail;
@@ -38,9 +38,9 @@ use OpenSEO\Schema\Pieces\WebPage as WebPagePiece;
 use OpenSEO\Schema\Pieces\WebSite as WebSitePiece;
 use OpenSEO\Settings\Options;
 use OpenSEO\Lifecycle\Schema;
-use OpenSEO\Redirects\Admin\RedirectsPage;
 use OpenSEO\Redirects\Cache as RedirectsCache;
 use OpenSEO\Redirects\Dispatcher;
+use OpenSEO\Redirects\RuleValidator;
 use OpenSEO\Redirects\Matcher;
 use OpenSEO\Redirects\Repository as RedirectsRepository;
 use OpenSEO\NotFound\LogRepository as NotFoundLog;
@@ -162,24 +162,15 @@ final class Plugin {
 		);
 
 		$modules[] = new SettingsController( $options );
+		$modules[] = new RedirectsController( $redirects_repo, $redirects_cache, new RuleValidator( $redirects_repo ) );
+		$modules[] = new NotFoundController( $not_found_log );
 
 		if ( is_admin() ) {
-			$behavior       = new BehaviorSettings( $options );
-			$redirects_page = new RedirectsPage( $redirects_repo, $redirects_cache, $behavior );
-			$notfound_page  = new NotFoundPage( $not_found_log, $options, $behavior );
-
-			$menu = new Menu(
-				array(
-					'openseo-redirects' => array( $redirects_page, 'render' ),
-					'openseo-404s'      => array( $notfound_page, 'render' ),
-				)
-			);
+			$menu = new Menu();
 
 			$modules[] = $menu;
 			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log );
-			$modules[] = $behavior;
 			$modules[] = new EditorPanel();
-			$modules[] = $redirects_page;
 		}
 
 		return $modules;
