@@ -39,6 +39,7 @@ use OpenSEO\Schema\Pieces\WebPage as WebPagePiece;
 use OpenSEO\Schema\Pieces\WebSite as WebSitePiece;
 use OpenSEO\Settings\Options;
 use OpenSEO\Lifecycle\Schema;
+use OpenSEO\Lifecycle\SettingsMigrations;
 use OpenSEO\Redirects\Cache as RedirectsCache;
 use OpenSEO\Redirects\Dispatcher;
 use OpenSEO\Redirects\RuleValidator;
@@ -146,6 +147,7 @@ final class Plugin {
 			new Dispatcher( $redirects_cache, new Matcher(), $redirects_repo, $options ),
 			new SlugWatcher( $redirects_repo, $redirects_cache, $options ),
 			new PostMeta(),
+			new SettingsMigrations(),
 			new Title( $resolver ),
 			new HeadPrinter(
 				array(
