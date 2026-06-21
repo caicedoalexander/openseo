@@ -30,11 +30,15 @@ const EMPTY_RULE = {
 	enabled: true,
 };
 
-// Strip a scheme-bearing or marked-up prefill before showing it (defense; the
-// server validates again on save).
+// Strip a scheme-bearing, protocol-relative, or marked-up prefill before
+// showing it (defense; the server validates again on save).
 function safeSource( raw ) {
 	const value = String( raw || '' );
-	if ( value.includes( ':' ) || value.includes( '<' ) ) {
+	if (
+		value.includes( ':' ) ||
+		value.includes( '<' ) ||
+		value.startsWith( '//' )
+	) {
 		return '';
 	}
 	return value;
@@ -57,13 +61,18 @@ export function Redirects() {
 	const [ formError, setFormError ] = useState( '' );
 	const [ selected, setSelected ] = useState( [] );
 
+	const openEditor = ( rule ) => {
+		setFormError( '' );
+		setEditing( rule );
+	};
+
 	// Open the create modal pre-filled when arriving from a 404 row.
 	useEffect( () => {
 		const prefill = safeSource(
 			getQueryArg( window.location.href, 'source' )
 		);
 		if ( prefill ) {
-			setEditing( { ...EMPTY_RULE, source_path: prefill } );
+			openEditor( { ...EMPTY_RULE, source_path: prefill } );
 		}
 	}, [] );
 
@@ -119,7 +128,7 @@ export function Redirects() {
 			<Button
 				variant="link"
 				onClick={ () =>
-					setEditing( {
+					openEditor( {
 						id: Number( r.id ),
 						source_path: r.source_path,
 						target: r.target,
@@ -244,7 +253,7 @@ export function Redirects() {
 				<h2>{ __( 'Redirects', 'openseo' ) }</h2>
 				<Button
 					variant="primary"
-					onClick={ () => setEditing( { ...EMPTY_RULE } ) }
+					onClick={ () => openEditor( { ...EMPTY_RULE } ) }
 				>
 					{ __( 'Add redirect', 'openseo' ) }
 				</Button>

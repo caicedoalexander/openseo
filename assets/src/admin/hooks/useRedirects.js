@@ -36,8 +36,28 @@ export function useRedirects() {
 	}, [] );
 
 	useEffect( () => {
-		load( query );
-	}, [ query, load ] );
+		let cancelled = false;
+		dispatch( { type: 'LOADING' } );
+		getRedirects( { page: query.page, search: query.search } )
+			.then( ( { items, total } ) => {
+				if ( ! cancelled ) {
+					dispatch( { type: 'LOADED', items, total } );
+				}
+			} )
+			.catch( ( e ) => {
+				if ( ! cancelled ) {
+					dispatch( {
+						type: 'ERROR',
+						error:
+							e?.message ||
+							__( 'Could not load redirects.', 'openseo' ),
+					} );
+				}
+			} );
+		return () => {
+			cancelled = true;
+		};
+	}, [ query ] );
 
 	const refresh = useCallback( () => load( query ), [ load, query ] );
 
