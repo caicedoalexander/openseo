@@ -211,6 +211,25 @@ Smoke test manual:
 > El motor se puede verificar en aislamiento aunque el rewrite falle:
 > `wp eval` instanciando `Repository::find_active_ruleset()` + `Matcher`.
 
+### Consolidación de UI admin (Fase 6): qué cubre y cómo probar
+
+La superficie de admin pasó de *Ajustes → OpenSEO* (7 tabs, Settings API) +
+*Herramientas → OpenSEO Redirects* a un **menú propio** con un submenú por sección.
+Las vistas de ajustes (Dashboard, General, Títulos, Social, Sitemaps, Schema, IA)
+son **React** (`assets/src/admin/`) sobre el REST `openseo/v1/settings`
+(`src/Rest/SettingsController.php`, reutiliza `Options::sanitize`). Redirecciones y
+404 se reubicaron bajo el menú conservando su `WP_List_Table` (PHP); sus toggles
+viven en un mini-form Settings API (`src/Settings/BehaviorSettings.php`).
+
+CI ejercita: rutas REST (`RestSettingsTest`, merge parcial/claves desconocidas),
+registro de menú (`MenuTest`, `MenuWiringTest`), secciones de toggles
+(`BehaviorSettingsTest`) y el enlace 404→redirect (`NotFoundLinkTest`).
+
+Smoke test manual: en wp-admin, abrir **OpenSEO** en el sidebar; cada submenú es su
+propia URL (`admin.php?page=openseo-*`); cambiar un campo en *General* y Guardar →
+recargar y confirmar persistencia; *404s* muestra el toggle del monitor arriba y el
+log abajo.
+
 ---
 
 ## 6. WP-CLI (vía wp-env)
