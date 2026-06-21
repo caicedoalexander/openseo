@@ -11,8 +11,10 @@ namespace OpenSEO\Admin;
 
 use OpenSEO\Ai\Connector;
 use OpenSEO\Contracts\Hookable;
+use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\NotFound\LogRepository;
 use OpenSEO\Redirects\Repository;
+use OpenSEO\Settings\ContentTypes;
 use OpenSEO\Settings\Options;
 
 /**
@@ -28,16 +30,20 @@ final class Assets implements Hookable {
 	/**
 	 * Constructor.
 	 *
-	 * @param Menu          $menu          Source of OpenSEO screen hook suffixes.
-	 * @param Options       $options       Settings accessor (initial bootstrap state).
-	 * @param Repository    $redirects     Redirect repository (dashboard count).
-	 * @param LogRepository $not_found_log 404 log (dashboard count).
+	 * @param Menu             $menu          Source of OpenSEO screen hook suffixes.
+	 * @param Options          $options       Settings accessor (initial bootstrap state).
+	 * @param Repository       $redirects     Redirect repository (dashboard count).
+	 * @param LogRepository    $not_found_log 404 log (dashboard count).
+	 * @param ContentTypes     $content_types Registered post types and taxonomies.
+	 * @param TemplateDefaults $defaults      Per-surface default title/description templates.
 	 */
 	public function __construct(
 		private readonly Menu $menu,
 		private readonly Options $options,
 		private readonly Repository $redirects,
 		private readonly LogRepository $not_found_log,
+		private readonly ContentTypes $content_types,
+		private readonly TemplateDefaults $defaults,
 	) {}
 
 	/**
@@ -96,6 +102,26 @@ final class Assets implements Hookable {
 	}
 
 	/**
+	 * Decorate slug/label entries with the per-surface default templates.
+	 *
+	 * @param array<int, array{slug:string, label:string}> $types               Slug/label pairs.
+	 * @param string                                       $default_title       Default title template.
+	 * @param string                                       $default_description Default description template.
+	 * @return array<int, array{slug:string, label:string, defaultTitle:string, defaultDescription:string}>
+	 */
+	private function content_type_entries( array $types, string $default_title, string $default_description ): array {
+		return array_map(
+			static fn( array $type ): array => array(
+				'slug'               => $type['slug'],
+				'label'              => $type['label'],
+				'defaultTitle'       => $default_title,
+				'defaultDescription' => $default_description,
+			),
+			$types
+		);
+	}
+
+	/**
 	 * Build the bootstrap payload. Dashboard counts only on the dashboard screen.
 	 *
 	 * @param string $hook_suffix Current screen hook.
@@ -103,10 +129,22 @@ final class Assets implements Hookable {
 	 */
 	private function bootstrap( string $hook_suffix ): array {
 		$data = array(
-			'settings'  => $this->options->all(),
-			'connector' => array(
+			'settings'     => $this->options->all(),
+			'connector'    => array(
 				'available' => Connector::is_text_generation_available(),
 				'url'       => Connector::settings_url(),
+			),
+			'contentTypes' => array(
+				'postTypes'  => $this->content_type_entries(
+					$this->content_types->post_types(),
+					$this->defaults->singular_title(),
+					$this->defaults->singular_description()
+				),
+				'taxonomies' => $this->content_type_entries(
+					$this->content_types->taxonomies(),
+					$this->defaults->taxonomy_title(),
+					$this->defaults->taxonomy_description()
+				),
 			),
 		);
 

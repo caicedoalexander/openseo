@@ -37,6 +37,7 @@ use OpenSEO\Schema\Pieces\Organization;
 use OpenSEO\Schema\Pieces\Person;
 use OpenSEO\Schema\Pieces\WebPage as WebPagePiece;
 use OpenSEO\Schema\Pieces\WebSite as WebSitePiece;
+use OpenSEO\Settings\ContentTypes;
 use OpenSEO\Settings\Options;
 use OpenSEO\Lifecycle\Schema;
 use OpenSEO\Lifecycle\SettingsMigrations;
@@ -172,7 +173,7 @@ final class Plugin {
 			$menu = new Menu();
 
 			$modules[] = $menu;
-			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log );
+			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log, new ContentTypes(), new TemplateDefaults() );
 			$modules[] = new EditorPanel();
 		}
 
