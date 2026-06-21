@@ -7,6 +7,7 @@ use Brain\Monkey;
 use Brain\Monkey\Functions;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\TemplateDefaults;
+use OpenSEO\Meta\TypeTemplates;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Schema\Pieces\Article;
 use OpenSEO\Schema\Pieces\WebPage;
@@ -48,9 +49,9 @@ final class ContentPiecesTest extends TestCase {
 	}
 
 	private function resolver(): Resolver {
-		$options = new Options();
-
-		return new Resolver( $options, new Variables( $options ), new TemplateDefaults() );
+		$options  = new Options();
+		$defaults = new TemplateDefaults();
+		return new Resolver( $options, new Variables( $options ), $defaults, new TypeTemplates( $options, $defaults ) );
 	}
 
 	public function test_webpage_needed_on_singular_and_references_website(): void {

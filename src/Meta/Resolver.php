@@ -11,6 +11,7 @@ namespace OpenSEO\Meta;
 
 use OpenSEO\Meta\TemplateContext;
 use OpenSEO\Meta\TemplateDefaults;
+use OpenSEO\Meta\TypeTemplates;
 use OpenSEO\Settings\Options;
 use WP_Term;
 
@@ -32,7 +33,8 @@ final class Resolver {
 	public function __construct(
 		private readonly Options $options,
 		private readonly Variables $variables,
-		private readonly TemplateDefaults $defaults
+		private readonly TemplateDefaults $defaults,
+		private readonly TypeTemplates $type_templates
 	) {}
 
 	/**
@@ -47,10 +49,7 @@ final class Resolver {
 				return $override;
 			}
 
-			$template = $this->type_template( 'post_types', (string) get_post_type( $id ), 'title' );
-			if ( '' === $template ) {
-				$template = $this->defaults->singular_title();
-			}
+			$template = $this->type_templates->title_for( (string) get_post_type( $id ) );
 
 			return $this->variables->replace( $template, TemplateContext::for_post( $id ) );
 		}
@@ -87,10 +86,7 @@ final class Resolver {
 				return $override;
 			}
 
-			$template = $this->type_template( 'post_types', (string) get_post_type( $id ), 'description' );
-			if ( '' === $template ) {
-				$template = $this->defaults->singular_description();
-			}
+			$template = $this->type_templates->description_for( (string) get_post_type( $id ) );
 
 			return $this->variables->replace( $template, TemplateContext::for_post( $id ) );
 		}
