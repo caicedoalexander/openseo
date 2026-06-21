@@ -20,7 +20,7 @@ use OpenSEO\Lifecycle\Schema;
  *
  * phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
  */
-final class Repository {
+final class Repository implements RedirectLookup {
 
 	/**
 	 * Build the active ruleset (enabled rules only).
