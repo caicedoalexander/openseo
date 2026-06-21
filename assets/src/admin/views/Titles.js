@@ -47,19 +47,19 @@ function GeneralPanel( { values, change } ) {
 			<TextControl
 				__nextHasNoMarginBottom
 				label={ __( 'Title separator', 'openseo' ) }
-				value={ values.title_separator }
+				value={ values.title_separator ?? '' }
 				onChange={ ( v ) => change( 'title_separator', v ) }
 			/>
 			<TemplateField
 				label={ __( 'Homepage title', 'openseo' ) }
-				value={ values.home_title }
+				value={ values.home_title ?? '' }
 				scope="global"
 				catalog={ catalog }
 				onChange={ ( v ) => change( 'home_title', v ) }
 			/>
 			<TemplateField
 				label={ __( 'Homepage description', 'openseo' ) }
-				value={ values.home_description }
+				value={ values.home_description ?? '' }
 				multiline
 				scope="global"
 				catalog={ catalog }
