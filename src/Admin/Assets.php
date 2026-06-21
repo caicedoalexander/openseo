@@ -15,6 +15,7 @@ use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\NotFound\LogRepository;
 use OpenSEO\Redirects\Repository;
 use OpenSEO\Settings\ContentTypes;
+use OpenSEO\Meta\VariableCatalog;
 use OpenSEO\Settings\Options;
 
 /**
@@ -36,6 +37,7 @@ final class Assets implements Hookable {
 	 * @param LogRepository    $not_found_log 404 log (dashboard count).
 	 * @param ContentTypes     $content_types Registered post types and taxonomies.
 	 * @param TemplateDefaults $defaults      Per-surface default title/description templates.
+	 * @param VariableCatalog  $variable_catalog Template variables catalog (inserter).
 	 */
 	public function __construct(
 		private readonly Menu $menu,
@@ -44,6 +46,7 @@ final class Assets implements Hookable {
 		private readonly LogRepository $not_found_log,
 		private readonly ContentTypes $content_types,
 		private readonly TemplateDefaults $defaults,
+		private readonly VariableCatalog $variable_catalog,
 	) {}
 
 	/**
@@ -146,6 +149,7 @@ final class Assets implements Hookable {
 					$this->defaults->taxonomy_description()
 				),
 			),
+			'variables'    => $this->variable_catalog->all(),
 		);
 
 		if ( $hook_suffix === $this->menu->dashboard_hook() ) {
