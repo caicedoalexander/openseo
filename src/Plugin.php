@@ -29,6 +29,7 @@ use OpenSEO\Frontend\Head\Twitter;
 use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\TemplateDefaults;
+use OpenSEO\Meta\TypeTemplates;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Schema\Graph;
 use OpenSEO\Schema\Pieces\Article;
@@ -121,9 +122,11 @@ final class Plugin {
 	 * @return array<int, Hookable>
 	 */
 	private function modules(): array {
-		$options   = new Options();
-		$variables = new Variables( $options );
-		$resolver  = new Resolver( $options, $variables, new TemplateDefaults() );
+		$options        = new Options();
+		$variables      = new Variables( $options );
+		$defaults       = new TemplateDefaults();
+		$type_templates = new TypeTemplates( $options, $defaults );
+		$resolver       = new Resolver( $options, $variables, $defaults, $type_templates );
 
 		$not_found_log   = new NotFoundLog();
 		$redirects_repo  = new RedirectsRepository();
@@ -174,7 +177,7 @@ final class Plugin {
 
 			$modules[] = $menu;
 			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log, new ContentTypes(), new TemplateDefaults() );
-			$modules[] = new EditorPanel();
+			$modules[] = new EditorPanel( $options, $type_templates );
 		}
 
 		return $modules;

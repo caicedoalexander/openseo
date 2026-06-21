@@ -7,6 +7,7 @@ use Brain\Monkey;
 use Brain\Monkey\Functions;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\TemplateDefaults;
+use OpenSEO\Meta\TypeTemplates;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
 use PHPUnit\Framework\TestCase;
@@ -35,8 +36,9 @@ final class ResolverTest extends TestCase {
 	}
 
 	private function resolver(): Resolver {
-		$options = new Options();
-		return new Resolver( $options, new Variables( $options ), new TemplateDefaults() );
+		$options  = new Options();
+		$defaults = new TemplateDefaults();
+		return new Resolver( $options, new Variables( $options ), $defaults, new TypeTemplates( $options, $defaults ) );
 	}
 
 	public function test_title_prefers_per_entry_override_on_singular(): void {
