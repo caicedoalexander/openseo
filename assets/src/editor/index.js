@@ -24,7 +24,7 @@ import { aiErrorMessage } from './ai';
 import { LengthIndicator } from './components/LengthIndicator';
 import { PreviewDevices } from './components/PreviewDevices';
 import { SerpPreview } from './components/SerpPreview';
-import './editor.scss';
+import './style.scss';
 
 function useMeta( key ) {
 	const postType = useSelect(
