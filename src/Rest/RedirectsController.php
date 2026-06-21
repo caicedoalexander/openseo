@@ -144,12 +144,21 @@ final class RedirectsController implements Hookable {
 	 * @param WP_REST_Request $request Request.
 	 */
 	public function create( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$clean = $this->validator->validate( (array) $request->get_json_params(), 0 );
+		$data  = array(
+			'source_path' => $request->get_param( 'source_path' ),
+			'target'      => $request->get_param( 'target' ),
+			'status_code' => $request->get_param( 'status_code' ),
+			'is_regex'    => $request->get_param( 'is_regex' ),
+		);
+		$clean = $this->validator->validate( $data, 0 );
 		if ( $clean instanceof WP_Error ) {
 			return $clean;
 		}
 
 		$id = $this->repo->create( $clean );
+		if ( 0 === $id ) {
+			return new WP_Error( 'openseo_create_failed', __( 'Could not save the redirect.', 'openseo' ), array( 'status' => 500 ) );
+		}
 		$this->cache->flush();
 
 		return new WP_REST_Response( $this->repo->find( $id ), 201 );
@@ -166,7 +175,14 @@ final class RedirectsController implements Hookable {
 			return new WP_Error( 'openseo_not_found', __( 'Redirect not found.', 'openseo' ), array( 'status' => 404 ) );
 		}
 
-		$clean = $this->validator->validate( (array) $request->get_json_params(), $id );
+		$data  = array(
+			'source_path' => $request->get_param( 'source_path' ),
+			'target'      => $request->get_param( 'target' ),
+			'status_code' => $request->get_param( 'status_code' ),
+			'is_regex'    => $request->get_param( 'is_regex' ),
+			'enabled'     => $request->get_param( 'enabled' ),
+		);
+		$clean = $this->validator->validate( $data, $id );
 		if ( $clean instanceof WP_Error ) {
 			return $clean;
 		}
@@ -195,10 +211,9 @@ final class RedirectsController implements Hookable {
 	 * @param WP_REST_Request $request Request.
 	 */
 	public function bulk( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-		$body   = (array) $request->get_json_params();
-		$action = isset( $body['action'] ) ? (string) $body['action'] : '';
-		$ids    = isset( $body['ids'] ) && is_array( $body['ids'] ) ? array_map( 'absint', $body['ids'] ) : array();
-		$ids    = array_values( array_filter( $ids ) );
+		$action  = (string) ( $request->get_param( 'action' ) ?? '' );
+		$raw_ids = $request->get_param( 'ids' );
+		$ids     = is_array( $raw_ids ) ? array_values( array_filter( array_map( 'absint', $raw_ids ) ) ) : array();
 
 		if ( ! in_array( $action, array( 'enable', 'disable', 'delete' ), true ) || array() === $ids ) {
 			return new WP_Error( 'openseo_invalid', __( 'Invalid bulk action.', 'openseo' ), array( 'status' => 400 ) );
