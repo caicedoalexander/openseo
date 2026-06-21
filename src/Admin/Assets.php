@@ -22,7 +22,8 @@ use OpenSEO\Settings\Options;
  */
 final class Assets implements Hookable {
 
-	private const HANDLE = 'openseo-admin-settings';
+	private const STYLE_HANDLE  = 'openseo-admin-settings';
+	private const SCRIPT_HANDLE = 'openseo-admin-app';
 
 	/**
 	 * Constructor.
@@ -68,7 +69,7 @@ final class Assets implements Hookable {
 		$style_path = OPENSEO_PLUGIN_DIR . 'assets/build/style-admin-settings.css';
 		if ( is_readable( $style_path ) ) {
 			wp_enqueue_style(
-				self::HANDLE,
+				self::STYLE_HANDLE,
 				OPENSEO_PLUGIN_URL . 'assets/build/style-admin-settings.css',
 				array(),
 				$version
@@ -81,20 +82,22 @@ final class Assets implements Hookable {
 		}
 
 		wp_enqueue_script(
-			self::HANDLE,
+			self::SCRIPT_HANDLE,
 			OPENSEO_PLUGIN_URL . 'assets/build/admin-settings.js',
 			$asset['dependencies'] ?? array(),
 			$version,
 			true
 		);
 
-		wp_add_inline_script(
-			self::HANDLE,
-			'window.openseoAdmin = ' . wp_json_encode( $this->bootstrap( $hook_suffix ), JSON_HEX_TAG ) . ';',
-			'before'
-		);
+		if ( wp_script_is( self::SCRIPT_HANDLE, 'enqueued' ) ) {
+			wp_add_inline_script(
+				self::SCRIPT_HANDLE,
+				'window.openseoAdmin = ' . wp_json_encode( $this->bootstrap( $hook_suffix ), JSON_HEX_TAG ) . ';',
+				'before'
+			);
+		}
 
-		wp_set_script_translations( self::HANDLE, 'openseo' );
+		wp_set_script_translations( self::SCRIPT_HANDLE, 'openseo' );
 	}
 
 	/**
