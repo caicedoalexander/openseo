@@ -1,6 +1,3 @@
-jest.mock( '@wordpress/api-fetch' );
-jest.mock( '@wordpress/element' );
-jest.mock( '@wordpress/i18n' );
 jest.mock( '../api' );
 
 import { settingsReducer } from './useSettings';
