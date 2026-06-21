@@ -13,6 +13,7 @@ use Brain\Monkey;
 use Brain\Monkey\Functions;
 use OpenSEO\Frontend\Head\Description;
 use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +23,9 @@ final class DescriptionTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		Monkey\setUp();
+		Functions\when( 'is_category' )->justReturn( false );
+		Functions\when( 'is_tag' )->justReturn( false );
+		Functions\when( 'is_tax' )->justReturn( false );
 	}
 
 	protected function tearDown(): void {
@@ -32,7 +36,7 @@ final class DescriptionTest extends TestCase {
 	private function resolver(): Resolver {
 		$options = new Options();
 
-		return new Resolver( $options, new Variables( $options ) );
+		return new Resolver( $options, new Variables( $options ), new TemplateDefaults() );
 	}
 
 	public function test_outputs_nothing_when_the_description_is_empty(): void {

@@ -5,9 +5,11 @@ namespace OpenSEO\Tests\Unit\Meta;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
+use OpenSEO\Meta\TemplateContext;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
 use PHPUnit\Framework\TestCase;
+use WP_Term;
 
 final class VariablesTest extends TestCase {
 
@@ -15,6 +17,7 @@ final class VariablesTest extends TestCase {
 		parent::setUp();
 		Monkey\setUp();
 		Functions\when( 'get_option' )->justReturn( array( 'title_separator' => '-' ) );
+		Functions\when( 'wp_strip_all_tags' )->returnArg();
 	}
 
 	protected function tearDown(): void {
@@ -39,28 +42,40 @@ final class VariablesTest extends TestCase {
 		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
 		Functions\when( 'get_the_title' )->justReturn( 'Hello World' );
 		Functions\when( 'get_the_excerpt' )->justReturn( 'A short summary.' );
-		Functions\when( 'wp_strip_all_tags' )->returnArg();
 
 		$variables = new Variables( new Options() );
+		$ctx       = TemplateContext::for_post( 42 );
 
 		$this->assertSame(
 			'Hello World - My Site',
-			$variables->replace( '%title% %sep% %sitename%', 42 )
+			$variables->replace( '%title% %sep% %sitename%', $ctx )
 		);
-		$this->assertSame( 'A short summary.', $variables->replace( '%excerpt%', 42 ) );
+		$this->assertSame( 'A short summary.', $variables->replace( '%excerpt%', $ctx ) );
+	}
+
+	public function test_replaces_term_tokens(): void {
+		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
+
+		$term              = new WP_Term();
+		$term->name        = 'News';
+		$term->description = 'All the news.';
+
+		$variables = new Variables( new Options() );
+		$ctx       = TemplateContext::for_term( $term );
+
+		$this->assertSame(
+			'News - My Site',
+			$variables->replace( '%term% %sep% %sitename%', $ctx )
+		);
+		$this->assertSame( 'All the news.', $variables->replace( '%term_description%', $ctx ) );
 	}
 
 	public function test_strips_separators_when_tokens_are_empty(): void {
-		// Mock the full set of functions Variables touches when $post_id > 0,
-		// otherwise Brain Monkey fatals on the first unmocked call.
 		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
-		Functions\when( 'get_the_title' )->justReturn( '' );
-		Functions\when( 'get_the_excerpt' )->justReturn( '' );
-		Functions\when( 'wp_strip_all_tags' )->returnArg();
 
 		$variables = new Variables( new Options() );
 
-		// Empty %title% leaves no double spaces or dangling separator.
-		$this->assertSame( '', $variables->replace( '%title% %sep%', 7 ) );
+		// none() context → %title% empty → no dangling separator.
+		$this->assertSame( '', $variables->replace( '%title% %sep%' ) );
 	}
 }

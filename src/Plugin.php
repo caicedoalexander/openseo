@@ -28,6 +28,7 @@ use OpenSEO\Frontend\Head\Title;
 use OpenSEO\Frontend\Head\Twitter;
 use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Schema\Graph;
 use OpenSEO\Schema\Pieces\Article;
@@ -36,8 +37,10 @@ use OpenSEO\Schema\Pieces\Organization;
 use OpenSEO\Schema\Pieces\Person;
 use OpenSEO\Schema\Pieces\WebPage as WebPagePiece;
 use OpenSEO\Schema\Pieces\WebSite as WebSitePiece;
+use OpenSEO\Settings\ContentTypes;
 use OpenSEO\Settings\Options;
 use OpenSEO\Lifecycle\Schema;
+use OpenSEO\Lifecycle\SettingsMigrations;
 use OpenSEO\Redirects\Cache as RedirectsCache;
 use OpenSEO\Redirects\Dispatcher;
 use OpenSEO\Redirects\RuleValidator;
@@ -120,7 +123,7 @@ final class Plugin {
 	private function modules(): array {
 		$options   = new Options();
 		$variables = new Variables( $options );
-		$resolver  = new Resolver( $options, $variables );
+		$resolver  = new Resolver( $options, $variables, new TemplateDefaults() );
 
 		$not_found_log   = new NotFoundLog();
 		$redirects_repo  = new RedirectsRepository();
@@ -145,6 +148,7 @@ final class Plugin {
 			new Dispatcher( $redirects_cache, new Matcher(), $redirects_repo, $options ),
 			new SlugWatcher( $redirects_repo, $redirects_cache, $options ),
 			new PostMeta(),
+			new SettingsMigrations(),
 			new Title( $resolver ),
 			new HeadPrinter(
 				array(
@@ -169,7 +173,7 @@ final class Plugin {
 			$menu = new Menu();
 
 			$modules[] = $menu;
-			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log );
+			$modules[] = new AdminAssets( $menu, $options, $redirects_repo, $not_found_log, new ContentTypes(), new TemplateDefaults() );
 			$modules[] = new EditorPanel();
 		}
 

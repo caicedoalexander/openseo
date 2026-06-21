@@ -9,7 +9,10 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Meta;
 
+use OpenSEO\Meta\TemplateContext;
+use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Settings\Options;
+use WP_Term;
 
 /**
  * SEO resolution cascade: per-entry override → content-type template → fallback.
@@ -20,14 +23,16 @@ use OpenSEO\Settings\Options;
 final class Resolver {
 
 	/**
-	 * Initializes the Resolver with settings and template variable replacer.
+	 * Initializes the Resolver with settings, template variable replacer, and template defaults.
 	 *
-	 * @param Options   $options   Settings accessor.
-	 * @param Variables $variables Template variable replacer.
+	 * @param Options          $options   Settings accessor.
+	 * @param Variables        $variables Template variable replacer.
+	 * @param TemplateDefaults $defaults  Default templates for each content surface.
 	 */
 	public function __construct(
 		private readonly Options $options,
-		private readonly Variables $variables
+		private readonly Variables $variables,
+		private readonly TemplateDefaults $defaults
 	) {}
 
 	/**
@@ -42,7 +47,25 @@ final class Resolver {
 				return $override;
 			}
 
-			return $this->variables->replace( (string) $this->options->get( 'title_template' ), $id );
+			$template = $this->type_template( 'post_types', (string) get_post_type( $id ), 'title' );
+			if ( '' === $template ) {
+				$template = $this->defaults->singular_title();
+			}
+
+			return $this->variables->replace( $template, TemplateContext::for_post( $id ) );
+		}
+
+		if ( $this->is_taxonomy() ) {
+			$term = get_queried_object();
+
+			if ( $term instanceof WP_Term ) {
+				$template = $this->type_template( 'taxonomies', $term->taxonomy, 'title' );
+				if ( '' === $template ) {
+					$template = $this->defaults->taxonomy_title();
+				}
+
+				return $this->variables->replace( $template, TemplateContext::for_term( $term ) );
+			}
 		}
 
 		if ( is_front_page() ) {
@@ -64,7 +87,25 @@ final class Resolver {
 				return $override;
 			}
 
-			return $this->variables->replace( (string) $this->options->get( 'description_template' ), $id );
+			$template = $this->type_template( 'post_types', (string) get_post_type( $id ), 'description' );
+			if ( '' === $template ) {
+				$template = $this->defaults->singular_description();
+			}
+
+			return $this->variables->replace( $template, TemplateContext::for_post( $id ) );
+		}
+
+		if ( $this->is_taxonomy() ) {
+			$term = get_queried_object();
+
+			if ( $term instanceof WP_Term ) {
+				$template = $this->type_template( 'taxonomies', $term->taxonomy, 'description' );
+				if ( '' === $template ) {
+					$template = $this->defaults->taxonomy_description();
+				}
+
+				return $this->variables->replace( $template, TemplateContext::for_term( $term ) );
+			}
 		}
 
 		if ( is_front_page() ) {
@@ -162,6 +203,30 @@ final class Resolver {
 	 */
 	public function twitter_image(): string {
 		return $this->social_value( '_openseo_twitter_image', $this->social_image() );
+	}
+
+	/**
+	 * Whether the current request is a public taxonomy archive.
+	 */
+	private function is_taxonomy(): bool {
+		return is_category() || is_tag() || is_tax();
+	}
+
+	/**
+	 * Stored template for an entity, or '' when none is configured.
+	 *
+	 * @param string $group 'post_types' or 'taxonomies'.
+	 * @param string $slug  Post type or taxonomy slug.
+	 * @param string $field 'title' or 'description'.
+	 */
+	private function type_template( string $group, string $slug, string $field ): string {
+		$map = $this->options->get( $group );
+
+		if ( ! is_array( $map ) ) {
+			return '';
+		}
+
+		return (string) ( $map[ $slug ][ $field ] ?? '' );
 	}
 
 	/**

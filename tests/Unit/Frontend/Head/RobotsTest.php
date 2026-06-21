@@ -13,6 +13,7 @@ use Brain\Monkey;
 use Brain\Monkey\Functions;
 use OpenSEO\Frontend\Head\Robots;
 use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +34,7 @@ final class RobotsTest extends TestCase {
 	private function resolver(): Resolver {
 		$options = new Options();
 
-		return new Resolver( $options, new Variables( $options ) );
+		return new Resolver( $options, new Variables( $options ), new TemplateDefaults() );
 	}
 
 	public function test_defaults_to_index_follow_when_not_singular(): void {

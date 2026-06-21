@@ -6,9 +6,11 @@ namespace OpenSEO\Tests\Unit\Meta;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
 use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
 use PHPUnit\Framework\TestCase;
+use WP_Term;
 
 final class ResolverTest extends TestCase {
 
@@ -21,6 +23,10 @@ final class ResolverTest extends TestCase {
 		Functions\when( 'get_the_excerpt' )->justReturn( '' );
 		Functions\when( 'wp_strip_all_tags' )->returnArg();
 		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'is_category' )->justReturn( false );
+		Functions\when( 'is_tag' )->justReturn( false );
+		Functions\when( 'is_tax' )->justReturn( false );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
 	}
 
 	protected function tearDown(): void {
@@ -30,7 +36,7 @@ final class ResolverTest extends TestCase {
 
 	private function resolver(): Resolver {
 		$options = new Options();
-		return new Resolver( $options, new Variables( $options ) );
+		return new Resolver( $options, new Variables( $options ), new TemplateDefaults() );
 	}
 
 	public function test_title_prefers_per_entry_override_on_singular(): void {
@@ -326,5 +332,57 @@ final class ResolverTest extends TestCase {
 		Functions\when( 'get_the_post_thumbnail_url' )->justReturn( 'https://example.com/featured.jpg' );
 
 		$this->assertSame( 'https://example.com/featured.jpg', $this->resolver()->twitter_image() );
+	}
+
+	public function test_title_uses_stored_post_type_template(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'page' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_the_title' )->justReturn( 'About' );
+		Functions\when( 'get_the_excerpt' )->justReturn( '' );
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'page' => array( 'title' => '%title% %sep% %sitename% PAGE' ) ) )
+		);
+
+		$this->assertSame( 'About - My Site PAGE', $this->resolver()->title() );
+	}
+
+	public function test_title_falls_back_to_singular_default_when_no_stored_template(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_the_title' )->justReturn( 'Post Title' );
+		Functions\when( 'get_the_excerpt' )->justReturn( '' );
+
+		// Default singular title '%title% %sep% %sitename%'.
+		$this->assertSame( 'Post Title - My Site', $this->resolver()->title() );
+	}
+
+	public function test_title_resolves_taxonomy_with_default(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_category' )->justReturn( true );
+
+		$term       = new WP_Term();
+		$term->name = 'News';
+		Functions\when( 'get_queried_object' )->justReturn( $term );
+
+		// taxonomies map empty → default '%term% %sep% %sitename%'.
+		$this->assertSame( 'News - My Site', $this->resolver()->title() );
+	}
+
+	public function test_description_resolves_taxonomy_template(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_tag' )->justReturn( true );
+
+		$term              = new WP_Term();
+		$term->name        = 'Tag';
+		$term->description = 'Tag desc.';
+		Functions\when( 'get_queried_object' )->justReturn( $term );
+		Functions\when( 'wp_strip_all_tags' )->returnArg();
+
+		// Default taxonomy description '%term_description%'.
+		$this->assertSame( 'Tag desc.', $this->resolver()->description() );
 	}
 }

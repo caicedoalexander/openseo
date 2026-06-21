@@ -54,7 +54,7 @@ final class RestSettingsTest extends WP_UnitTestCase {
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame( '|', $data['title_separator'] );
 		// Unsent key keeps its value instead of resetting.
-		$this->assertSame( '%title% %sep% %sitename%', $data['title_template'] );
+		$this->assertSame( '%sitename% %sep% %tagline%', $data['home_title'] );
 	}
 
 	public function test_unknown_keys_are_dropped(): void {

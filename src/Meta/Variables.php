@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Meta;
 
+use OpenSEO\Meta\TemplateContext;
 use OpenSEO\Settings\Options;
 
 /**
@@ -26,17 +27,21 @@ final class Variables {
 	/**
 	 * Replace every supported token in the template.
 	 *
-	 * @param string $template Template containing %tokens%.
-	 * @param int    $post_id  Post context for post-specific tokens (0 = none).
+	 * @param string               $template Template containing %tokens%.
+	 * @param TemplateContext|null $context  Rendering context (null = empty).
 	 */
-	public function replace( string $template, int $post_id = 0 ): string {
+	public function replace( string $template, ?TemplateContext $context = null ): string {
+		$context = $context ?? TemplateContext::none();
+
 		$replacements = array(
-			'%sitename%'    => (string) get_bloginfo( 'name' ),
-			'%tagline%'     => (string) get_bloginfo( 'description' ),
-			'%sep%'         => (string) $this->options->get( 'title_separator' ),
-			'%currentyear%' => gmdate( 'Y' ),
-			'%title%'       => $post_id > 0 ? (string) get_the_title( $post_id ) : '',
-			'%excerpt%'     => $post_id > 0 ? wp_strip_all_tags( (string) get_the_excerpt( $post_id ) ) : '',
+			'%sitename%'         => (string) get_bloginfo( 'name' ),
+			'%tagline%'          => (string) get_bloginfo( 'description' ),
+			'%sep%'              => (string) $this->options->get( 'title_separator' ),
+			'%currentyear%'      => gmdate( 'Y' ),
+			'%title%'            => $context->title,
+			'%excerpt%'          => $context->excerpt,
+			'%term%'             => $context->term_name,
+			'%term_description%' => $context->term_description,
 		);
 
 		$output = strtr( $template, $replacements );
