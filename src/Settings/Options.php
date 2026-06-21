@@ -29,8 +29,6 @@ final class Options {
 	public function defaults(): array {
 		return array(
 			'title_separator'          => '-',
-			'title_template'           => '%title% %sep% %sitename%',
-			'description_template'     => '%excerpt%',
 			'home_title'               => '%sitename% %sep% %tagline%',
 			'home_description'         => '',
 			'og_default_image'         => '',
@@ -89,7 +87,7 @@ final class Options {
 		// keep their saved value instead of resetting to default.
 		$clean = $this->all();
 
-		foreach ( array( 'title_separator', 'title_template', 'description_template', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model' ) as $key ) {
+		foreach ( array( 'title_separator', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = sanitize_text_field( wp_unslash( $input[ $key ] ) );
 			}

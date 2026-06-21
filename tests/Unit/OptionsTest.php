@@ -48,8 +48,6 @@ final class OptionsTest extends TestCase {
 		$options = new Options();
 
 		$this->assertSame( '-', $options->get( 'title_separator' ) );
-		$this->assertSame( '%title% %sep% %sitename%', $options->get( 'title_template' ) );
-		$this->assertSame( '%excerpt%', $options->get( 'description_template' ) );
 		$this->assertSame( '', $options->get( 'og_default_image' ) );
 	}
 
@@ -62,7 +60,7 @@ final class OptionsTest extends TestCase {
 
 		$this->assertSame( '|', $options->get( 'title_separator' ) );
 		// Untouched key still falls back to its default.
-		$this->assertSame( '%excerpt%', $options->get( 'description_template' ) );
+		$this->assertSame( '%sitename% %sep% %tagline%', $options->get( 'home_title' ) );
 	}
 
 	public function test_sanitize_cleans_and_normalizes_input(): void {
@@ -77,18 +75,15 @@ final class OptionsTest extends TestCase {
 
 		$clean = $options->sanitize(
 			array(
-				'title_separator'      => '  <b>|</b>  ',
-				'title_template'       => '%title% %sep% %sitename%',
-				'description_template' => '%excerpt%',
-				'home_title'           => '%sitename%',
-				'home_description'     => 'Home desc',
-				'og_default_image'     => 'https://example.com/og.png',
-				'ai_model'             => 'claude-opus-4-8',
+				'title_separator'  => '  <b>|</b>  ',
+				'home_title'       => '%sitename%',
+				'home_description' => 'Home desc',
+				'og_default_image' => 'https://example.com/og.png',
+				'ai_model'         => 'claude-opus-4-8',
 			)
 		);
 
 		$this->assertSame( '|', $clean['title_separator'] );
-		$this->assertSame( '%title% %sep% %sitename%', $clean['title_template'] );
 		$this->assertSame( 'https://example.com/og.png', $clean['og_default_image'] );
 		$this->assertSame( 'claude-opus-4-8', $clean['ai_model'] );
 	}
@@ -109,7 +104,7 @@ final class OptionsTest extends TestCase {
 		Functions\when( 'sanitize_text_field' )->returnArg();
 		// A previously saved value from another tab is currently stored.
 		Functions\when( 'get_option' )->justReturn(
-			array( 'title_template' => 'Stored title %sep% %sitename%' )
+			array( 'home_title' => 'Stored home %sep% %tagline%' )
 		);
 
 		$options = new Options();
@@ -119,7 +114,16 @@ final class OptionsTest extends TestCase {
 
 		$this->assertSame( 'claude-opus-4-8', $clean['ai_model'] );
 		// The unrelated tab's saved value survives instead of resetting to default.
-		$this->assertSame( 'Stored title %sep% %sitename%', $clean['title_template'] );
+		$this->assertSame( 'Stored home %sep% %tagline%', $clean['home_title'] );
+	}
+
+	public function test_global_template_keys_are_retired(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$all = ( new Options() )->all();
+
+		$this->assertArrayNotHasKey( 'title_template', $all );
+		$this->assertArrayNotHasKey( 'description_template', $all );
 	}
 
 	public function test_sitemap_defaults(): void {
