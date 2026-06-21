@@ -1,6 +1,6 @@
 <?php
 /**
- * Redirects manager page (Tools → OpenSEO Redirects).
+ * Redirects manager page (OpenSEO → Redirects).
  *
  * @package OpenSEO
  */
@@ -10,59 +10,39 @@ declare( strict_types=1 );
 namespace OpenSEO\Redirects\Admin;
 
 use OpenSEO\Contracts\Hookable;
-use OpenSEO\NotFound\Admin\NotFoundListTable;
-use OpenSEO\NotFound\LogRepository;
 use OpenSEO\Redirects\Cache;
 use OpenSEO\Redirects\Normalizer;
 use OpenSEO\Redirects\Regex;
 use OpenSEO\Redirects\Repository;
-use OpenSEO\Settings\Options;
+use OpenSEO\Settings\BehaviorSettings;
 
 /**
- * Registers the Tools page, handles CRUD form submissions (nonce + capability),
- * and renders the redirects sub-tab.
+ * Handles redirect CRUD form submissions (nonce + capability) and renders the
+ * redirects page. The submenu itself is registered by Admin\Menu.
  */
 final class RedirectsPage implements Hookable {
-
-	private const SLUG = 'openseo-redirects';
 
 	private const CAP = 'manage_options';
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Repository    $repo          Redirect rule repository.
-	 * @param Cache         $cache         Redirect ruleset cache.
-	 * @param Options       $options       Plugin settings.
-	 * @param LogRepository $not_found_log 404 log (for the 404 monitor sub-tab).
+	 * @param Repository       $repo     Redirect rule repository.
+	 * @param Cache            $cache    Redirect ruleset cache.
+	 * @param BehaviorSettings $behavior Renders the redirect toggle form.
 	 */
 	public function __construct(
 		private readonly Repository $repo,
 		private readonly Cache $cache,
-		private readonly Options $options,
-		private readonly LogRepository $not_found_log,
+		private readonly BehaviorSettings $behavior,
 	) {}
 
 	/**
-	 * Register WordPress hooks.
+	 * Register the CRUD form handlers (no menu — Admin\Menu owns that).
 	 */
 	public function register(): void {
-		add_action( 'admin_menu', array( $this, 'add_page' ) );
 		add_action( 'admin_post_openseo_save_redirect', array( $this, 'handle_save' ) );
 		add_action( 'admin_post_openseo_redirect_row_action', array( $this, 'handle_row_action' ) );
-	}
-
-	/**
-	 * Register the Tools → OpenSEO Redirects menu page.
-	 */
-	public function add_page(): void {
-		add_management_page(
-			__( 'OpenSEO Redirects', 'openseo' ),
-			__( 'OpenSEO Redirects', 'openseo' ),
-			self::CAP,
-			self::SLUG,
-			array( $this, 'render' )
-		);
 	}
 
 	/**
@@ -158,27 +138,18 @@ final class RedirectsPage implements Hookable {
 	}
 
 	/**
-	 * Render the page (sub-tabs + active panel).
+	 * Render the redirects page (toggle form + add form + list table).
 	 */
 	public function render(): void {
 		if ( ! current_user_can( self::CAP ) ) {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab selection.
-		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'redirects';
-
-		// Pre-fill source from a 404 "create redirect" link (re-normalized, never trusted).
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- GET prefill only; the save POST is nonce-protected.
 		$prefill = isset( $_GET['source'] ) ? ( new Normalizer() )->normalize( sanitize_text_field( wp_unslash( $_GET['source'] ) ) ) : '';
 
-		// Inject the page's collaborators into the template (no `new` in the view).
-		$openseo_repo    = $this->repo;
-		$openseo_options = $this->options;
-
-		// Build the 404 sub-tab's list table here so the view stays free of `new`.
-		$openseo_notfound_table = new NotFoundListTable( $this->not_found_log );
-		$openseo_notfound_table->prepare_items();
+		$openseo_repo     = $this->repo;
+		$openseo_behavior = $this->behavior;
 
 		require OPENSEO_PLUGIN_DIR . 'templates/admin/redirects-page.php';
 	}
@@ -217,7 +188,7 @@ final class RedirectsPage implements Hookable {
 	 * @return never
 	 */
 	private function redirect_back( string $flag ): never {
-		wp_safe_redirect( add_query_arg( 'openseo_msg', $flag, admin_url( 'tools.php?page=' . self::SLUG ) ) );
+		wp_safe_redirect( add_query_arg( 'openseo_msg', $flag, admin_url( 'admin.php?page=openseo-redirects' ) ) );
 		exit;
 	}
 }

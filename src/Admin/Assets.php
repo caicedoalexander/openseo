@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin asset loading.
+ * Admin asset loading for the OpenSEO menu screens.
  *
  * @package OpenSEO
  */
@@ -9,35 +9,50 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Admin;
 
+use OpenSEO\Ai\Connector;
 use OpenSEO\Contracts\Hookable;
+use OpenSEO\NotFound\LogRepository;
+use OpenSEO\Redirects\Repository;
+use OpenSEO\Settings\Options;
 
 /**
- * Enqueues the compiled admin bundle on the OpenSEO settings screen only.
- *
- * The bundle and its dependency metadata are produced by @wordpress/scripts
- * into assets/build/. We read the generated *.asset.php for the dependency
- * array and cache-busting version.
+ * Enqueues the shared chrome CSS on every OpenSEO screen and the React app
+ * (plus the window.openseoAdmin bootstrap) on React screens only. Screen
+ * targeting uses the hook suffixes Menu captured at registration.
  */
 final class Assets implements Hookable {
 
 	private const HANDLE = 'openseo-admin-settings';
 
-	private const SCREEN_HOOK = 'settings_page_openseo';
+	/**
+	 * Constructor.
+	 *
+	 * @param Menu          $menu          Source of OpenSEO screen hook suffixes.
+	 * @param Options       $options       Settings accessor (initial bootstrap state).
+	 * @param Repository    $redirects     Redirect repository (dashboard count).
+	 * @param LogRepository $not_found_log 404 log (dashboard count).
+	 */
+	public function __construct(
+		private readonly Menu $menu,
+		private readonly Options $options,
+		private readonly Repository $redirects,
+		private readonly LogRepository $not_found_log,
+	) {}
 
 	/**
-	 * Register admin asset hooks.
+	 * Register the enqueue hook.
 	 */
 	public function register(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 	}
 
 	/**
-	 * Enqueue the admin script and style on the settings screen.
+	 * Enqueue CSS on all OpenSEO screens, JS + bootstrap on React screens.
 	 *
 	 * @param string $hook_suffix Current admin screen hook suffix.
 	 */
 	public function enqueue( string $hook_suffix ): void {
-		if ( self::SCREEN_HOOK !== $hook_suffix ) {
+		if ( ! in_array( $hook_suffix, $this->menu->screen_hooks(), true ) ) {
 			return;
 		}
 
@@ -47,25 +62,63 @@ final class Assets implements Hookable {
 			return;
 		}
 
-		$asset = require $asset_path;
+		$asset   = require $asset_path;
+		$version = $asset['version'] ?? OPENSEO_VERSION;
+
+		$style_path = OPENSEO_PLUGIN_DIR . 'assets/build/style-admin-settings.css';
+		if ( is_readable( $style_path ) ) {
+			wp_enqueue_style(
+				self::HANDLE,
+				OPENSEO_PLUGIN_URL . 'assets/build/style-admin-settings.css',
+				array(),
+				$version
+			);
+		}
+
+		// PHP screens (Redirects/404) get the chrome CSS only.
+		if ( ! in_array( $hook_suffix, $this->menu->react_screen_hooks(), true ) ) {
+			return;
+		}
 
 		wp_enqueue_script(
 			self::HANDLE,
 			OPENSEO_PLUGIN_URL . 'assets/build/admin-settings.js',
 			$asset['dependencies'] ?? array(),
-			$asset['version'] ?? OPENSEO_VERSION,
+			$version,
 			true
 		);
 
-		$style_path = OPENSEO_PLUGIN_DIR . 'assets/build/admin-settings.css';
+		wp_add_inline_script(
+			self::HANDLE,
+			'window.openseoAdmin = ' . wp_json_encode( $this->bootstrap( $hook_suffix ), JSON_HEX_TAG ) . ';',
+			'before'
+		);
 
-		if ( is_readable( $style_path ) ) {
-			wp_enqueue_style(
-				self::HANDLE,
-				OPENSEO_PLUGIN_URL . 'assets/build/admin-settings.css',
-				array(),
-				$asset['version'] ?? OPENSEO_VERSION
+		wp_set_script_translations( self::HANDLE, 'openseo' );
+	}
+
+	/**
+	 * Build the bootstrap payload. Dashboard counts only on the dashboard screen.
+	 *
+	 * @param string $hook_suffix Current screen hook.
+	 * @return array<string, mixed>
+	 */
+	private function bootstrap( string $hook_suffix ): array {
+		$data = array(
+			'settings'  => $this->options->all(),
+			'connector' => array(
+				'available' => Connector::is_text_generation_available(),
+				'url'       => Connector::settings_url(),
+			),
+		);
+
+		if ( $hook_suffix === $this->menu->dashboard_hook() ) {
+			$data['dashboard'] = array(
+				'redirects' => $this->redirects->count_active(),
+				'notfound'  => $this->not_found_log->count_all(),
 			);
 		}
+
+		return $data;
 	}
 }
