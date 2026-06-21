@@ -23,7 +23,9 @@ export function variablesForScope( catalog, scope ) {
  * @return {Array} Matching variables.
  */
 export function filterVariables( list, query ) {
-	const q = String( query ?? '' ).trim().toLowerCase();
+	const q = String( query ?? '' )
+		.trim()
+		.toLowerCase();
 	if ( ! q ) {
 		return list;
 	}

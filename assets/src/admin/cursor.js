@@ -6,7 +6,7 @@
  * @param {string} token Token to insert.
  * @param {number} start Selection start (defaults to end of value).
  * @param {number} end   Selection end (defaults to start).
- * @return {{ value: string, cursor: number }}
+ * @return {{ value: string, cursor: number }} New value and caret position.
  */
 export function insertAtCursor( value, token, start, end ) {
 	const len = value.length;
