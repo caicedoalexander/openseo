@@ -28,6 +28,7 @@ use OpenSEO\Frontend\Head\Title;
 use OpenSEO\Frontend\Head\Twitter;
 use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Schema\Graph;
 use OpenSEO\Schema\Pieces\Article;
@@ -120,7 +121,7 @@ final class Plugin {
 	private function modules(): array {
 		$options   = new Options();
 		$variables = new Variables( $options );
-		$resolver  = new Resolver( $options, $variables );
+		$resolver  = new Resolver( $options, $variables, new TemplateDefaults() );
 
 		$not_found_log   = new NotFoundLog();
 		$redirects_repo  = new RedirectsRepository();

@@ -6,6 +6,7 @@ namespace OpenSEO\Tests\Unit\Schema\Pieces;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
 use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\Variables;
 use OpenSEO\Schema\Pieces\Article;
 use OpenSEO\Schema\Pieces\WebPage;
@@ -30,6 +31,9 @@ final class ContentPiecesTest extends TestCase {
 		Functions\when( 'get_post_meta' )->justReturn( '' );
 		Functions\when( 'get_the_post_thumbnail_url' )->justReturn( '' );
 		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'is_category' )->justReturn( false );
+		Functions\when( 'is_tag' )->justReturn( false );
+		Functions\when( 'is_tax' )->justReturn( false );
 		Functions\when( 'get_the_author_meta' )->justReturn( 'Jane' );
 		Functions\when( 'get_the_author' )->justReturn( 'Jane' );
 		Functions\when( 'get_author_posts_url' )->justReturn( 'https://example.com/author/jane/' );
@@ -46,7 +50,7 @@ final class ContentPiecesTest extends TestCase {
 	private function resolver(): Resolver {
 		$options = new Options();
 
-		return new Resolver( $options, new Variables( $options ) );
+		return new Resolver( $options, new Variables( $options ), new TemplateDefaults() );
 	}
 
 	public function test_webpage_needed_on_singular_and_references_website(): void {
