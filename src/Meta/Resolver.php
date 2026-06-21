@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Meta;
 
+use OpenSEO\Meta\TemplateContext;
 use OpenSEO\Settings\Options;
 
 /**
@@ -42,7 +43,7 @@ final class Resolver {
 				return $override;
 			}
 
-			return $this->variables->replace( (string) $this->options->get( 'title_template' ), $id );
+			return $this->variables->replace( (string) $this->options->get( 'title_template' ), TemplateContext::for_post( $id ) );
 		}
 
 		if ( is_front_page() ) {
@@ -64,7 +65,7 @@ final class Resolver {
 				return $override;
 			}
 
-			return $this->variables->replace( (string) $this->options->get( 'description_template' ), $id );
+			return $this->variables->replace( (string) $this->options->get( 'description_template' ), TemplateContext::for_post( $id ) );
 		}
 
 		if ( is_front_page() ) {
