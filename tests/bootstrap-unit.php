@@ -49,3 +49,16 @@ if ( ! class_exists( 'WP_Post' ) ) {
 		public string $post_content = '';
 	}
 }
+
+if ( ! class_exists( 'WP_Term' ) ) {
+	class WP_Term {
+
+		public int $term_id = 0;
+
+		public string $name = '';
+
+		public string $description = '';
+
+		public string $taxonomy = '';
+	}
+}
