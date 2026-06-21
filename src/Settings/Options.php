@@ -46,6 +46,8 @@ final class Options {
 			'redirects_track_hits'     => '1',
 			'notfound_monitor_enabled' => '',
 			'notfound_retention_days'  => '30',
+			'post_types'               => array(),
+			'taxonomies'               => array(),
 		);
 	}
 
@@ -125,6 +127,72 @@ final class Options {
 			$clean['notfound_retention_days'] = (string) max( 1, $days );
 		}
 
+		if ( isset( $input['post_types'] ) || isset( $input['taxonomies'] ) ) {
+			$content_types = new ContentTypes();
+
+			if ( isset( $input['post_types'] ) ) {
+				$clean['post_types'] = $this->sanitize_template_map(
+					$input['post_types'],
+					is_array( $clean['post_types'] ?? null ) ? $clean['post_types'] : array(),
+					$content_types->post_type_slugs()
+				);
+			}
+
+			if ( isset( $input['taxonomies'] ) ) {
+				$clean['taxonomies'] = $this->sanitize_template_map(
+					$input['taxonomies'],
+					is_array( $clean['taxonomies'] ?? null ) ? $clean['taxonomies'] : array(),
+					$content_types->taxonomy_slugs()
+				);
+			}
+		}
+
 		return $clean;
+	}
+
+	/**
+	 * Sanitize one nested template map (post_types or taxonomies) slug-by-slug.
+	 *
+	 * Conservation of unsent slugs comes from $current already holding the stored
+	 * map (sanitize() starts from all()); this is NOT a PHP deep merge. Per slug:
+	 * whitelist, merge per field, and unset when both fields end up empty.
+	 *
+	 * @param mixed                                       $input_map Raw submitted map for the group.
+	 * @param array<string, array<string, string>>        $current   Stored map for this group.
+	 * @param array<int, string>                          $allowed   Whitelisted slugs.
+	 * @return array<string, array<string, string>>
+	 */
+	private function sanitize_template_map( mixed $input_map, array $current, array $allowed ): array {
+		if ( ! is_array( $input_map ) ) {
+			return $current;
+		}
+
+		foreach ( $input_map as $slug => $fields ) {
+			$slug = (string) $slug;
+
+			if ( ! in_array( $slug, $allowed, true ) || ! is_array( $fields ) ) {
+				continue;
+			}
+
+			$title = array_key_exists( 'title', $fields )
+				? sanitize_text_field( wp_unslash( (string) $fields['title'] ) )
+				: (string) ( $current[ $slug ]['title'] ?? '' );
+
+			$description = array_key_exists( 'description', $fields )
+				? sanitize_textarea_field( wp_unslash( (string) $fields['description'] ) )
+				: (string) ( $current[ $slug ]['description'] ?? '' );
+
+			if ( '' === $title && '' === $description ) {
+				unset( $current[ $slug ] );
+				continue;
+			}
+
+			$current[ $slug ] = array(
+				'title'       => $title,
+				'description' => $description,
+			);
+		}
+
+		return $current;
 	}
 }

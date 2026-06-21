@@ -19,11 +19,27 @@ final class OptionsTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		Monkey\setUp();
+		Functions\when( 'sanitize_textarea_field' )->returnArg();
+		Functions\when( 'get_post_types' )->justReturn(
+			array( 'post' => $this->fake_type( 'post' ), 'page' => $this->fake_type( 'page' ) )
+		);
+		Functions\when( 'get_taxonomies' )->justReturn(
+			array( 'category' => $this->fake_type( 'category' ) )
+		);
 	}
 
 	protected function tearDown(): void {
 		Monkey\tearDown();
 		parent::tearDown();
+	}
+
+	private function fake_type( string $name ): object {
+		$labels       = new \stdClass();
+		$labels->name = ucfirst( $name );
+		$type         = new \stdClass();
+		$type->name   = $name;
+		$type->labels = $labels;
+		return $type;
 	}
 
 	public function test_returns_on_page_defaults_when_nothing_is_stored(): void {
@@ -222,6 +238,86 @@ final class OptionsTest extends TestCase {
 
 		$valid = $options->sanitize( array( 'redirects_default_status' => '307' ) );
 		$this->assertSame( '307', $valid['redirects_default_status'] );
+	}
+
+	public function test_defaults_include_empty_template_maps(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$all = ( new Options() )->all();
+
+		$this->assertSame( array(), $all['post_types'] );
+		$this->assertSame( array(), $all['taxonomies'] );
+	}
+
+	public function test_sanitize_stores_whitelisted_post_type_template(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'post' => array( 'title' => 'Custom %sitename%', 'description' => 'Desc' ) ) )
+		);
+
+		$this->assertSame(
+			array( 'title' => 'Custom %sitename%', 'description' => 'Desc' ),
+			$clean['post_types']['post']
+		);
+	}
+
+	public function test_sanitize_rejects_unknown_slug(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'bogus' => array( 'title' => 'X', 'description' => 'Y' ) ) )
+		);
+
+		$this->assertArrayNotHasKey( 'bogus', $clean['post_types'] );
+	}
+
+	public function test_sanitize_preserves_unsent_slugs(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'page' => array( 'title' => 'Kept', 'description' => '' ) ) )
+		);
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'post' => array( 'title' => 'New', 'description' => '' ) ) )
+		);
+
+		$this->assertSame( 'Kept', $clean['post_types']['page']['title'] );
+		$this->assertSame( 'New', $clean['post_types']['post']['title'] );
+	}
+
+	public function test_sanitize_unsets_fully_empty_slug(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'post' => array( 'title' => 'Old', 'description' => '' ) ) )
+		);
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'post' => array( 'title' => '', 'description' => '' ) ) )
+		);
+
+		$this->assertArrayNotHasKey( 'post', $clean['post_types'] );
+	}
+
+	public function test_sanitize_ignores_missing_group(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'taxonomies' => array( 'category' => array( 'title' => 'Cat', 'description' => '' ) ) )
+		);
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		// Submit only post_types; taxonomies must be preserved untouched.
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'post' => array( 'title' => 'P', 'description' => '' ) ) )
+		);
+
+		$this->assertSame( 'Cat', $clean['taxonomies']['category']['title'] );
 	}
 }
 
