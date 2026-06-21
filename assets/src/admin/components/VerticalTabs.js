@@ -35,6 +35,7 @@ export function VerticalTabs( { groups, active, onSelect, children } ) {
 				role="tablist"
 				aria-orientation="vertical"
 				onKeyDown={ onKeyDown }
+				tabIndex={ -1 }
 			>
 				{ groups.map( ( group, groupIndex ) => (
 					<div
