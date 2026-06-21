@@ -37,9 +37,9 @@ export function VerticalTabs( { groups, active, onSelect, children } ) {
 				onKeyDown={ onKeyDown }
 				tabIndex={ -1 }
 			>
-				{ groups.map( ( group ) => (
+				{ groups.map( ( group, groupIndex ) => (
 					<div
-						key={ group.label ?? 'general' }
+						key={ group.label ?? `group-${ groupIndex }` }
 						className="openseo-vtabs__group"
 					>
 						{ group.label && (
