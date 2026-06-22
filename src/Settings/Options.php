@@ -50,9 +50,18 @@ final class Options {
 			'capitalize_titles'        => '',
 			'twitter_card_type'        => 'summary_large_image',
 			'advanced_robots'          => array(
-				'max_snippet'       => array( 'enabled' => '', 'length' => '-1' ),
-				'max_video_preview' => array( 'enabled' => '', 'length' => '-1' ),
-				'max_image_preview' => array( 'enabled' => '', 'value' => 'large' ),
+				'max_snippet'       => array(
+					'enabled' => '',
+					'length'  => '-1',
+				),
+				'max_video_preview' => array(
+					'enabled' => '',
+					'length'  => '-1',
+				),
+				'max_image_preview' => array(
+					'enabled' => '',
+					'value'   => 'large',
+				),
 			),
 		);
 	}
