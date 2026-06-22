@@ -18,8 +18,9 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { resolveSnippet, deriveExcerpt, formatBreadcrumb } from './preview';
+import { resolveSnippet, formatBreadcrumb } from './preview';
 import { aiErrorMessage } from './ai';
+import { useTemplateTokens } from './useTemplateTokens';
 import { triValue, isNoindexValue } from './robots';
 import { LengthIndicator } from './components/LengthIndicator';
 import { PreviewDevices } from './components/PreviewDevices';
@@ -207,29 +208,13 @@ function GeneralTab() {
 	const [ noindex ] = useMeta( '_openseo_robots_noindex' );
 	const [ device, setDevice ] = useState( 'desktop' );
 
-	const { postTitle, excerpt, content, permalink } = useSelect(
-		( select ) => {
-			const editor = select( editorStore );
-			return {
-				postTitle: editor.getEditedPostAttribute( 'title' ) || '',
-				excerpt: editor.getEditedPostAttribute( 'excerpt' ) || '',
-				content: editor.getEditedPostContent() || '',
-				permalink: editor.getPermalink() || '',
-			};
-		},
+	const tokens = useTemplateTokens();
+	const permalink = useSelect(
+		( select ) => select( editorStore ).getPermalink() || '',
 		[]
 	);
 
 	const cfg = window.openseoEditor ?? {};
-	const tokens = {
-		'%title%': postTitle,
-		'%excerpt%': excerpt || deriveExcerpt( content ),
-		'%sitename%': cfg.siteName ?? '',
-		'%tagline%': cfg.tagline ?? '',
-		'%sep%': cfg.separator ?? '-',
-		'%currentyear%': String( new Date().getUTCFullYear() ),
-	};
-
 	const resolvedTitle = resolveSnippet( {
 		override: title,
 		template: cfg.titleTemplate ?? '',
