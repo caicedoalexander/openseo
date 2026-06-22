@@ -20,6 +20,7 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { resolveSnippet, deriveExcerpt, formatBreadcrumb } from './preview';
 import { aiErrorMessage } from './ai';
+import { triValue, isNoindexValue } from './robots';
 import { LengthIndicator } from './components/LengthIndicator';
 import { PreviewDevices } from './components/PreviewDevices';
 import { SerpPreview } from './components/SerpPreview';
@@ -30,10 +31,6 @@ const ROBOTS_TRISTATE = [
 	{ label: __( 'Yes', 'openseo' ), value: 'on' },
 	{ label: __( 'No', 'openseo' ), value: 'off' },
 ];
-
-// Legacy '1' (old binary toggle) reads as 'on'.
-const triValue = ( v ) => ( v === '1' ? 'on' : v );
-const isNoindexValue = ( v ) => v === 'on' || v === '1';
 
 function useMeta( key ) {
 	const postType = useSelect(
