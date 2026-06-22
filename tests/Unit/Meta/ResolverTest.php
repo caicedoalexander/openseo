@@ -180,6 +180,71 @@ final class ResolverTest extends TestCase {
 		$this->assertSame( 'index, nofollow', $this->resolver()->robots() );
 	}
 
+	public function test_robots_global_noindex_applies_when_no_overrides(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_option' )->justReturn( array( 'robots' => array( 'noindex' => '1' ) ) );
+
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
+	}
+
+	public function test_robots_per_type_overrides_global(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'page' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'robots'     => array( 'noindex' => '1' ),
+				'post_types' => array( 'page' => array( 'robots' => array( 'noindex' => 'off' ) ) ),
+			)
+		);
+
+		// Type forces index over a global noindex.
+		$this->assertSame( 'index, follow', $this->resolver()->robots() );
+	}
+
+	public function test_robots_entry_off_overrides_type_noindex(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->alias(
+			static fn( $id, $key ) => '_openseo_robots_noindex' === $key ? 'off' : ''
+		);
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'post' => array( 'robots' => array( 'noindex' => 'on' ) ) ) )
+		);
+
+		$this->assertSame( 'index, follow', $this->resolver()->robots() );
+	}
+
+	public function test_robots_adds_extra_directives_from_type(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'post' => array( 'robots' => array( 'noarchive' => 'on', 'nosnippet' => 'on' ) ) ) )
+		);
+
+		$this->assertSame( 'index, follow, noarchive, nosnippet', $this->resolver()->robots() );
+	}
+
+	public function test_robots_taxonomy_empty_term_forces_noindex(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_tag' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'robots' => array( 'noindex_empty_terms' => '1' ) ) );
+
+		$term        = new WP_Term();
+		$term->name  = 'Empty';
+		$term->count = 0;
+		Functions\when( 'get_queried_object' )->justReturn( $term );
+
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
+	}
+
 	// -----------------------------------------------------------------------
 	// social_title() / social_description()
 	// -----------------------------------------------------------------------

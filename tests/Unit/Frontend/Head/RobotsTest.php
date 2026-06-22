@@ -25,6 +25,11 @@ final class RobotsTest extends TestCase {
 		parent::setUp();
 		Monkey\setUp();
 		Functions\when( 'esc_attr' )->returnArg();
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'is_category' )->justReturn( false );
+		Functions\when( 'is_tag' )->justReturn( false );
+		Functions\when( 'is_tax' )->justReturn( false );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
 	}
 
 	protected function tearDown(): void {
