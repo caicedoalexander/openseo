@@ -1,10 +1,16 @@
-import { TextControl } from '@wordpress/components';
+import {
+	CheckboxControl,
+	TextControl,
+	ToggleControl,
+} from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { VerticalTabs } from '../components/VerticalTabs';
 import { TemplateField } from '../components/TemplateField';
 import { setTemplateField } from '../templateFields';
+import { ROBOTS_DIRECTIVES } from '../robots';
+import { RobotsFields, ROBOTS_LABELS } from '../components/RobotsFields';
 
 const bootstrap = window.openseoAdmin ?? {};
 const contentTypes = bootstrap.contentTypes ?? {
@@ -65,6 +71,32 @@ function GeneralPanel( { values, change } ) {
 				catalog={ catalog }
 				onChange={ ( v ) => change( 'home_description', v ) }
 			/>
+			<h3>{ __( 'Default robots', 'openseo' ) }</h3>
+			{ ROBOTS_DIRECTIVES.map( ( directive ) => (
+				<CheckboxControl
+					key={ directive }
+					__nextHasNoMarginBottom
+					label={ ROBOTS_LABELS[ directive ] }
+					checked={ ( values.robots ?? {} )[ directive ] === '1' }
+					onChange={ ( on ) =>
+						change( 'robots', {
+							...( values.robots ?? {} ),
+							[ directive ]: on ? '1' : '',
+						} )
+					}
+				/>
+			) ) }
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Noindex empty term archives', 'openseo' ) }
+				checked={ ( values.robots ?? {} ).noindex_empty_terms === '1' }
+				onChange={ ( on ) =>
+					change( 'robots', {
+						...( values.robots ?? {} ),
+						noindex_empty_terms: on ? '1' : '',
+					} )
+				}
+			/>
 		</>
 	);
 }
@@ -99,6 +131,16 @@ function TypePanel( { type, mapKey, scope, values, change } ) {
 						mapKey,
 						setTemplateField( map, type.slug, 'description', v )
 					)
+				}
+			/>
+			<h3>{ __( 'Robots', 'openseo' ) }</h3>
+			<RobotsFields
+				robots={ entry.robots }
+				onChange={ ( nextRobots ) =>
+					change( mapKey, {
+						...map,
+						[ type.slug ]: { ...entry, robots: nextRobots },
+					} )
 				}
 			/>
 		</>
