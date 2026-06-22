@@ -40,6 +40,8 @@ final class LocalSeoSanitizerTest extends TestCase {
 		$bad = LocalSeoSanitizer::sanitize( array( 'local_geo' => '200,abc' ), array() );
 		$this->assertSame( '40.7128,-74.006', $ok['local_geo'] );
 		$this->assertSame( '', $bad['local_geo'] );
+		$range = LocalSeoSanitizer::sanitize( array( 'local_geo' => '200,0' ), array() );
+		$this->assertSame( '', $range['local_geo'] );
 	}
 
 	public function test_address_merges_over_current(): void {

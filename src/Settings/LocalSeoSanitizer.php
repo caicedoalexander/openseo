@@ -44,7 +44,7 @@ final class LocalSeoSanitizer {
 		}
 
 		if ( array_key_exists( 'local_geo', $input ) ) {
-			$clean['local_geo'] = self::parse_geo( (string) wp_unslash( (string) $input['local_geo'] ) );
+			$clean['local_geo'] = self::parse_geo( (string) wp_unslash( $input['local_geo'] ) );
 		}
 
 		if ( array_key_exists( 'local_address', $input ) ) {
@@ -81,7 +81,7 @@ final class LocalSeoSanitizer {
 		if ( false === $lat || false === $lng || $lat < -90.0 || $lat > 90.0 || $lng < -180.0 || $lng > 180.0 ) {
 			return '';
 		}
-		return $lat . ',' . $lng;
+		return trim( $parts[0] ) . ',' . trim( $parts[1] );
 	}
 
 	/**
