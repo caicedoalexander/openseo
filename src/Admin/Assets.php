@@ -14,6 +14,7 @@ use OpenSEO\Contracts\Hookable;
 use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\NotFound\LogRepository;
 use OpenSEO\Redirects\Repository;
+use OpenSEO\Schema\LocalChoices;
 use OpenSEO\Settings\ContentTypes;
 use OpenSEO\Meta\VariableCatalog;
 use OpenSEO\Settings\Options;
@@ -152,6 +153,12 @@ final class Assets implements Hookable {
 				),
 			),
 			'variables'    => $this->variable_catalog->all(),
+			'localChoices' => array(
+				'businessTypes'       => LocalChoices::business_types(),
+				'phoneTypes'          => LocalChoices::phone_types(),
+				'additionalInfoTypes' => LocalChoices::additional_info_types(),
+				'days'                => LocalChoices::days(),
+			),
 		);
 
 		if ( $hook_suffix === $this->menu->dashboard_hook() ) {

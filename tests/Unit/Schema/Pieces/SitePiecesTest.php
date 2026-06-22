@@ -169,4 +169,45 @@ final class SitePiecesTest extends TestCase {
 		$this->assertSame( 'https://me.example', $data['url'] );
 		$this->assertSame( 'me@example.com', $data['email'] );
 	}
+
+	public function test_organization_becomes_local_business_with_props(): void {
+		$org = new Organization(
+			$this->options(
+				array(
+					'schema_site_type'    => 'Organization',
+					'local_business_type' => 'Restaurant',
+					'local_phone'         => '+1-555',
+					'local_address'       => array( 'street' => 'Main St', 'locality' => '', 'region' => '', 'postal_code' => '', 'country' => 'US' ),
+					'local_price_range'   => '$$',
+				)
+			)
+		);
+
+		$data = $org->data();
+		$this->assertSame( 'Restaurant', $data['@type'] );
+		$this->assertSame( '+1-555', $data['telephone'] );
+		$this->assertSame( 'PostalAddress', $data['address']['@type'] );
+		$this->assertSame( '$$', $data['priceRange'] );
+	}
+
+	public function test_organization_without_business_type_stays_organization(): void {
+		$data = ( new Organization(
+			$this->options(
+				array(
+					'schema_site_type'  => 'Organization',
+					'local_price_range' => '$$',
+					'local_description' => 'About',
+				)
+			)
+		) )->data();
+
+		$this->assertSame( 'Organization', $data['@type'] );
+		$this->assertArrayNotHasKey( 'priceRange', $data );
+		$this->assertSame( 'About', $data['description'] );
+	}
+
+	public function test_person_emits_telephone(): void {
+		$data = ( new Person( $this->options( array( 'schema_site_type' => 'Person', 'local_phone' => '+1-555' ) ) ) )->data();
+		$this->assertSame( '+1-555', $data['telephone'] );
+	}
 }

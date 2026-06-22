@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-22T18:35:12+00:00\n"
+"POT-Creation-Date: 2026-06-22T21:06:44+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: openseo\n"
@@ -182,7 +182,7 @@ msgstr ""
 
 #: src/Meta/VariableCatalog.php:53
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:235
+#: assets/src/admin/views/Titles.js:246
 msgid "Title"
 msgstr ""
 
@@ -292,6 +292,258 @@ msgstr ""
 msgid "Invalid bulk action."
 msgstr ""
 
+#: src/Schema/LocalChoices.php:137
+msgid "Local business (generic)"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:138
+msgid "Accounting service"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:139
+msgid "Attorney"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:140
+msgid "Automotive business"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:141
+msgid "Auto repair"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:142
+msgid "Bakery"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:143
+msgid "Bar or pub"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:144
+msgid "Beauty salon"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:145
+msgid "Cafe or coffee shop"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:146
+msgid "Child care"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:147
+msgid "Clothing store"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:148
+msgid "Dentist"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:149
+msgid "Electrician"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:150
+msgid "Electronics store"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:151
+msgid "Entertainment business"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:152
+msgid "Financial service"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:153
+msgid "Food establishment"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:154
+msgid "Grocery store"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:155
+msgid "Hair salon"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:156
+msgid "Hardware store"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:157
+msgid "Health and beauty business"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:158
+msgid "Home and construction business"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:159
+msgid "Hotel"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:160
+msgid "Insurance agency"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:161
+msgid "Legal service"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:162
+msgid "Locksmith"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:163
+msgid "Lodging business"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:164
+msgid "Medical business"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:165
+msgid "Pharmacy"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:166
+msgid "Physician"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:167
+msgid "Plumber"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:168
+msgid "Professional service"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:169
+msgid "Real estate agent"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:170
+msgid "Restaurant"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:171
+msgid "Sports activity location"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:172
+msgid "Store"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:173
+msgid "Travel agency"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:186
+msgid "Customer service"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:187
+msgid "Technical support"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:188
+msgid "Billing support"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:189
+msgid "Bill payment"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:190
+msgid "Sales"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:191
+msgid "Reservations"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:192
+msgid "Credit card support"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:193
+msgid "Emergency"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:194
+msgid "Package tracking"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:207
+msgid "Legal name"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:208
+msgid "Founding date (YYYY or YYYY-MM-DD)"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:209
+msgid "VAT ID"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:210
+msgid "Tax ID"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:211
+msgid "DUNS"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:212
+msgid "LEI code"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:213
+msgid "NAICS code"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:214
+msgid "ISO 6523 code"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:215
+msgid "Global location number"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:216
+msgid "Number of employees"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:229
+msgid "Monday"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:230
+msgid "Tuesday"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:231
+msgid "Wednesday"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:232
+msgid "Thursday"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:233
+msgid "Friday"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:234
+msgid "Saturday"
+msgstr ""
+
+#: src/Schema/LocalChoices.php:235
+msgid "Sunday"
+msgstr ""
+
 #: assets/build/admin-settings.js:1
 #: assets/src/admin/views/Dashboard.js:11
 msgid "AI connector"
@@ -374,6 +626,7 @@ msgstr ""
 
 #: assets/build/admin-settings.js:1
 #: assets/src/admin/components/MediaField.js:53
+#: assets/src/admin/components/RepeatableGroup.js:93
 msgid "Remove"
 msgstr ""
 
@@ -440,6 +693,146 @@ msgid "Max image preview size"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:18
+msgid "— None"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:23
+msgid "— Type"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:31
+msgid "Street address"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:32
+msgid "City / locality"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:33
+msgid "Region / state"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:34
+msgid "Postal code"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:44
+msgid "Local business"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:47
+msgid "Business type"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:54
+#: assets/src/admin/views/Titles.js:259
+msgid "Description"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:58
+msgid "Address"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:70
+msgid "Country"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:73
+msgid "ISO 3166-1 alpha-2 code, e.g. US, ES."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:80
+msgid "Price range"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:86
+msgid "Geo coordinates"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:87
+msgid "Latitude,longitude — e.g. 40.7128,-74.006."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:95
+msgid "Opening hours"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:100
+msgid "Day"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:106
+msgid "Opens"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:111
+msgid "Closes"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:117
+msgid "Add hours"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:120
+msgid "Phone numbers"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/build/admin-settings.js:3
+#: assets/src/admin/components/LocalBusinessFields.js:125
+#: assets/src/admin/components/LocalBusinessFields.js:145
+#: assets/src/admin/views/Redirects.js:114
+#: assets/src/admin/views/Redirects.js:316
+msgid "Type"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:131
+msgid "Number"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:137
+msgid "Add phone"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:140
+msgid "Additional info"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:151
+msgid "Value"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/components/LocalBusinessFields.js:157
+msgid "Add info"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
 #: assets/build/editor.js:1
 #: assets/src/admin/components/RobotsFields.js:6
 #: assets/src/editor/index.js:315
@@ -490,159 +883,159 @@ msgid "No"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:28
+#: assets/src/admin/views/Titles.js:29
 msgid "Summary card with large image"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:31
+#: assets/src/admin/views/Titles.js:32
 msgid "Summary card"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:37
+#: assets/src/admin/views/Titles.js:38
 msgid "Meta Global"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:38
+#: assets/src/admin/views/Titles.js:39
 msgid "SEO Local"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:39
+#: assets/src/admin/views/Titles.js:40
 msgid "Homepage"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:45
+#: assets/src/admin/views/Titles.js:46
 msgid "Content types"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:56
+#: assets/src/admin/views/Titles.js:57
 msgid "Taxonomies"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:79
+#: assets/src/admin/views/Titles.js:80
 msgid "Capitalize titles"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:80
+#: assets/src/admin/views/Titles.js:81
 msgid "Automatically capitalize the first letter of each word in titles."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:89
+#: assets/src/admin/views/Titles.js:90
 msgid "Default robots"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:106
+#: assets/src/admin/views/Titles.js:107
 msgid "Noindex empty term archives"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:119
+#: assets/src/admin/views/Titles.js:120
 msgid "OpenGraph thumbnail"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:121
+#: assets/src/admin/views/Titles.js:122
 msgid "Default image used when a post has no featured or social image."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:130
+#: assets/src/admin/views/Titles.js:131
 msgid "Twitter card type"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:144
+#: assets/src/admin/views/Titles.js:145
 msgid "Site represents"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:148
+#: assets/src/admin/views/Titles.js:149
 msgid "Organization"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:151
+#: assets/src/admin/views/Titles.js:152
 msgid "Person"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:157
+#: assets/src/admin/views/Titles.js:158
 msgid "Website name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:158
+#: assets/src/admin/views/Titles.js:159
 msgid "Name of the WebSite node (defaults to site name)."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:167
+#: assets/src/admin/views/Titles.js:168
 msgid "Alternate website name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:175
+#: assets/src/admin/views/Titles.js:176
 msgid "Person or Organization name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:176
+#: assets/src/admin/views/Titles.js:177
 msgid "Name of the Organization/Person entity (defaults to site name)."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:183
+#: assets/src/admin/views/Titles.js:184
 msgid "Logo"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:185
+#: assets/src/admin/views/Titles.js:186
 msgid "Minimum size 112×112px."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
 #: assets/build/admin-settings.js:3
 #: assets/src/admin/views/NotFound.js:19
-#: assets/src/admin/views/Titles.js:191
+#: assets/src/admin/views/Titles.js:192
 msgid "URL"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:192
+#: assets/src/admin/views/Titles.js:193
 msgid "Defaults to the site URL."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:199
+#: assets/src/admin/views/Titles.js:200
 msgid "Email"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:211
+#: assets/src/admin/views/Titles.js:206
+msgid "Phone"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:222
 msgid "Homepage title"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:218
+#: assets/src/admin/views/Titles.js:229
 msgid "Homepage description"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:248
-msgid "Description"
-msgstr ""
-
-#: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:261
+#: assets/src/admin/views/Titles.js:272
 msgid "Robots"
 msgstr ""
 
@@ -725,12 +1118,6 @@ msgstr ""
 #: assets/src/admin/views/Redirects.js:113
 #: assets/src/admin/views/Redirects.js:325
 msgid "Target"
-msgstr ""
-
-#: assets/build/admin-settings.js:3
-#: assets/src/admin/views/Redirects.js:114
-#: assets/src/admin/views/Redirects.js:316
-msgid "Type"
 msgstr ""
 
 #: assets/build/admin-settings.js:3

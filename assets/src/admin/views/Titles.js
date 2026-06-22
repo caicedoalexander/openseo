@@ -12,6 +12,7 @@ import { TemplateField } from '../components/TemplateField';
 import { MediaField } from '../components/MediaField';
 import { SeparatorField } from '../components/SeparatorField';
 import { AdvancedRobotsField } from '../components/AdvancedRobotsField';
+import { LocalBusinessFields } from '../components/LocalBusinessFields';
 import { setTemplateField } from '../templateFields';
 import { ROBOTS_DIRECTIVES } from '../robots';
 import { RobotsFields, ROBOTS_LABELS } from '../components/RobotsFields';
@@ -200,6 +201,16 @@ function SeoLocalPanel( { values, change } ) {
 				value={ values.local_email ?? '' }
 				onChange={ ( v ) => change( 'local_email', v ) }
 			/>
+			<TextControl
+				__nextHasNoMarginBottom
+				label={ __( 'Phone', 'openseo' ) }
+				value={ values.local_phone ?? '' }
+				onChange={ ( v ) => change( 'local_phone', v ) }
+			/>
+			{ ( values.schema_site_type ?? 'Organization' ) ===
+				'Organization' && (
+				<LocalBusinessFields values={ values } change={ change } />
+			) }
 		</>
 	);
 }

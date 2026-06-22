@@ -75,6 +75,11 @@ final class Person implements Piece {
 			);
 		}
 
+		$phone = (string) $this->options->get( 'local_phone' );
+		if ( '' !== $phone ) {
+			$data['telephone'] = $phone;
+		}
+
 		return $data;
 	}
 }

@@ -513,6 +513,37 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( '', $invalid['local_email'] );
 	}
 
+	public function test_defaults_include_local_business_keys(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		$o = new Options();
+
+		$this->assertSame( '', $o->get( 'local_business_type' ) );
+		$this->assertSame( array(), $o->get( 'local_opening_hours' ) );
+		$this->assertSame(
+			array( 'street' => '', 'locality' => '', 'region' => '', 'postal_code' => '', 'country' => '' ),
+			$o->get( 'local_address' )
+		);
+	}
+
+	public function test_sanitize_delegates_local_business_keys(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+
+		$clean = ( new Options() )->sanitize( array( 'local_business_type' => 'Restaurant' ) );
+		$this->assertSame( 'Restaurant', $clean['local_business_type'] );
+	}
+
+	public function test_sanitize_other_tab_does_not_wipe_local_keys(): void {
+		// A previously saved local_business_type is stored; another tab posts only its own field.
+		Functions\when( 'get_option' )->justReturn( array( 'local_business_type' => 'Store' ) );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+
+		$clean = ( new Options() )->sanitize( array( 'title_separator' => '|' ) );
+		$this->assertSame( 'Store', $clean['local_business_type'] );
+	}
+
 	public function test_sanitize_keeps_separator_value_unchanged(): void {
 		// Brain Monkey does not load WP, so sanitize_text_field is a passthrough here;
 		// this asserts Options itself never mutilates a multibyte separator char.

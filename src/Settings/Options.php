@@ -67,6 +67,21 @@ final class Options {
 			'local_website_alternate_name' => '',
 			'local_url'                    => '',
 			'local_email'                  => '',
+			'local_business_type'          => '',
+			'local_description'            => '',
+			'local_price_range'            => '',
+			'local_geo'                    => '',
+			'local_phone'                  => '',
+			'local_address'                => array(
+				'street'      => '',
+				'locality'    => '',
+				'region'      => '',
+				'postal_code' => '',
+				'country'     => '',
+			),
+			'local_opening_hours'          => array(),
+			'local_phone_numbers'          => array(),
+			'local_additional_info'        => array(),
 		);
 	}
 
@@ -194,6 +209,21 @@ final class Options {
 				'max_video_preview' => $this->sanitize_advanced_length( $adv['max_video_preview'] ?? null ),
 				'max_image_preview' => $this->sanitize_advanced_image( $adv['max_image_preview'] ?? null ),
 			);
+		}
+
+		$local_keys = array(
+			'local_business_type',
+			'local_description',
+			'local_price_range',
+			'local_geo',
+			'local_phone',
+			'local_address',
+			'local_opening_hours',
+			'local_phone_numbers',
+			'local_additional_info',
+		);
+		if ( array() !== array_intersect_key( $input, array_flip( $local_keys ) ) ) {
+			$clean = array_merge( $clean, LocalSeoSanitizer::sanitize( $input, $clean ) );
 		}
 
 		return $clean;
