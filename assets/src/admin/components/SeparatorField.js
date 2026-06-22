@@ -12,10 +12,10 @@ import { SEPARATOR_PRESETS } from '../advancedRobots';
  */
 export function SeparatorField( { value, onChange } ) {
 	return (
-		<div className="openseo-separator-field">
-			<p className="openseo-separator-field__label">
+		<fieldset className="openseo-separator-field">
+			<legend className="openseo-separator-field__label">
 				{ __( 'Title separator', 'openseo' ) }
-			</p>
+			</legend>
 			<Flex justify="flex-start" gap={ 1 } wrap>
 				{ SEPARATOR_PRESETS.map( ( preset ) => (
 					<FlexItem key={ preset }>
@@ -35,6 +35,6 @@ export function SeparatorField( { value, onChange } ) {
 				value={ value ?? '' }
 				onChange={ onChange }
 			/>
-		</div>
+		</fieldset>
 	);
 }
