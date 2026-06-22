@@ -253,6 +253,24 @@ final class ResolverTest extends TestCase {
 	}
 
 	// -----------------------------------------------------------------------
+	// twitter_card()
+	// -----------------------------------------------------------------------
+
+	public function test_twitter_card_defaults_to_summary_large_image(): void {
+		$this->assertSame( 'summary_large_image', $this->resolver()->twitter_card() );
+	}
+
+	public function test_twitter_card_uses_configured_value(): void {
+		Functions\when( 'get_option' )->justReturn( array( 'twitter_card_type' => 'summary' ) );
+		$this->assertSame( 'summary', $this->resolver()->twitter_card() );
+	}
+
+	public function test_twitter_card_rejects_invalid_value(): void {
+		Functions\when( 'get_option' )->justReturn( array( 'twitter_card_type' => 'bogus' ) );
+		$this->assertSame( 'summary_large_image', $this->resolver()->twitter_card() );
+	}
+
+	// -----------------------------------------------------------------------
 	// social_title() / social_description()
 	// -----------------------------------------------------------------------
 

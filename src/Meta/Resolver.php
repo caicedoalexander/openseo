@@ -310,6 +310,17 @@ final class Resolver {
 	}
 
 	/**
+	 * Effective Twitter card type from the global setting (revalidated).
+	 */
+	public function twitter_card(): string {
+		$type = (string) $this->options->get( 'twitter_card_type' );
+
+		return in_array( $type, array( 'summary', 'summary_large_image' ), true )
+			? $type
+			: 'summary_large_image';
+	}
+
+	/**
 	 * Whether the current request is a public taxonomy archive.
 	 */
 	private function is_taxonomy(): bool {
