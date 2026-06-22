@@ -28,28 +28,28 @@ final class Options {
 	 */
 	public function defaults(): array {
 		return array(
-			'title_separator'          => '-',
-			'home_title'               => '%sitename% %sep% %tagline%',
-			'home_description'         => '',
-			'og_default_image'         => '',
-			'sitemap_enabled'          => '1',
-			'sitemap_include_authors'  => '',
-			'schema_site_type'         => 'Organization',
-			'schema_site_name'         => '',
-			'schema_logo'              => '',
-			'breadcrumb_separator'     => '›',
-			'ai_model'                 => '',
-			'redirects_auto_slug'      => '1',
-			'redirects_default_status' => '301',
-			'redirects_track_hits'     => '1',
-			'notfound_monitor_enabled' => '',
-			'notfound_retention_days'  => '30',
-			'post_types'               => array(),
-			'taxonomies'               => array(),
-			'robots'                   => array(),
-			'capitalize_titles'        => '',
-			'twitter_card_type'        => 'summary_large_image',
-			'advanced_robots'          => array(
+			'title_separator'              => '-',
+			'home_title'                   => '%sitename% %sep% %tagline%',
+			'home_description'             => '',
+			'og_default_image'             => '',
+			'sitemap_enabled'              => '1',
+			'sitemap_include_authors'      => '',
+			'schema_site_type'             => 'Organization',
+			'schema_site_name'             => '',
+			'schema_logo'                  => '',
+			'breadcrumb_separator'         => '›',
+			'ai_model'                     => '',
+			'redirects_auto_slug'          => '1',
+			'redirects_default_status'     => '301',
+			'redirects_track_hits'         => '1',
+			'notfound_monitor_enabled'     => '',
+			'notfound_retention_days'      => '30',
+			'post_types'                   => array(),
+			'taxonomies'                   => array(),
+			'robots'                       => array(),
+			'capitalize_titles'            => '',
+			'twitter_card_type'            => 'summary_large_image',
+			'advanced_robots'              => array(
 				'max_snippet'       => array(
 					'enabled' => '',
 					'length'  => '-1',
@@ -63,6 +63,10 @@ final class Options {
 					'value'   => 'large',
 				),
 			),
+			'local_website_name'           => '',
+			'local_website_alternate_name' => '',
+			'local_url'                    => '',
+			'local_email'                  => '',
 		);
 	}
 
@@ -104,7 +108,7 @@ final class Options {
 		// keep their saved value instead of resetting to default.
 		$clean = $this->all();
 
-		foreach ( array( 'title_separator', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model' ) as $key ) {
+		foreach ( array( 'title_separator', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model', 'local_website_name', 'local_website_alternate_name' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = sanitize_text_field( wp_unslash( $input[ $key ] ) );
 			}
@@ -131,10 +135,15 @@ final class Options {
 			$clean['twitter_card_type'] = in_array( $card, array( 'summary_large_image', 'summary' ), true ) ? $card : 'summary_large_image';
 		}
 
-		foreach ( array( 'og_default_image', 'schema_logo' ) as $key ) {
+		foreach ( array( 'og_default_image', 'schema_logo', 'local_url' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = esc_url_raw( wp_unslash( $input[ $key ] ) );
 			}
+		}
+
+		if ( isset( $input['local_email'] ) ) {
+			$email                = sanitize_email( wp_unslash( $input['local_email'] ) );
+			$clean['local_email'] = is_email( $email ) ? $email : '';
 		}
 
 		if ( isset( $input['redirects_default_status'] ) ) {

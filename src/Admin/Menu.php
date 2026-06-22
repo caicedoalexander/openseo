@@ -127,11 +127,6 @@ final class Menu implements Hookable {
 				'view'  => 'dashboard',
 			),
 			array(
-				'slug'  => 'openseo-general',
-				'title' => __( 'General', 'openseo' ),
-				'view'  => 'general',
-			),
-			array(
 				'slug'  => 'openseo-titles',
 				'title' => __( 'Titles & Meta', 'openseo' ),
 				'view'  => 'titles',

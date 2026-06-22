@@ -469,6 +469,50 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( array( 'enabled' => '1', 'value' => 'large' ), $clean['advanced_robots']['max_image_preview'] ); // bogus → large
 	}
 
+	public function test_defaults_include_local_identity_keys(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		$o = new Options();
+
+		$this->assertSame( '', $o->get( 'local_website_name' ) );
+		$this->assertSame( '', $o->get( 'local_website_alternate_name' ) );
+		$this->assertSame( '', $o->get( 'local_url' ) );
+		$this->assertSame( '', $o->get( 'local_email' ) );
+	}
+
+	public function test_sanitize_local_text_and_url(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array(
+				'local_website_name'           => 'My Brand',
+				'local_website_alternate_name' => 'MB',
+				'local_url'                    => 'https://example.com',
+			)
+		);
+
+		$this->assertSame( 'My Brand', $clean['local_website_name'] );
+		$this->assertSame( 'MB', $clean['local_website_alternate_name'] );
+		$this->assertSame( 'https://example.com', $clean['local_url'] );
+	}
+
+	public function test_sanitize_local_email_valid_and_invalid(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_email' )->returnArg();
+		Functions\when( 'is_email' )->alias(
+			static fn( $v ) => str_contains( (string) $v, '@' ) ? $v : false
+		);
+
+		$valid   = ( new Options() )->sanitize( array( 'local_email' => 'hi@example.com' ) );
+		$invalid = ( new Options() )->sanitize( array( 'local_email' => 'not-an-email' ) );
+
+		$this->assertSame( 'hi@example.com', $valid['local_email'] );
+		$this->assertSame( '', $invalid['local_email'] );
+	}
+
 	public function test_sanitize_keeps_separator_value_unchanged(): void {
 		// Brain Monkey does not load WP, so sanitize_text_field is a passthrough here;
 		// this asserts Options itself never mutilates a multibyte separator char.

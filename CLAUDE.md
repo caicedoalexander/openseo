@@ -110,8 +110,9 @@ and the wp-env integration suite.
   (`Description`, `Robots`, `Canonical`, `OpenGraph`, `Twitter`) and removes core's
   `rel_canonical` to avoid duplicates; `Title` filters `pre_get_document_title`.
 - `Admin/Menu.php` — the single registrar of the **top-level OpenSEO menu** and all
-  9 submenus (Dashboard · General · Titles & Meta · Social · Sitemaps · Schema ·
-  Redirects · 404s · AI). All submenus are React — every screen renders
+  8 submenus (Dashboard · Titles & Meta · Social · Sitemaps · Schema ·
+  Redirects · 404s · AI); the site identity (Organization/Person, name, logo, URL,
+  email) lives in the **SEO Local** tab of Titles & Meta. All submenus are React — every screen renders
   `templates/admin/app-page.php` (a `#openseo-app[data-view]` mount + shared
   `templates/admin/header.php`); the React app lives in `assets/src/admin/` and
   reads/writes `openseo_settings` via the `Rest/SettingsController` route

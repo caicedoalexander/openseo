@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-22T16:55:58+00:00\n"
+"POT-Creation-Date: 2026-06-22T18:35:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: openseo\n"
@@ -53,40 +53,34 @@ msgid "Dashboard"
 msgstr ""
 
 #: src/Admin/Menu.php:131
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:339
-msgid "General"
-msgstr ""
-
-#: src/Admin/Menu.php:136
 msgid "Titles & Meta"
 msgstr ""
 
-#: src/Admin/Menu.php:141
+#: src/Admin/Menu.php:136
 #: assets/build/editor.js:1
 #: assets/src/editor/index.js:340
 msgid "Social"
 msgstr ""
 
-#: src/Admin/Menu.php:146
+#: src/Admin/Menu.php:141
 msgid "Sitemaps"
 msgstr ""
 
-#: src/Admin/Menu.php:151
+#: src/Admin/Menu.php:146
 msgid "Schema"
 msgstr ""
 
-#: src/Admin/Menu.php:156
+#: src/Admin/Menu.php:151
 #: assets/build/admin-settings.js:3
 #: assets/src/admin/views/Redirects.js:253
 msgid "Redirects"
 msgstr ""
 
-#: src/Admin/Menu.php:161
+#: src/Admin/Menu.php:156
 msgid "404s"
 msgstr ""
 
-#: src/Admin/Menu.php:166
+#: src/Admin/Menu.php:161
 msgid "AI"
 msgstr ""
 
@@ -188,7 +182,7 @@ msgstr ""
 
 #: src/Meta/VariableCatalog.php:53
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:165
+#: assets/src/admin/views/Titles.js:235
 msgid "Title"
 msgstr ""
 
@@ -496,87 +490,159 @@ msgid "No"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:27
+#: assets/src/admin/views/Titles.js:28
 msgid "Summary card with large image"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:30
+#: assets/src/admin/views/Titles.js:31
 msgid "Summary card"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:36
+#: assets/src/admin/views/Titles.js:37
 msgid "Meta Global"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:37
+#: assets/src/admin/views/Titles.js:38
+msgid "SEO Local"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:39
 msgid "Homepage"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:43
+#: assets/src/admin/views/Titles.js:45
 msgid "Content types"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:54
+#: assets/src/admin/views/Titles.js:56
 msgid "Taxonomies"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:77
+#: assets/src/admin/views/Titles.js:79
 msgid "Capitalize titles"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:78
+#: assets/src/admin/views/Titles.js:80
 msgid "Automatically capitalize the first letter of each word in titles."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:87
+#: assets/src/admin/views/Titles.js:89
 msgid "Default robots"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:104
+#: assets/src/admin/views/Titles.js:106
 msgid "Noindex empty term archives"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:117
+#: assets/src/admin/views/Titles.js:119
 msgid "OpenGraph thumbnail"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:119
+#: assets/src/admin/views/Titles.js:121
 msgid "Default image used when a post has no featured or social image."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:128
+#: assets/src/admin/views/Titles.js:130
 msgid "Twitter card type"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:141
-msgid "Homepage title"
+#: assets/src/admin/views/Titles.js:144
+msgid "Site represents"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
 #: assets/src/admin/views/Titles.js:148
+msgid "Organization"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:151
+msgid "Person"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:157
+msgid "Website name"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:158
+msgid "Name of the WebSite node (defaults to site name)."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:167
+msgid "Alternate website name"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:175
+msgid "Person or Organization name"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:176
+msgid "Name of the Organization/Person entity (defaults to site name)."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:183
+msgid "Logo"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:185
+msgid "Minimum size 112×112px."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/build/admin-settings.js:3
+#: assets/src/admin/views/NotFound.js:19
+#: assets/src/admin/views/Titles.js:191
+msgid "URL"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:192
+msgid "Defaults to the site URL."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:199
+msgid "Email"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:211
+msgid "Homepage title"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:218
 msgid "Homepage description"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:178
+#: assets/src/admin/views/Titles.js:248
 msgid "Description"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:191
+#: assets/src/admin/views/Titles.js:261
 msgid "Robots"
 msgstr ""
 
@@ -617,31 +683,6 @@ msgstr ""
 #: assets/build/admin-settings.js:3
 #: assets/src/admin/components/DataTable.js:185
 msgid "Next"
-msgstr ""
-
-#: assets/build/admin-settings.js:3
-#: assets/src/admin/views/General.js:11
-msgid "Site represents"
-msgstr ""
-
-#: assets/build/admin-settings.js:3
-#: assets/src/admin/views/General.js:15
-msgid "Organization"
-msgstr ""
-
-#: assets/build/admin-settings.js:3
-#: assets/src/admin/views/General.js:19
-msgid "Person"
-msgstr ""
-
-#: assets/build/admin-settings.js:3
-#: assets/src/admin/views/General.js:26
-msgid "Name (defaults to site name)"
-msgstr ""
-
-#: assets/build/admin-settings.js:3
-#: assets/src/admin/views/General.js:34
-msgid "Logo / image URL"
 msgstr ""
 
 #: assets/build/admin-settings.js:3
@@ -817,11 +858,6 @@ msgid "Could not load 404s."
 msgstr ""
 
 #: assets/build/admin-settings.js:3
-#: assets/src/admin/views/NotFound.js:19
-msgid "URL"
-msgstr ""
-
-#: assets/build/admin-settings.js:3
 #: assets/src/admin/views/NotFound.js:21
 msgid "Last seen"
 msgstr ""
@@ -981,6 +1017,11 @@ msgstr ""
 #: assets/build/editor.js:1
 #: assets/src/editor/index.js:328
 msgid "Canonical URL"
+msgstr ""
+
+#: assets/build/editor.js:1
+#: assets/src/editor/index.js:339
+msgid "General"
 msgstr ""
 
 #: assets/build/editor.js:1
