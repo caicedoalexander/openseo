@@ -31,7 +31,6 @@ final class MenuTest extends WP_UnitTestCase {
 		foreach (
 			array(
 				'openseo',
-				'openseo-general',
 				'openseo-titles',
 				'openseo-social',
 				'openseo-sitemaps',
