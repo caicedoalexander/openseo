@@ -14,6 +14,7 @@ use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\RobotsResolver;
 use OpenSEO\Meta\TypeTemplates;
 use OpenSEO\Settings\Options;
+use OpenSEO\Support\Str;
 use WP_Term;
 
 /**
@@ -40,9 +41,30 @@ final class Resolver {
 	) {}
 
 	/**
-	 * Effective document title (empty = let WordPress decide).
+	 * Effective document title (empty = let WordPress decide), with optional
+	 * global capitalization applied.
 	 */
 	public function title(): string {
+		return $this->capitalize( $this->resolve_title() );
+	}
+
+	/**
+	 * Apply the global "capitalize titles" setting when enabled. Empty stays empty.
+	 *
+	 * @param string $title Resolved title.
+	 */
+	private function capitalize( string $title ): string {
+		if ( '' === $title || '1' !== (string) $this->options->get( 'capitalize_titles' ) ) {
+			return $title;
+		}
+
+		return Str::mb_ucwords( $title );
+	}
+
+	/**
+	 * Resolve the raw effective title before capitalization.
+	 */
+	private function resolve_title(): string {
 		if ( is_singular() ) {
 			$id = get_queried_object_id();
 

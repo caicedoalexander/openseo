@@ -459,4 +459,30 @@ final class ResolverTest extends TestCase {
 		// Default taxonomy description '%term_description%'.
 		$this->assertSame( 'Tag desc.', $this->resolver()->description() );
 	}
+
+	// -----------------------------------------------------------------------
+	// title() capitalization
+	// -----------------------------------------------------------------------
+
+	public function test_title_capitalizes_when_enabled(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_the_title' )->justReturn( 'hello world' );
+		Functions\when( 'get_option' )->justReturn( array( 'capitalize_titles' => '1' ) );
+
+		// '%title% %sep% %sitename%' → 'hello world - My Site' → capitalized.
+		$this->assertSame( 'Hello World - My Site', $this->resolver()->title() );
+	}
+
+	public function test_title_not_capitalized_by_default(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_the_title' )->justReturn( 'hello world' );
+
+		$this->assertSame( 'hello world - My Site', $this->resolver()->title() );
+	}
 }
