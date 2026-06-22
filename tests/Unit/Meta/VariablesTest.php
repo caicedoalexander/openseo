@@ -85,4 +85,25 @@ final class VariablesTest extends TestCase {
 		// none() context → %title% empty → no dangling separator.
 		$this->assertSame( '', $variables->replace( '%title% %sep%' ) );
 	}
+
+	public function test_replaces_enriched_post_tokens(): void {
+		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
+		Functions\when( 'get_the_title' )->justReturn( 'Hello World' );
+		Functions\when( 'get_the_excerpt' )->justReturn( '' );
+		Functions\when( 'get_the_date' )->justReturn( 'June 21, 2026' );
+		Functions\when( 'get_post_field' )->justReturn( 7 );
+		Functions\when( 'get_the_author_meta' )->justReturn( 'Jane Doe' );
+		$cat       = new WP_Term();
+		$cat->name = 'News';
+		Functions\when( 'get_the_category' )->justReturn( array( $cat ) );
+		Functions\when( 'get_the_tags' )->justReturn( false );
+
+		$variables = new Variables( new Options() );
+		$ctx       = TemplateContext::for_post( 42 );
+
+		$this->assertSame( 'June 21, 2026', $variables->replace( '%date%', $ctx ) );
+		$this->assertSame( 'Jane Doe', $variables->replace( '%author%', $ctx ) );
+		$this->assertSame( 'News', $variables->replace( '%category%', $ctx ) );
+		$this->assertSame( '', $variables->replace( '%tag%', $ctx ) );
+	}
 }
