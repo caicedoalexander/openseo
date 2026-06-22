@@ -11,6 +11,7 @@ namespace OpenSEO\Meta;
 
 use OpenSEO\Meta\TemplateContext;
 use OpenSEO\Meta\TemplateDefaults;
+use OpenSEO\Meta\RobotsResolver;
 use OpenSEO\Meta\TypeTemplates;
 use OpenSEO\Settings\Options;
 use WP_Term;
@@ -118,20 +119,69 @@ final class Resolver {
 	 * Effective robots directive, e.g. "index, follow".
 	 */
 	public function robots(): string {
-		$noindex  = false;
-		$nofollow = false;
+		$global_map = $this->options->get( 'robots' );
+		$global_map = is_array( $global_map ) ? $global_map : array();
+		$global     = static fn( string $directive ): bool => '1' === (string) ( $global_map[ $directive ] ?? '' );
+
+		$type_robots         = array();
+		$entry               = array();
+		$force_noindex_empty = false;
 
 		if ( is_singular() ) {
-			$id       = get_queried_object_id();
-			$noindex  = '1' === (string) get_post_meta( $id, '_openseo_robots_noindex', true );
-			$nofollow = '1' === (string) get_post_meta( $id, '_openseo_robots_nofollow', true );
+			$id          = get_queried_object_id();
+			$type        = (string) get_post_type( $id );
+			$map         = $this->options->get( 'post_types' );
+			$type_robots = is_array( $map ) && is_array( $map[ $type ]['robots'] ?? null ) ? $map[ $type ]['robots'] : array();
+			$entry       = array(
+				'noindex'  => (string) get_post_meta( $id, '_openseo_robots_noindex', true ),
+				'nofollow' => (string) get_post_meta( $id, '_openseo_robots_nofollow', true ),
+			);
+		} elseif ( $this->is_taxonomy() ) {
+			$term = get_queried_object();
+			if ( $term instanceof WP_Term ) {
+				$map         = $this->options->get( 'taxonomies' );
+				$type_robots = is_array( $map ) && is_array( $map[ $term->taxonomy ]['robots'] ?? null ) ? $map[ $term->taxonomy ]['robots'] : array();
+				if ( $global( 'noindex_empty_terms' ) && 0 === (int) $term->count ) {
+					$force_noindex_empty = true;
+				}
+			}
 		}
 
-		return sprintf(
-			'%s, %s',
-			$noindex ? 'noindex' : 'index',
-			$nofollow ? 'nofollow' : 'follow'
+		$effective = array();
+		foreach ( array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex' ) as $directive ) {
+			$entry_val               = ( 'noindex' === $directive || 'nofollow' === $directive ) ? (string) ( $entry[ $directive ] ?? '' ) : '';
+			$type_val                = (string) ( $type_robots[ $directive ] ?? '' );
+			$effective[ $directive ] = RobotsResolver::resolve( $entry_val, $type_val, $global( $directive ) );
+		}
+
+		if ( $force_noindex_empty ) {
+			$effective['noindex'] = true;
+		}
+
+		return $this->robots_string( $effective );
+	}
+
+	/**
+	 * Build the robots directive string from the effective map.
+	 *
+	 * @param array<string, bool> $e Effective directives.
+	 */
+	private function robots_string( array $e ): string {
+		$parts = array(
+			$e['noindex'] ? 'noindex' : 'index',
+			$e['nofollow'] ? 'nofollow' : 'follow',
 		);
+		if ( $e['noarchive'] ) {
+			$parts[] = 'noarchive';
+		}
+		if ( $e['nosnippet'] ) {
+			$parts[] = 'nosnippet';
+		}
+		if ( $e['noimageindex'] ) {
+			$parts[] = 'noimageindex';
+		}
+
+		return implode( ', ', $parts );
 	}
 
 	/**

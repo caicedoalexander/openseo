@@ -14,17 +14,23 @@ import {
 	SelectControl,
 	TextControl,
 	TextareaControl,
-	ToggleControl,
 	TabPanel,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { resolveSnippet, deriveExcerpt, formatBreadcrumb } from './preview';
 import { aiErrorMessage } from './ai';
+import { triValue, isNoindexValue } from './robots';
 import { LengthIndicator } from './components/LengthIndicator';
 import { PreviewDevices } from './components/PreviewDevices';
 import { SerpPreview } from './components/SerpPreview';
 import './style.scss';
+
+const ROBOTS_TRISTATE = [
+	{ label: __( 'Default', 'openseo' ), value: '' },
+	{ label: __( 'Yes', 'openseo' ), value: 'on' },
+	{ label: __( 'No', 'openseo' ), value: 'off' },
+];
 
 function useMeta( key ) {
 	const postType = useSelect(
@@ -245,7 +251,7 @@ function GeneralTab() {
 				url={ breadcrumb }
 				favicon={ cfg.siteIcon ?? '' }
 				device={ device }
-				isNoindex={ noindex === '1' }
+				isNoindex={ isNoindexValue( noindex ) }
 			/>
 
 			<TextControl
@@ -319,15 +325,19 @@ function AdvancedTab() {
 
 	return (
 		<>
-			<ToggleControl
+			<SelectControl
+				__nextHasNoMarginBottom
 				label={ __( 'No index', 'openseo' ) }
-				checked={ noindex === '1' }
-				onChange={ ( on ) => setNoindex( on ? '1' : '' ) }
+				value={ triValue( noindex ) }
+				options={ ROBOTS_TRISTATE }
+				onChange={ setNoindex }
 			/>
-			<ToggleControl
+			<SelectControl
+				__nextHasNoMarginBottom
 				label={ __( 'No follow', 'openseo' ) }
-				checked={ nofollow === '1' }
-				onChange={ ( on ) => setNofollow( on ? '1' : '' ) }
+				value={ triValue( nofollow ) }
+				options={ ROBOTS_TRISTATE }
+				onChange={ setNofollow }
 			/>
 			<TextControl
 				label={ __( 'Canonical URL', 'openseo' ) }

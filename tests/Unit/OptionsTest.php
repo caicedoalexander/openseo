@@ -339,6 +339,81 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( 'New T', $clean['post_types']['post']['title'] );
 		$this->assertSame( 'Stored D', $clean['post_types']['post']['description'] );
 	}
+
+	public function test_defaults_include_empty_robots(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$this->assertSame( array(), ( new Options() )->all()['robots'] );
+	}
+
+	public function test_sanitize_global_robots_whitelists_and_normalizes(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$clean = ( new Options() )->sanitize(
+			array(
+				'robots' => array(
+					'noindex'             => '1',
+					'nofollow'            => '',
+					'noindex_empty_terms' => '1',
+					'bogus'               => '1',
+				),
+			)
+		);
+
+		$this->assertSame( '1', $clean['robots']['noindex'] );
+		$this->assertSame( '1', $clean['robots']['noindex_empty_terms'] );
+		$this->assertArrayNotHasKey( 'nofollow', $clean['robots'] );
+		$this->assertArrayNotHasKey( 'bogus', $clean['robots'] );
+	}
+
+	public function test_sanitize_per_type_robots_tristate(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array(
+				'post_types' => array(
+					'post' => array(
+						'title'  => '',
+						'robots' => array( 'noindex' => 'on', 'nofollow' => 'off', 'bogus' => 'x', 'noarchive' => 'maybe' ),
+					),
+				),
+			)
+		);
+
+		$this->assertSame( 'on', $clean['post_types']['post']['robots']['noindex'] );
+		$this->assertSame( 'off', $clean['post_types']['post']['robots']['nofollow'] );
+		$this->assertArrayNotHasKey( 'bogus', $clean['post_types']['post']['robots'] );
+		$this->assertArrayNotHasKey( 'noarchive', $clean['post_types']['post']['robots'] ); // 'maybe' invalid → dropped
+	}
+
+	public function test_sanitize_keeps_slug_with_only_robots(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'post' => array( 'title' => '', 'description' => '', 'robots' => array( 'noindex' => 'on' ) ) ) )
+		);
+
+		$this->assertArrayHasKey( 'post', $clean['post_types'] );
+		$this->assertSame( 'on', $clean['post_types']['post']['robots']['noindex'] );
+	}
+
+	public function test_sanitize_unsets_slug_when_all_three_empty(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'post' => array( 'title' => 'Old', 'description' => '' ) ) )
+		);
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'post' => array( 'title' => '', 'description' => '', 'robots' => array() ) ) )
+		);
+
+		$this->assertArrayNotHasKey( 'post', $clean['post_types'] );
+	}
 }
 
 

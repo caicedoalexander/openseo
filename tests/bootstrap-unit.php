@@ -60,5 +60,7 @@ if ( ! class_exists( 'WP_Term' ) ) {
 		public string $description = '';
 
 		public string $taxonomy = '';
+
+		public int $count = 0;
 	}
 }
