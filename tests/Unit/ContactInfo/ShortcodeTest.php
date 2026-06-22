@@ -26,6 +26,7 @@ final class ShortcodeTest extends TestCase {
 			->with( 'openseo_contact_info', \Mockery::type( 'array' ) );
 
 		( new Shortcode() )->register();
+		$this->addToAssertionCount( 1 );
 	}
 
 	public function test_parse_sections_empty_is_all(): void {
@@ -44,6 +45,7 @@ final class ShortcodeTest extends TestCase {
 	}
 
 	public function test_render_returns_empty_when_no_data(): void {
+		// The real Renderer runs here (no data → ''); stub the WP fns it may touch.
 		Functions\when( 'shortcode_atts' )->alias(
 			static fn( $defaults, $atts ) => array_merge( $defaults, is_array( $atts ) ? $atts : array() )
 		);
