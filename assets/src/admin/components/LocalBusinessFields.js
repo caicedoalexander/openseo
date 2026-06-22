@@ -68,10 +68,10 @@ export function LocalBusinessFields( { values, change } ) {
 			<TextControl
 				__nextHasNoMarginBottom
 				label={ __( 'Country', 'openseo' ) }
-				help={ __(
-					'ISO 3166–1 alpha-2 code, e.g. US, ES.',
-					'openseo'
-				) }
+				help={
+					// eslint-disable-next-line @wordpress/i18n-hyphenated-range
+					__( 'ISO 3166-1 alpha-2 code, e.g. US, ES.', 'openseo' )
+				}
 				value={ address.country ?? '' }
 				onChange={ ( v ) => setAddress( 'country', v ) }
 			/>
