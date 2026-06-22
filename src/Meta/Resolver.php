@@ -180,15 +180,22 @@ final class Resolver {
 			$effective['noindex'] = true;
 		}
 
-		return $this->robots_string( $effective );
+		$parts = $this->robots_parts( $effective );
+
+		if ( ! $effective['noindex'] && ! $effective['nosnippet'] ) {
+			$parts = array_merge( $parts, $this->advanced_robots_parts() );
+		}
+
+		return implode( ', ', $parts );
 	}
 
 	/**
-	 * Build the robots directive string from the effective map.
+	 * Effective directive list (index/follow + any extra booleans), without advanced robots.
 	 *
 	 * @param array<string, bool> $e Effective directives.
+	 * @return array<int, string>
 	 */
-	private function robots_string( array $e ): string {
+	private function robots_parts( array $e ): array {
 		$parts = array(
 			$e['noindex'] ? 'noindex' : 'index',
 			$e['nofollow'] ? 'nofollow' : 'follow',
@@ -203,7 +210,35 @@ final class Resolver {
 			$parts[] = 'noimageindex';
 		}
 
-		return implode( ', ', $parts );
+		return $parts;
+	}
+
+	/**
+	 * Advanced robots directives from the global setting, e.g. "max-snippet:-1".
+	 * The caller skips these when the page is noindex or nosnippet.
+	 *
+	 * @return array<int, string>
+	 */
+	private function advanced_robots_parts(): array {
+		$adv = $this->options->get( 'advanced_robots' );
+		$adv = is_array( $adv ) ? $adv : array();
+
+		$blocks = array(
+			'max-snippet'       => array( 'max_snippet', 'length', '-1' ),
+			'max-video-preview' => array( 'max_video_preview', 'length', '-1' ),
+			'max-image-preview' => array( 'max_image_preview', 'value', 'large' ),
+		);
+
+		$parts = array();
+		foreach ( $blocks as $directive => $meta ) {
+			[ $key, $field, $default ] = $meta;
+			$block                     = is_array( $adv[ $key ] ?? null ) ? $adv[ $key ] : array();
+			if ( '1' === (string) ( $block['enabled'] ?? '' ) ) {
+				$parts[] = $directive . ':' . (string) ( $block[ $field ] ?? $default );
+			}
+		}
+
+		return $parts;
 	}
 
 	/**

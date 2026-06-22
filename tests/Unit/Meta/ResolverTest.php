@@ -485,4 +485,44 @@ final class ResolverTest extends TestCase {
 
 		$this->assertSame( 'hello world - My Site', $this->resolver()->title() );
 	}
+
+	// -----------------------------------------------------------------------
+	// robots() — advanced directives
+	// -----------------------------------------------------------------------
+
+	public function test_robots_appends_advanced_when_indexable(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'advanced_robots' => array(
+					'max_snippet'       => array( 'enabled' => '1', 'length' => '-1' ),
+					'max_image_preview' => array( 'enabled' => '1', 'value' => 'large' ),
+				),
+			)
+		);
+
+		$this->assertSame(
+			'index, follow, max-snippet:-1, max-image-preview:large',
+			$this->resolver()->robots()
+		);
+	}
+
+	public function test_robots_skips_advanced_when_nosnippet(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'advanced_robots' => array( 'max_snippet' => array( 'enabled' => '1', 'length' => '50' ) ),
+				'post_types'      => array( 'post' => array( 'robots' => array( 'nosnippet' => 'on' ) ) ),
+			)
+		);
+
+		// nosnippet bail → no max-snippet appended.
+		$this->assertSame( 'index, follow, nosnippet', $this->resolver()->robots() );
+	}
 }
