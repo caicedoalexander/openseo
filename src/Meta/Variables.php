@@ -42,6 +42,12 @@ final class Variables {
 			'%excerpt%'          => $context->excerpt,
 			'%term%'             => $context->term_name,
 			'%term_description%' => $context->term_description,
+			'%date%'             => $context->date,
+			'%modified%'         => $context->modified,
+			'%author%'           => $context->author,
+			'%category%'         => $context->category,
+			'%tag%'              => $context->tag,
+			'%parent_title%'     => $context->parent_title,
 		);
 
 		$output = strtr( $template, $replacements );

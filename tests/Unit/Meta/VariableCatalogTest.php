@@ -47,6 +47,13 @@ final class VariableCatalogTest extends TestCase {
 		Functions\when( 'get_the_title' )->justReturn( 'A Title' );
 		Functions\when( 'get_the_excerpt' )->justReturn( 'An excerpt' );
 		Functions\when( 'wp_strip_all_tags' )->returnArg();
+		Functions\when( 'get_the_date' )->justReturn( '' );
+		Functions\when( 'get_the_modified_date' )->justReturn( '' );
+		Functions\when( 'get_post_field' )->justReturn( 0 );
+		Functions\when( 'get_the_author_meta' )->justReturn( '' );
+		Functions\when( 'get_the_category' )->justReturn( array() );
+		Functions\when( 'get_the_tags' )->justReturn( false );
+		Functions\when( 'wp_get_post_parent_id' )->justReturn( 0 );
 
 		$variables = new Variables( new Options() );
 
@@ -60,6 +67,14 @@ final class VariableCatalogTest extends TestCase {
 				$output,
 				"Catalog token {$token} is not expanded by Variables::replace"
 			);
+		}
+	}
+
+	public function test_catalog_includes_enriched_tokens(): void {
+		$tokens = array_column( ( new VariableCatalog() )->all(), 'token' );
+
+		foreach ( array( '%date%', '%modified%', '%author%', '%category%', '%tag%', '%parent_title%' ) as $expected ) {
+			$this->assertContains( $expected, $tokens );
 		}
 	}
 

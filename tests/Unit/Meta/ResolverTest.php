@@ -28,6 +28,13 @@ final class ResolverTest extends TestCase {
 		Functions\when( 'is_tag' )->justReturn( false );
 		Functions\when( 'is_tax' )->justReturn( false );
 		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_the_date' )->justReturn( '' );
+		Functions\when( 'get_the_modified_date' )->justReturn( '' );
+		Functions\when( 'get_post_field' )->justReturn( 0 );
+		Functions\when( 'get_the_author_meta' )->justReturn( '' );
+		Functions\when( 'get_the_category' )->justReturn( array() );
+		Functions\when( 'get_the_tags' )->justReturn( false );
+		Functions\when( 'wp_get_post_parent_id' )->justReturn( 0 );
 	}
 
 	protected function tearDown(): void {

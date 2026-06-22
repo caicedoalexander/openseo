@@ -41,6 +41,9 @@ final class ContentPiecesTest extends TestCase {
 		Functions\when( 'get_post_field' )->justReturn( 7 );
 		Functions\when( 'wp_strip_all_tags' )->alias( static fn( $str ) => strip_tags( $str ) );
 		Functions\when( 'get_the_excerpt' )->justReturn( '' );
+		Functions\when( 'get_the_category' )->justReturn( array() );
+		Functions\when( 'get_the_tags' )->justReturn( false );
+		Functions\when( 'wp_get_post_parent_id' )->justReturn( 0 );
 	}
 
 	protected function tearDown(): void {
