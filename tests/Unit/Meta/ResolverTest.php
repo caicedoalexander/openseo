@@ -543,4 +543,19 @@ final class ResolverTest extends TestCase {
 		// nosnippet bail → no max-snippet appended.
 		$this->assertSame( 'index, follow, nosnippet', $this->resolver()->robots() );
 	}
+
+	public function test_robots_skips_advanced_when_noindex(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->alias(
+			static fn( $id, $key ) => '_openseo_robots_noindex' === $key ? '1' : ''
+		);
+		Functions\when( 'get_option' )->justReturn(
+			array( 'advanced_robots' => array( 'max_snippet' => array( 'enabled' => '1', 'length' => '50' ) ) )
+		);
+
+		// noindex bail → no max-snippet appended.
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
+	}
 }
