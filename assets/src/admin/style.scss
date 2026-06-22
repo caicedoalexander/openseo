@@ -273,6 +273,28 @@
 	}
 }
 
+.openseo-repeatable {
+	margin: 0;
+	padding: 16px;
+	border: 1px solid var(--openseo-divider);
+	border-radius: 6px;
+	background: var(--openseo-bg-muted);
+
+	> legend {
+		padding: 0 6px;
+		margin-left: -6px;
+		color: var(--openseo-text);
+		font-size: 12px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+
+	&__row {
+		margin-bottom: 10px;
+	}
+}
+
 .openseo-template-field {
 
 	&__header {
