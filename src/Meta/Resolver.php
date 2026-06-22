@@ -123,23 +123,23 @@ final class Resolver {
 		$global_map = is_array( $global_map ) ? $global_map : array();
 		$global     = static fn( string $directive ): bool => '1' === (string) ( $global_map[ $directive ] ?? '' );
 
-		$type_robots = array();
-		$entry       = array();
+		$type_robots         = array();
+		$entry               = array();
 		$force_noindex_empty = false;
 
 		if ( is_singular() ) {
-			$id   = get_queried_object_id();
-			$type = (string) get_post_type( $id );
-			$map  = $this->options->get( 'post_types' );
+			$id          = get_queried_object_id();
+			$type        = (string) get_post_type( $id );
+			$map         = $this->options->get( 'post_types' );
 			$type_robots = is_array( $map ) && is_array( $map[ $type ]['robots'] ?? null ) ? $map[ $type ]['robots'] : array();
-			$entry = array(
+			$entry       = array(
 				'noindex'  => (string) get_post_meta( $id, '_openseo_robots_noindex', true ),
 				'nofollow' => (string) get_post_meta( $id, '_openseo_robots_nofollow', true ),
 			);
 		} elseif ( $this->is_taxonomy() ) {
 			$term = get_queried_object();
 			if ( $term instanceof WP_Term ) {
-				$map = $this->options->get( 'taxonomies' );
+				$map         = $this->options->get( 'taxonomies' );
 				$type_robots = is_array( $map ) && is_array( $map[ $term->taxonomy ]['robots'] ?? null ) ? $map[ $term->taxonomy ]['robots'] : array();
 				if ( $global( 'noindex_empty_terms' ) && 0 === (int) $term->count ) {
 					$force_noindex_empty = true;
@@ -149,8 +149,8 @@ final class Resolver {
 
 		$effective = array();
 		foreach ( array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex' ) as $directive ) {
-			$entry_val = ( 'noindex' === $directive || 'nofollow' === $directive ) ? (string) ( $entry[ $directive ] ?? '' ) : '';
-			$type_val  = (string) ( $type_robots[ $directive ] ?? '' );
+			$entry_val               = ( 'noindex' === $directive || 'nofollow' === $directive ) ? (string) ( $entry[ $directive ] ?? '' ) : '';
+			$type_val                = (string) ( $type_robots[ $directive ] ?? '' );
 			$effective[ $directive ] = RobotsResolver::resolve( $entry_val, $type_val, $global( $directive ) );
 		}
 
