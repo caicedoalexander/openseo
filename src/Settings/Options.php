@@ -47,6 +47,22 @@ final class Options {
 			'post_types'               => array(),
 			'taxonomies'               => array(),
 			'robots'                   => array(),
+			'capitalize_titles'        => '',
+			'twitter_card_type'        => 'summary_large_image',
+			'advanced_robots'          => array(
+				'max_snippet'       => array(
+					'enabled' => '',
+					'length'  => '-1',
+				),
+				'max_video_preview' => array(
+					'enabled' => '',
+					'length'  => '-1',
+				),
+				'max_image_preview' => array(
+					'enabled' => '',
+					'value'   => 'large',
+				),
+			),
 		);
 	}
 
@@ -96,7 +112,7 @@ final class Options {
 
 		// Checkboxes: a hidden companion field guarantees the key is present (0 or
 		// 1) when its tab is submitted, so an explicit '1' check turns it on/off.
-		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors', 'redirects_auto_slug', 'redirects_track_hits', 'notfound_monitor_enabled' ) as $key ) {
+		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors', 'redirects_auto_slug', 'redirects_track_hits', 'notfound_monitor_enabled', 'capitalize_titles' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = '1' === $input[ $key ] ? '1' : '';
 			}
@@ -108,6 +124,11 @@ final class Options {
 			$clean['schema_site_type'] = in_array( $type, array( 'Organization', 'Person' ), true )
 				? $type
 				: 'Organization';
+		}
+
+		if ( isset( $input['twitter_card_type'] ) ) {
+			$card                       = sanitize_text_field( wp_unslash( $input['twitter_card_type'] ) );
+			$clean['twitter_card_type'] = in_array( $card, array( 'summary_large_image', 'summary' ), true ) ? $card : 'summary_large_image';
 		}
 
 		foreach ( array( 'og_default_image', 'schema_logo' ) as $key ) {
@@ -155,6 +176,15 @@ final class Options {
 					$content_types->taxonomy_slugs()
 				);
 			}
+		}
+
+		if ( isset( $input['advanced_robots'] ) && is_array( $input['advanced_robots'] ) ) {
+			$adv                      = $input['advanced_robots'];
+			$clean['advanced_robots'] = array(
+				'max_snippet'       => $this->sanitize_advanced_length( $adv['max_snippet'] ?? null ),
+				'max_video_preview' => $this->sanitize_advanced_length( $adv['max_video_preview'] ?? null ),
+				'max_image_preview' => $this->sanitize_advanced_image( $adv['max_image_preview'] ?? null ),
+			);
 		}
 
 		return $clean;
@@ -221,5 +251,45 @@ final class Options {
 		}
 
 		return $current;
+	}
+
+	/**
+	 * Sanitize one length-based advanced robots block (max-snippet / max-video-preview).
+	 *
+	 * @param mixed $block Raw block ({ enabled, length }).
+	 * @return array{enabled:string,length:string}
+	 */
+	private function sanitize_advanced_length( mixed $block ): array {
+		$block   = is_array( $block ) ? $block : array();
+		$enabled = '1' === (string) ( $block['enabled'] ?? '' ) ? '1' : '';
+		$length  = isset( $block['length'] ) ? (int) wp_unslash( $block['length'] ) : -1;
+		if ( $length < -1 ) {
+			$length = -1;
+		}
+
+		return array(
+			'enabled' => $enabled,
+			'length'  => (string) $length,
+		);
+	}
+
+	/**
+	 * Sanitize the image-preview advanced robots block (max-image-preview).
+	 *
+	 * @param mixed $block Raw block ({ enabled, value }).
+	 * @return array{enabled:string,value:string}
+	 */
+	private function sanitize_advanced_image( mixed $block ): array {
+		$block   = is_array( $block ) ? $block : array();
+		$enabled = '1' === (string) ( $block['enabled'] ?? '' ) ? '1' : '';
+		$value   = sanitize_text_field( wp_unslash( (string) ( $block['value'] ?? 'large' ) ) );
+		if ( ! in_array( $value, array( 'large', 'standard', 'none' ), true ) ) {
+			$value = 'large';
+		}
+
+		return array(
+			'enabled' => $enabled,
+			'value'   => $value,
+		);
 	}
 }

@@ -1,6 +1,6 @@
 import {
 	CheckboxControl,
-	TextControl,
+	SelectControl,
 	ToggleControl,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
@@ -8,6 +8,9 @@ import { __ } from '@wordpress/i18n';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { VerticalTabs } from '../components/VerticalTabs';
 import { TemplateField } from '../components/TemplateField';
+import { MediaField } from '../components/MediaField';
+import { SeparatorField } from '../components/SeparatorField';
+import { AdvancedRobotsField } from '../components/AdvancedRobotsField';
 import { setTemplateField } from '../templateFields';
 import { ROBOTS_DIRECTIVES } from '../robots';
 import { RobotsFields, ROBOTS_LABELS } from '../components/RobotsFields';
@@ -19,8 +22,21 @@ const contentTypes = bootstrap.contentTypes ?? {
 };
 const catalog = bootstrap.variables ?? [];
 
+const TWITTER_CARD_OPTIONS = [
+	{
+		label: __( 'Summary card with large image', 'openseo' ),
+		value: 'summary_large_image',
+	},
+	{ label: __( 'Summary card', 'openseo' ), value: 'summary' },
+];
+
 const GROUPS = [
-	{ tabs: [ { name: 'general', title: __( 'General', 'openseo' ) } ] },
+	{
+		tabs: [
+			{ name: 'meta-global', title: __( 'Meta Global', 'openseo' ) },
+			{ name: 'homepage', title: __( 'Homepage', 'openseo' ) },
+		],
+	},
 	...( contentTypes.postTypes.length
 		? [
 				{
@@ -47,15 +63,80 @@ const GROUPS = [
 
 const TAB_NAMES = GROUPS.flatMap( ( g ) => g.tabs.map( ( t ) => t.name ) );
 
-function GeneralPanel( { values, change } ) {
+function MetaGlobalPanel( { values, change } ) {
+	const robots = values.robots ?? {};
+
 	return (
 		<>
-			<TextControl
-				__nextHasNoMarginBottom
-				label={ __( 'Title separator', 'openseo' ) }
+			<SeparatorField
 				value={ values.title_separator ?? '' }
 				onChange={ ( v ) => change( 'title_separator', v ) }
 			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Capitalize titles', 'openseo' ) }
+				help={ __(
+					'Automatically capitalize the first letter of each word in titles.',
+					'openseo'
+				) }
+				checked={ values.capitalize_titles === '1' }
+				onChange={ ( on ) =>
+					change( 'capitalize_titles', on ? '1' : '' )
+				}
+			/>
+			<h3>{ __( 'Default robots', 'openseo' ) }</h3>
+			{ ROBOTS_DIRECTIVES.map( ( directive ) => (
+				<CheckboxControl
+					key={ directive }
+					__nextHasNoMarginBottom
+					label={ ROBOTS_LABELS[ directive ] }
+					checked={ robots[ directive ] === '1' }
+					onChange={ ( on ) =>
+						change( 'robots', {
+							...robots,
+							[ directive ]: on ? '1' : '',
+						} )
+					}
+				/>
+			) ) }
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Noindex empty term archives', 'openseo' ) }
+				checked={ robots.noindex_empty_terms === '1' }
+				onChange={ ( on ) =>
+					change( 'robots', {
+						...robots,
+						noindex_empty_terms: on ? '1' : '',
+					} )
+				}
+			/>
+			<AdvancedRobotsField
+				value={ values.advanced_robots ?? {} }
+				onChange={ ( v ) => change( 'advanced_robots', v ) }
+			/>
+			<h3>{ __( 'OpenGraph thumbnail', 'openseo' ) }</h3>
+			<MediaField
+				label={ __(
+					'Default image used when a post has no featured or social image.',
+					'openseo'
+				) }
+				value={ values.og_default_image ?? '' }
+				onChange={ ( url ) => change( 'og_default_image', url ) }
+			/>
+			<SelectControl
+				__nextHasNoMarginBottom
+				label={ __( 'Twitter card type', 'openseo' ) }
+				value={ values.twitter_card_type ?? 'summary_large_image' }
+				options={ TWITTER_CARD_OPTIONS }
+				onChange={ ( v ) => change( 'twitter_card_type', v ) }
+			/>
+		</>
+	);
+}
+
+function HomepagePanel( { values, change } ) {
+	return (
+		<>
 			<TemplateField
 				label={ __( 'Homepage title', 'openseo' ) }
 				value={ values.home_title ?? '' }
@@ -70,32 +151,6 @@ function GeneralPanel( { values, change } ) {
 				scope="global"
 				catalog={ catalog }
 				onChange={ ( v ) => change( 'home_description', v ) }
-			/>
-			<h3>{ __( 'Default robots', 'openseo' ) }</h3>
-			{ ROBOTS_DIRECTIVES.map( ( directive ) => (
-				<CheckboxControl
-					key={ directive }
-					__nextHasNoMarginBottom
-					label={ ROBOTS_LABELS[ directive ] }
-					checked={ ( values.robots ?? {} )[ directive ] === '1' }
-					onChange={ ( on ) =>
-						change( 'robots', {
-							...( values.robots ?? {} ),
-							[ directive ]: on ? '1' : '',
-						} )
-					}
-				/>
-			) ) }
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={ __( 'Noindex empty term archives', 'openseo' ) }
-				checked={ ( values.robots ?? {} ).noindex_empty_terms === '1' }
-				onChange={ ( on ) =>
-					change( 'robots', {
-						...( values.robots ?? {} ),
-						noindex_empty_terms: on ? '1' : '',
-					} )
-				}
 			/>
 		</>
 	);
@@ -176,12 +231,15 @@ function renderPanel( tab, values, change ) {
 			/>
 		) : null;
 	}
-	return <GeneralPanel values={ values } change={ change } />;
+	if ( tab === 'homepage' ) {
+		return <HomepagePanel values={ values } change={ change } />;
+	}
+	return <MetaGlobalPanel values={ values } change={ change } />;
 }
 
 export function Titles() {
-	const [ active, setActive ] = useState( 'general' );
-	const current = TAB_NAMES.includes( active ) ? active : 'general';
+	const [ active, setActive ] = useState( 'meta-global' );
+	const current = TAB_NAMES.includes( active ) ? active : 'meta-global';
 
 	return (
 		<SettingsPanel>

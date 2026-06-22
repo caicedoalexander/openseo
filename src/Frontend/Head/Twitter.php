@@ -30,7 +30,7 @@ final class Twitter implements Presenter {
 		$image = $this->resolver->twitter_image();
 
 		$tags = array(
-			'twitter:card'        => '' !== $image ? 'summary_large_image' : 'summary',
+			'twitter:card'        => $this->resolver->twitter_card(),
 			'twitter:title'       => $this->resolver->twitter_title(),
 			'twitter:description' => $this->resolver->twitter_description(),
 			'twitter:image'       => $image,

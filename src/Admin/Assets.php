@@ -93,6 +93,8 @@ final class Assets implements Hookable {
 			true
 		);
 
+		wp_enqueue_media();
+
 		if ( wp_script_is( self::SCRIPT_HANDLE, 'enqueued' ) ) {
 			wp_add_inline_script(
 				self::SCRIPT_HANDLE,

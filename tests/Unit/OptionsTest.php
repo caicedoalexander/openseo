@@ -414,6 +414,73 @@ final class OptionsTest extends TestCase {
 
 		$this->assertArrayNotHasKey( 'post', $clean['post_types'] );
 	}
+
+	public function test_defaults_include_meta_global_keys(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		$options = new Options();
+
+		$this->assertSame( '', $options->get( 'capitalize_titles' ) );
+		$this->assertSame( 'summary_large_image', $options->get( 'twitter_card_type' ) );
+		$this->assertSame(
+			array( 'enabled' => '', 'value' => 'large' ),
+			$options->get( 'advanced_robots' )['max_image_preview']
+		);
+	}
+
+	public function test_sanitize_capitalize_titles_checkbox(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$on  = ( new Options() )->sanitize( array( 'capitalize_titles' => '1' ) );
+		$off = ( new Options() )->sanitize( array( 'capitalize_titles' => '0' ) );
+
+		$this->assertSame( '1', $on['capitalize_titles'] );
+		$this->assertSame( '', $off['capitalize_titles'] );
+	}
+
+	public function test_sanitize_twitter_card_type_whitelist(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+
+		$valid   = ( new Options() )->sanitize( array( 'twitter_card_type' => 'summary' ) );
+		$invalid = ( new Options() )->sanitize( array( 'twitter_card_type' => 'bogus' ) );
+
+		$this->assertSame( 'summary', $valid['twitter_card_type'] );
+		$this->assertSame( 'summary_large_image', $invalid['twitter_card_type'] );
+	}
+
+	public function test_sanitize_advanced_robots(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array(
+				'advanced_robots' => array(
+					'max_snippet'       => array( 'enabled' => '1', 'length' => '50' ),
+					'max_video_preview' => array( 'enabled' => '', 'length' => '-5' ),
+					'max_image_preview' => array( 'enabled' => '1', 'value' => 'bogus' ),
+				),
+			)
+		);
+
+		$this->assertSame( array( 'enabled' => '1', 'length' => '50' ), $clean['advanced_robots']['max_snippet'] );
+		$this->assertSame( array( 'enabled' => '', 'length' => '-1' ), $clean['advanced_robots']['max_video_preview'] ); // -5 clamped to -1
+		$this->assertSame( array( 'enabled' => '1', 'value' => 'large' ), $clean['advanced_robots']['max_image_preview'] ); // bogus → large
+	}
+
+	public function test_sanitize_keeps_separator_value_unchanged(): void {
+		// Brain Monkey does not load WP, so sanitize_text_field is a passthrough here;
+		// this asserts Options itself never mutilates a multibyte separator char.
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+
+		$clean = ( new Options() )->sanitize( array( 'title_separator' => '—' ) );
+
+		$this->assertSame( '—', $clean['title_separator'] );
+	}
 }
 
 

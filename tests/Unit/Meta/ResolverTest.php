@@ -253,6 +253,24 @@ final class ResolverTest extends TestCase {
 	}
 
 	// -----------------------------------------------------------------------
+	// twitter_card()
+	// -----------------------------------------------------------------------
+
+	public function test_twitter_card_defaults_to_summary_large_image(): void {
+		$this->assertSame( 'summary_large_image', $this->resolver()->twitter_card() );
+	}
+
+	public function test_twitter_card_uses_configured_value(): void {
+		Functions\when( 'get_option' )->justReturn( array( 'twitter_card_type' => 'summary' ) );
+		$this->assertSame( 'summary', $this->resolver()->twitter_card() );
+	}
+
+	public function test_twitter_card_rejects_invalid_value(): void {
+		Functions\when( 'get_option' )->justReturn( array( 'twitter_card_type' => 'bogus' ) );
+		$this->assertSame( 'summary_large_image', $this->resolver()->twitter_card() );
+	}
+
+	// -----------------------------------------------------------------------
 	// social_title() / social_description()
 	// -----------------------------------------------------------------------
 
@@ -458,5 +476,86 @@ final class ResolverTest extends TestCase {
 
 		// Default taxonomy description '%term_description%'.
 		$this->assertSame( 'Tag desc.', $this->resolver()->description() );
+	}
+
+	// -----------------------------------------------------------------------
+	// title() capitalization
+	// -----------------------------------------------------------------------
+
+	public function test_title_capitalizes_when_enabled(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_the_title' )->justReturn( 'hello world' );
+		Functions\when( 'get_option' )->justReturn( array( 'capitalize_titles' => '1' ) );
+
+		// '%title% %sep% %sitename%' → 'hello world - My Site' → capitalized.
+		$this->assertSame( 'Hello World - My Site', $this->resolver()->title() );
+	}
+
+	public function test_title_not_capitalized_by_default(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_the_title' )->justReturn( 'hello world' );
+
+		$this->assertSame( 'hello world - My Site', $this->resolver()->title() );
+	}
+
+	// -----------------------------------------------------------------------
+	// robots() — advanced directives
+	// -----------------------------------------------------------------------
+
+	public function test_robots_appends_advanced_when_indexable(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'advanced_robots' => array(
+					'max_snippet'       => array( 'enabled' => '1', 'length' => '-1' ),
+					'max_image_preview' => array( 'enabled' => '1', 'value' => 'large' ),
+				),
+			)
+		);
+
+		$this->assertSame(
+			'index, follow, max-snippet:-1, max-image-preview:large',
+			$this->resolver()->robots()
+		);
+	}
+
+	public function test_robots_skips_advanced_when_nosnippet(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'advanced_robots' => array( 'max_snippet' => array( 'enabled' => '1', 'length' => '50' ) ),
+				'post_types'      => array( 'post' => array( 'robots' => array( 'nosnippet' => 'on' ) ) ),
+			)
+		);
+
+		// nosnippet bail → no max-snippet appended.
+		$this->assertSame( 'index, follow, nosnippet', $this->resolver()->robots() );
+	}
+
+	public function test_robots_skips_advanced_when_noindex(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->alias(
+			static fn( $id, $key ) => '_openseo_robots_noindex' === $key ? '1' : ''
+		);
+		Functions\when( 'get_option' )->justReturn(
+			array( 'advanced_robots' => array( 'max_snippet' => array( 'enabled' => '1', 'length' => '50' ) ) )
+		);
+
+		// noindex bail → no max-snippet appended.
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
 	}
 }
