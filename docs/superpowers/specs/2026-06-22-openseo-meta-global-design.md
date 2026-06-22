@@ -115,8 +115,16 @@ public static function mb_ucwords( string $str ): string {
 `Resolver::title()` se refactoriza: el cuerpo actual pasa a un privado `resolve_title(): string`, y
 `title()` envuelve: `return $this->capitalize( $this->resolve_title() );`. El privado
 `capitalize(string $title)` aplica `Support\Str::mb_ucwords()` **solo** si `capitalize_titles === '1'`
-y el título no está vacío. Como `social_title()` cae a `title()`, la capitalización se propaga a OG /
-Twitter title por cascada (comportamiento aceptado en el brainstorming).
+y el título no está vacío.
+
+> **Alcance de la capitalización:** `Resolver::title()` tiene **cuatro** consumidores —
+> `Frontend\Head\Title` (`<title>`), `social_title()` (fallback OG/Twitter title),
+> `Schema\Pieces\Article` (`headline`) y `Schema\Pieces\WebPage` (`name`). Capitalizar dentro de
+> `title()` es la **fuente única**, así que el título capitalizado se propaga a todos ellos, incluido el
+> JSON-LD `headline`/`name`. Se **acepta** como comportamiento consistente (un único título resuelto
+> usado en todas sus salidas). No es un objetivo capitalizar el schema de forma independiente; si en el
+> futuro se quisiera restringir la capitalización solo al `<title>`, habría que moverla al presenter
+> `Title` en vez de a `Resolver::title()`.
 
 **b) Metadatos avanzados de robots — `Meta\Resolver::robots()`.**
 
