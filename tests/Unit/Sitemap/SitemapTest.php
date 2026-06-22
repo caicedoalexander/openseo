@@ -115,4 +115,29 @@ final class SitemapTest extends TestCase {
 
 		$this->assertCount( 2, $result );
 	}
+
+	public function test_excludes_noindex_taxonomy_provider(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'taxonomies' => array( 'category' => array( 'robots' => array( 'noindex' => 'on' ) ) ) )
+		);
+
+		$items = array( 'post_tag' => new \stdClass(), 'category' => new \stdClass() );
+
+		$result = ( new Sitemap( new Options() ) )->exclude_noindex_taxonomies( $items );
+
+		$this->assertArrayHasKey( 'post_tag', $result );
+		$this->assertArrayNotHasKey( 'category', $result );
+	}
+
+	public function test_global_noindex_drops_all_providers(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'robots' => array( 'noindex' => '1' ) )
+		);
+
+		$items = array( 'post' => new \stdClass(), 'page' => new \stdClass() );
+
+		$result = ( new Sitemap( new Options() ) )->exclude_noindex_post_types( $items );
+
+		$this->assertCount( 0, $result );
+	}
 }
