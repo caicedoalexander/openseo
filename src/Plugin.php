@@ -18,6 +18,7 @@ use OpenSEO\Rest\SettingsController;
 use OpenSEO\Ai\Abilities;
 use OpenSEO\Breadcrumbs\Block as BreadcrumbsBlock;
 use OpenSEO\Breadcrumbs\Trail;
+use OpenSEO\ContactInfo\Shortcode as ContactInfoShortcode;
 use OpenSEO\Contracts\Hookable;
 use OpenSEO\Frontend\Head\Canonical;
 use OpenSEO\Frontend\Head\Description;
@@ -167,6 +168,7 @@ final class Plugin {
 			new Sitemap( $options ),
 			$graph,
 			new BreadcrumbsBlock( $options ),
+			new ContactInfoShortcode(),
 		);
 
 		$modules[] = new SettingsController( $options );
