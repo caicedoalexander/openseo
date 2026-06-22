@@ -61,6 +61,42 @@ final class VariableCatalog {
 				'scope'       => 'singular',
 			),
 			array(
+				'token'       => '%date%',
+				'label'       => __( 'Published date', 'openseo' ),
+				'description' => __( 'The entry publication date', 'openseo' ),
+				'scope'       => 'singular',
+			),
+			array(
+				'token'       => '%modified%',
+				'label'       => __( 'Modified date', 'openseo' ),
+				'description' => __( 'The entry last-modified date', 'openseo' ),
+				'scope'       => 'singular',
+			),
+			array(
+				'token'       => '%author%',
+				'label'       => __( 'Author', 'openseo' ),
+				'description' => __( "The entry author's name", 'openseo' ),
+				'scope'       => 'singular',
+			),
+			array(
+				'token'       => '%category%',
+				'label'       => __( 'Category', 'openseo' ),
+				'description' => __( 'The first category of the entry', 'openseo' ),
+				'scope'       => 'singular',
+			),
+			array(
+				'token'       => '%tag%',
+				'label'       => __( 'Tag', 'openseo' ),
+				'description' => __( 'The first tag of the entry', 'openseo' ),
+				'scope'       => 'singular',
+			),
+			array(
+				'token'       => '%parent_title%',
+				'label'       => __( 'Parent title', 'openseo' ),
+				'description' => __( 'The title of the parent entry', 'openseo' ),
+				'scope'       => 'singular',
+			),
+			array(
 				'token'       => '%term%',
 				'label'       => __( 'Term name', 'openseo' ),
 				'description' => __( 'The taxonomy term name', 'openseo' ),

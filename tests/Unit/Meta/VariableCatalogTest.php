@@ -70,6 +70,14 @@ final class VariableCatalogTest extends TestCase {
 		}
 	}
 
+	public function test_catalog_includes_enriched_tokens(): void {
+		$tokens = array_column( ( new VariableCatalog() )->all(), 'token' );
+
+		foreach ( array( '%date%', '%modified%', '%author%', '%category%', '%tag%', '%parent_title%' ) as $expected ) {
+			$this->assertContains( $expected, $tokens );
+		}
+	}
+
 	private function context_for_scope( string $scope ): TemplateContext {
 		if ( 'singular' === $scope ) {
 			return TemplateContext::for_post( 1 );
