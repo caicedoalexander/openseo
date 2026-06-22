@@ -96,4 +96,38 @@ final class SitePiecesTest extends TestCase {
 		$this->assertSame( 'Person', $data['@type'] );
 		$this->assertSame( 'https://example.com/#person', $data['@id'] );
 	}
+
+	public function test_website_uses_configured_name_and_alternate(): void {
+		$piece = new WebSite(
+			$this->options(
+				array(
+					'schema_site_type'             => 'Organization',
+					'local_website_name'           => 'Acme Site',
+					'local_website_alternate_name' => 'Acme',
+				)
+			)
+		);
+
+		$data = $piece->data();
+		$this->assertSame( 'Acme Site', $data['name'] );
+		$this->assertSame( 'Acme', $data['alternateName'] );
+	}
+
+	public function test_website_name_falls_back_to_bloginfo_and_omits_alternate(): void {
+		$data = ( new WebSite( $this->options( array( 'schema_site_type' => 'Organization' ) ) ) )->data();
+
+		$this->assertSame( 'My Site', $data['name'] );
+		$this->assertArrayNotHasKey( 'alternateName', $data );
+	}
+
+	public function test_website_and_organization_names_do_not_cross(): void {
+		$stored = array(
+			'schema_site_type'   => 'Organization',
+			'local_website_name' => 'A',
+			'schema_site_name'   => 'B',
+		);
+
+		$this->assertSame( 'A', ( new WebSite( $this->options( $stored ) ) )->data()['name'] );
+		$this->assertSame( 'B', ( new Organization( $this->options( $stored ) ) )->data()['name'] );
+	}
 }

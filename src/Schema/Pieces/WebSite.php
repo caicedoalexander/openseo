@@ -49,11 +49,16 @@ final class WebSite implements Piece {
 			? Ids::person()
 			: Ids::organization();
 
-		return array(
+		$name = (string) $this->options->get( 'local_website_name' );
+		if ( '' === $name ) {
+			$name = (string) get_bloginfo( 'name' );
+		}
+
+		$data = array(
 			'@type'           => 'WebSite',
 			'@id'             => $this->id(),
 			'url'             => home_url( '/' ),
-			'name'            => (string) get_bloginfo( 'name' ),
+			'name'            => $name,
 			'description'     => (string) get_bloginfo( 'description' ),
 			'publisher'       => array( '@id' => $identity ),
 			'inLanguage'      => (string) get_bloginfo( 'language' ),
@@ -66,5 +71,12 @@ final class WebSite implements Piece {
 				'query-input' => 'required name=search_term_string',
 			),
 		);
+
+		$alternate = (string) $this->options->get( 'local_website_alternate_name' );
+		if ( '' !== $alternate ) {
+			$data['alternateName'] = $alternate;
+		}
+
+		return $data;
 	}
 }
