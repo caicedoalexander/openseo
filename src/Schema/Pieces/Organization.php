@@ -10,6 +10,8 @@ declare( strict_types=1 );
 namespace OpenSEO\Schema\Pieces;
 
 use OpenSEO\Schema\Ids;
+use OpenSEO\Schema\LocalBusiness;
+use OpenSEO\Schema\LocalChoices;
 use OpenSEO\Schema\Piece;
 use OpenSEO\Settings\Options;
 
@@ -55,8 +57,11 @@ final class Organization implements Piece {
 			$url = home_url( '/' );
 		}
 
+		$business_type = (string) $this->options->get( 'local_business_type' );
+		$type          = in_array( $business_type, LocalChoices::business_type_values(), true ) ? $business_type : 'Organization';
+
 		$data = array(
-			'@type' => 'Organization',
+			'@type' => $type,
 			'@id'   => $this->id(),
 			'name'  => $name,
 			'url'   => $url,
@@ -78,6 +83,8 @@ final class Organization implements Piece {
 			);
 			$data['image'] = array( '@id' => $this->id() . 'Logo' );
 		}
+
+		$data = array_merge( $data, ( new LocalBusiness() )->build( $this->options ) );
 
 		return $data;
 	}
