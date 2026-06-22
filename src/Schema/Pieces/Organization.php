@@ -50,12 +50,22 @@ final class Organization implements Piece {
 			$name = (string) get_bloginfo( 'name' );
 		}
 
+		$url = (string) $this->options->get( 'local_url' );
+		if ( '' === $url ) {
+			$url = home_url( '/' );
+		}
+
 		$data = array(
 			'@type' => 'Organization',
 			'@id'   => $this->id(),
 			'name'  => $name,
-			'url'   => home_url( '/' ),
+			'url'   => $url,
 		);
+
+		$email = (string) $this->options->get( 'local_email' );
+		if ( '' !== $email ) {
+			$data['email'] = $email;
+		}
 
 		$logo = (string) $this->options->get( 'schema_logo' );
 		if ( '' !== $logo ) {

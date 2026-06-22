@@ -130,4 +130,43 @@ final class SitePiecesTest extends TestCase {
 		$this->assertSame( 'A', ( new WebSite( $this->options( $stored ) ) )->data()['name'] );
 		$this->assertSame( 'B', ( new Organization( $this->options( $stored ) ) )->data()['name'] );
 	}
+
+	public function test_organization_emits_email_and_url_override(): void {
+		$org = new Organization(
+			$this->options(
+				array(
+					'schema_site_type' => 'Organization',
+					'local_url'        => 'https://brand.example',
+					'local_email'      => 'hi@example.com',
+				)
+			)
+		);
+
+		$data = $org->data();
+		$this->assertSame( 'https://brand.example', $data['url'] );
+		$this->assertSame( 'hi@example.com', $data['email'] );
+	}
+
+	public function test_organization_url_falls_back_and_omits_email(): void {
+		$data = ( new Organization( $this->options( array( 'schema_site_type' => 'Organization' ) ) ) )->data();
+
+		$this->assertSame( 'https://example.com/', $data['url'] );
+		$this->assertArrayNotHasKey( 'email', $data );
+	}
+
+	public function test_person_emits_email_and_url_override(): void {
+		$person = new Person(
+			$this->options(
+				array(
+					'schema_site_type' => 'Person',
+					'local_url'        => 'https://me.example',
+					'local_email'      => 'me@example.com',
+				)
+			)
+		);
+
+		$data = $person->data();
+		$this->assertSame( 'https://me.example', $data['url'] );
+		$this->assertSame( 'me@example.com', $data['email'] );
+	}
 }
