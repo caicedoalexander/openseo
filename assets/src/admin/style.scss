@@ -1,33 +1,298 @@
+/**
+ * OpenSEO admin styles.
+ *
+ * A native-WordPress, card-based settings surface: one white card per screen,
+ * a divided tab rail, section dividers, consistent vertical rhythm, and a
+ * sticky save footer. Design tokens live as CSS custom properties scoped to
+ * `.openseo-admin` so nothing leaks into the rest of wp-admin.
+ */
+
+.openseo-admin {
+	--openseo-surface: #fff;
+	--openseo-bg-muted: #fbfbfc;
+	--openseo-text: #1e1e1e;
+	--openseo-text-muted: #757575;
+	--openseo-border: #e2e4e7;
+	--openseo-divider: #f0f0f1;
+	--openseo-accent: #3858e9;
+	--openseo-accent-soft: #f0f3fe;
+	--openseo-radius: 8px;
+	--openseo-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
+	--openseo-gap: 20px;
+
+	max-width: 960px;
+}
+
+/* -------------------------------------------------------------------------- */
+
+/* Header                                                                     */
+
+/* -------------------------------------------------------------------------- */
+
 .openseo-header {
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	padding: 16px 0;
-	margin-bottom: 16px;
-	border-bottom: 1px solid #dcdcde;
+	gap: 10px;
+	margin: 4px 0 20px;
+	padding: 4px 0 16px;
+	border-bottom: 1px solid var(--openseo-border);
 
 	&__logo {
-		color: #2271b1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		border-radius: 7px;
+		background: var(--openseo-accent-soft);
+		color: var(--openseo-accent);
 	}
 
 	&__title {
 		font-size: 18px;
 		font-weight: 600;
+		letter-spacing: -0.01em;
 	}
 
 	&__version {
-		color: #646970;
-		font-size: 12px;
+		padding: 2px 8px;
+		border-radius: 999px;
+		background: var(--openseo-divider);
+		color: var(--openseo-text-muted);
+		font-size: 11px;
+		font-weight: 500;
 	}
 }
 
+/* -------------------------------------------------------------------------- */
+
+/* Card panel + vertical rhythm                                               */
+
+/* -------------------------------------------------------------------------- */
+
 .openseo-panel {
-	max-width: 720px;
+	max-width: 920px;
+	background: var(--openseo-surface);
+	border: 1px solid var(--openseo-border);
+	border-radius: var(--openseo-radius);
+	box-shadow: var(--openseo-shadow);
+
+	&__fields {
+		padding: 26px 28px 28px;
+	}
 }
 
-.openseo-savebar {
-	margin-top: 16px;
+/* Consistent spacing between top-level controls; headings and checkbox
+   lists override this with their own rhythm. */
+.openseo-panel__fields > * + *,
+.openseo-vtabs__panel > * + * {
+	margin-top: var(--openseo-gap);
 }
+
+/* Group checkbox lists tightly instead of the full field gap. */
+.openseo-panel__fields .components-checkbox-control + .components-checkbox-control,
+.openseo-vtabs__panel .components-checkbox-control + .components-checkbox-control {
+	margin-top: 8px;
+}
+
+/* Section dividers: every <h3> in a panel becomes a labelled division. */
+.openseo-panel__fields h3,
+.openseo-vtabs__panel h3 {
+	margin: 28px 0 16px;
+	padding-top: 24px;
+	border-top: 1px solid var(--openseo-divider);
+	color: var(--openseo-text);
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: -0.005em;
+}
+
+.openseo-panel__fields > h3:first-child,
+.openseo-vtabs__panel > h3:first-child {
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
+/* Save footer                                                                */
+
+/* -------------------------------------------------------------------------- */
+
+.openseo-savebar {
+	position: sticky;
+	bottom: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 0;
+	padding: 16px 28px;
+	border-top: 1px solid var(--openseo-border);
+	border-radius: 0 0 var(--openseo-radius) var(--openseo-radius);
+	background: var(--openseo-bg-muted);
+
+	.components-button {
+		align-self: flex-end;
+	}
+}
+
+/* -------------------------------------------------------------------------- */
+
+/* Vertical tabs                                                              */
+
+/* -------------------------------------------------------------------------- */
+
+.openseo-vtabs {
+	display: flex;
+	gap: 0;
+	align-items: stretch;
+
+	&__nav {
+		display: flex;
+		flex: 0 0 196px;
+		flex-direction: column;
+		gap: 2px;
+		margin-right: 24px;
+		padding-right: 24px;
+		border-right: 1px solid var(--openseo-divider);
+	}
+
+	&__group-label {
+		margin: 16px 0 6px;
+		font-size: 11px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--openseo-text-muted);
+
+		&:first-child {
+			margin-top: 0;
+		}
+	}
+
+	&__group:first-child &__group-label {
+		margin-top: 0;
+	}
+
+	&__tab {
+		display: block;
+		width: 100%;
+		padding: 8px 12px;
+		border: 0;
+		border-radius: 6px;
+		background: transparent;
+		color: var(--openseo-text);
+		font-size: 13px;
+		text-align: left;
+		cursor: pointer;
+		transition: background 0.12s ease, color 0.12s ease;
+
+		&:hover {
+			background: var(--openseo-divider);
+		}
+
+		&.is-active {
+			background: var(--openseo-accent-soft);
+			color: var(--openseo-accent);
+			font-weight: 600;
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--openseo-accent);
+			outline-offset: 1px;
+		}
+	}
+
+	&__panel {
+		flex: 1 1 auto;
+		min-width: 0;
+
+		/* No overflow:hidden here — the inserter Popover must escape this box. */
+	}
+}
+
+/* -------------------------------------------------------------------------- */
+
+/* Field components                                                          */
+
+/* -------------------------------------------------------------------------- */
+
+.openseo-separator-field {
+
+	&__label {
+		margin: 0 0 8px;
+		color: var(--openseo-text);
+		font-size: 11px;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+
+	.components-button {
+		min-width: 40px;
+		justify-content: center;
+		font-size: 15px;
+	}
+}
+
+.openseo-media-field {
+
+	&__label {
+		margin: 0 0 10px;
+		color: var(--openseo-text-muted);
+		font-size: 13px;
+	}
+
+	&__preview {
+		margin-bottom: 12px;
+		border: 1px solid var(--openseo-border);
+		border-radius: 6px;
+	}
+}
+
+.openseo-advanced-robots {
+	margin: 0;
+	padding: 16px;
+	border: 1px solid var(--openseo-divider);
+	border-radius: 6px;
+	background: var(--openseo-bg-muted);
+
+	> legend {
+		padding: 0 6px;
+		margin-left: -6px;
+		color: var(--openseo-text);
+		font-size: 12px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+
+	.components-base-control + .components-base-control {
+		margin-top: 12px;
+	}
+}
+
+.openseo-template-field {
+
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		margin-bottom: 6px;
+	}
+
+	&__label {
+		font-weight: 600;
+	}
+}
+
+/* -------------------------------------------------------------------------- */
+
+/* Dashboard                                                                  */
+
+/* -------------------------------------------------------------------------- */
 
 .openseo-dashboard {
 	display: grid;
@@ -35,6 +300,12 @@
 	gap: 16px;
 	max-width: 960px;
 }
+
+/* -------------------------------------------------------------------------- */
+
+/* Data table                                                                 */
+
+/* -------------------------------------------------------------------------- */
 
 .openseo-datatable {
 	margin-top: 12px;
@@ -53,102 +324,48 @@
 	}
 }
 
-.openseo-vtabs {
-	display: flex;
-	gap: 24px;
-	align-items: flex-start;
+/* -------------------------------------------------------------------------- */
 
-	&__nav {
-		flex: 0 0 200px;
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
+/* Variable inserter popover                                                  */
 
-	&__group-label {
-		margin: 12px 0 4px;
-		font-size: 11px;
-		font-weight: 600;
-		text-transform: uppercase;
-		color: #757575;
-	}
+/* -------------------------------------------------------------------------- */
 
-	&__tab {
-		text-align: left;
-		padding: 8px 12px;
-		border: 0;
-		border-radius: 4px;
-		background: transparent;
-		cursor: pointer;
-		color: #1e1e1e;
-
-		&:hover {
-			background: #f0f0f0;
-		}
-
-		&.is-active {
-			background: #e6f0f7;
-			box-shadow: inset 3px 0 0 #3858e9;
-			font-weight: 600;
-		}
-	}
+.openseo-var-inserter {
 
 	&__panel {
-		flex: 1 1 auto;
-		min-width: 0;
-		/* No overflow:hidden here — the inserter Popover must escape this box. */
+		width: 280px;
+		max-height: 320px;
+		padding: 8px;
+		overflow-y: auto;
 	}
-}
 
-.openseo-template-field {
-	margin-bottom: 16px;
+	&__list {
+		margin: 8px 0 0;
+		padding: 0;
+		list-style: none;
+	}
 
-	&__header {
+	&__item {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-		margin-bottom: 4px;
+		flex-direction: column;
+		align-items: flex-start;
+		width: 100%;
+		height: auto;
+		padding: 6px 8px;
+	}
+
+	&__token {
+		font-family: monospace;
+		color: var(--openseo-accent);
 	}
 
 	&__label {
-		font-weight: 600;
+		font-size: 11px;
+		color: var(--openseo-text-muted);
 	}
-}
 
-.openseo-var-inserter__panel {
-	width: 280px;
-	max-height: 320px;
-	overflow-y: auto;
-	padding: 8px;
-}
-
-.openseo-var-inserter__list {
-	margin: 8px 0 0;
-	padding: 0;
-	list-style: none;
-}
-
-.openseo-var-inserter__item {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	width: 100%;
-	height: auto;
-	padding: 6px 8px;
-}
-
-.openseo-var-inserter__token {
-	font-family: monospace;
-	color: #3858e9;
-}
-
-.openseo-var-inserter__label {
-	font-size: 11px;
-	color: #757575;
-}
-
-.openseo-var-inserter__empty {
-	margin: 8px 0 0;
-	color: #757575;
+	&__empty {
+		margin: 8px 0 0;
+		color: var(--openseo-text-muted);
+	}
 }
