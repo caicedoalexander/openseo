@@ -47,6 +47,13 @@ final class VariableCatalogTest extends TestCase {
 		Functions\when( 'get_the_title' )->justReturn( 'A Title' );
 		Functions\when( 'get_the_excerpt' )->justReturn( 'An excerpt' );
 		Functions\when( 'wp_strip_all_tags' )->returnArg();
+		Functions\when( 'get_the_date' )->justReturn( '' );
+		Functions\when( 'get_the_modified_date' )->justReturn( '' );
+		Functions\when( 'get_post_field' )->justReturn( 0 );
+		Functions\when( 'get_the_author_meta' )->justReturn( '' );
+		Functions\when( 'get_the_category' )->justReturn( array() );
+		Functions\when( 'get_the_tags' )->justReturn( false );
+		Functions\when( 'wp_get_post_parent_id' )->justReturn( 0 );
 
 		$variables = new Variables( new Options() );
 
