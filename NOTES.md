@@ -215,7 +215,7 @@ Smoke test manual:
 
 La superficie de admin pasó de *Ajustes → OpenSEO* (7 tabs, Settings API) +
 *Herramientas → OpenSEO Redirects* a un **menú propio** con un submenú por sección.
-Las vistas de ajustes (Dashboard, General, Títulos, Social, Sitemaps, Schema, IA)
+Las vistas de ajustes (Dashboard, Títulos, Social, Sitemaps, Schema, IA)
 son **React** (`assets/src/admin/`) sobre el REST `openseo/v1/settings`
 (`src/Rest/SettingsController.php`, reutiliza `Options::sanitize`). Redirecciones y
 404 se reubicaron bajo el menú conservando su `WP_List_Table` (PHP); sus toggles
@@ -226,7 +226,9 @@ registro de menú (`MenuTest`, `MenuWiringTest`), secciones de toggles
 (`BehaviorSettingsTest`) y el enlace 404→redirect (`NotFoundLinkTest`).
 
 Smoke test manual: en wp-admin, abrir **OpenSEO** en el sidebar; cada submenú es su
-propia URL (`admin.php?page=openseo-*`); cambiar un campo en *General* y Guardar →
+propia URL (`admin.php?page=openseo-*`); la identidad de schema (persona/empresa,
+nombre, logo, URL, email) vive en la pestaña *SEO Local* de *Titles & Meta*; cambiar
+un campo ahí y Guardar →
 recargar y confirmar persistencia; *404s* muestra el toggle del monitor arriba y el
 log abajo.
 
