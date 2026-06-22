@@ -67,8 +67,8 @@ final class SitemapTest extends TestCase {
 		$this->assertSame( 'OR', $args['meta_query']['relation'] );
 		$this->assertSame( '_openseo_robots_noindex', $args['meta_query'][0]['key'] );
 		$this->assertSame( 'NOT EXISTS', $args['meta_query'][0]['compare'] );
-		$this->assertSame( '1', $args['meta_query'][1]['value'] );
-		$this->assertSame( '!=', $args['meta_query'][1]['compare'] );
+		$this->assertSame( array( '1', 'on' ), $args['meta_query'][1]['value'] );
+		$this->assertSame( 'NOT IN', $args['meta_query'][1]['compare'] );
 	}
 
 	public function test_exclude_noindex_preserves_existing_meta_query(): void {
@@ -89,5 +89,30 @@ final class SitemapTest extends TestCase {
 
 		$this->assertArrayHasKey( 'meta_query', $args );
 		$this->assertSame( 'OR', $args['meta_query']['relation'] );
+	}
+
+	public function test_excludes_noindex_post_type_provider(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'page' => array( 'robots' => array( 'noindex' => 'on' ) ) ) )
+		);
+
+		$page = new \stdClass();
+		$post = new \stdClass();
+		$items = array( 'post' => $post, 'page' => $page );
+
+		$result = ( new Sitemap( new Options() ) )->exclude_noindex_post_types( $items );
+
+		$this->assertArrayHasKey( 'post', $result );
+		$this->assertArrayNotHasKey( 'page', $result );
+	}
+
+	public function test_keeps_post_types_when_not_noindex(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$items = array( 'post' => new \stdClass(), 'page' => new \stdClass() );
+
+		$result = ( new Sitemap( new Options() ) )->exclude_noindex_post_types( $items );
+
+		$this->assertCount( 2, $result );
 	}
 }
