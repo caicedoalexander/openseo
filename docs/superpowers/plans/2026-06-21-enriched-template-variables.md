@@ -122,7 +122,12 @@ Reescribir `for_post()`:
 	public static function for_post( int $post_id ): self {
 		$categories = get_the_category( $post_id );
 		$tags       = get_the_tags( $post_id );
-		$parent     = wp_get_post_parent_id( $post_id );
+		$parent     = (int) wp_get_post_parent_id( $post_id );
+
+		// get_post_field stub returns int|string|int[]; is_scalar narrows away
+		// the array branch so the (int) cast is PHPStan-level-6 clean (M3).
+		$author     = get_post_field( 'post_author', $post_id );
+		$author_id  = is_scalar( $author ) ? (int) $author : 0;
 
 		return new self(
 			$post_id,
@@ -132,7 +137,7 @@ Reescribir `for_post()`:
 			'',
 			(string) get_the_date( '', $post_id ),
 			(string) get_the_modified_date( '', $post_id ),
-			(string) get_the_author_meta( 'display_name', (int) get_post_field( 'post_author', $post_id ) ),
+			(string) get_the_author_meta( 'display_name', $author_id ),
 			isset( $categories[0] ) ? (string) $categories[0]->name : '',
 			is_array( $tags ) && isset( $tags[0] ) ? (string) $tags[0]->name : '',
 			$parent > 0 ? (string) get_the_title( $parent ) : '',
@@ -140,9 +145,13 @@ Reescribir `for_post()`:
 	}
 ```
 
-(No tocar `for_term()` ni `none()`: los nuevos primitivos toman su default `''`.)
+(No tocar `for_term()` ni `none()`: los nuevos primitivos toman su default `''`.
+`$parent` se castea a `int` antes de `> 0` para evitar el ruido de PHPStan sobre
+`int|false` (M4).)
 
 - [ ] **Step 4: Añadir mocks por defecto a los tests que ya construyen `for_post` (evitar fatales)**
+
+> **Aplicar este Step 4 en el MISMO commit que el Step 3, antes de correr la suite (Step 5).** En cuanto el Step 3 reescribe `for_post`, los tests existentes que construyen un contexto de post fatalan hasta que estos defaults estén puestos; no hay un estado "verde" entre Step 3 y Step 4 (es esperado dentro del task). Nota: los dos tests nuevos del Step 1 ya redefinen algunas de estas funciones con `Functions\when(...)` locales — eso **sobreescribe** los defaults del `setUp` (el del cuerpo del test gana en Brain Monkey); es intencional, no un duplicado a eliminar.
 
 En `tests/Unit/Meta/TemplateContextTest.php`, añadir al final de `setUp()` (después de `Monkey\setUp();`) defaults seguros:
 
@@ -158,7 +167,7 @@ En `tests/Unit/Meta/TemplateContextTest.php`, añadir al final de `setUp()` (des
 
 En `tests/Unit/Meta/VariablesTest.php`, añadir esas mismas 7 líneas al final de `setUp()`.
 
-En `tests/Unit/Meta/ResolverTest.php`, añadir esas mismas 7 líneas al final de `setUp()` (después de `Functions\when( 'get_post_type' )->justReturn( 'post' );`).
+En `tests/Unit/Meta/ResolverTest.php`, añadir esas mismas 7 líneas al final de `setUp()` (después de `Functions\when( 'get_post_type' )->justReturn( 'post' );`). (ResolverTest ya mockea `get_the_title`/`get_the_excerpt`/`wp_strip_all_tags` en su `setUp`; solo faltan estos 7 — cubren de una vez los 8 casos singular-sin-override que resuelven plantilla vía `for_post`.)
 
 En `tests/Unit/Meta/VariableCatalogTest.php`, dentro de `test_every_catalog_token_is_replaced_by_variables()`, añadir esas 7 líneas justo después de `Functions\when( 'wp_strip_all_tags' )->returnArg();`.
 
@@ -215,7 +224,7 @@ En `tests/Unit/Meta/VariablesTest.php`, añadir:
 	}
 ```
 
-(Las funciones WP no sobrescritas aquí ya tienen default seguro en `setUp()` desde Task 1.)
+(Las funciones WP no sobrescritas aquí —`get_the_modified_date`, `wp_get_post_parent_id`— ya tienen default seguro en `setUp()` desde Task 1. **Este test depende de Task 1**: no ejecutar Task 2 aislado.)
 
 - [ ] **Step 2: Ejecutar el test (verificar que falla)**
 
@@ -441,6 +450,8 @@ Expected: PASS.
 
 Run: `npm run lint:js`
 Expected: 0 errores (árbol completo).
+
+> Contingencia (L1): `@wordpress/date` llega transitivamente vía `@wordpress/scripts` y se externaliza a `wp-date` en build (como ya hacen `@wordpress/editor`/`@wordpress/core-data` en `index.js`). Si `lint:js` reportara `import/no-extraneous-dependencies` sobre `@wordpress/date`, declararlo en `devDependencies` de `package.json` (como ya se hizo con `@wordpress/url`) y re-lint.
 
 - [ ] **Step 5: Commit**
 
