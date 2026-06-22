@@ -46,6 +46,7 @@ final class Options {
 			'notfound_retention_days'  => '30',
 			'post_types'               => array(),
 			'taxonomies'               => array(),
+			'robots'                   => array(),
 		);
 	}
 
@@ -125,6 +126,17 @@ final class Options {
 			$clean['notfound_retention_days'] = (string) max( 1, $days );
 		}
 
+		if ( isset( $input['robots'] ) && is_array( $input['robots'] ) ) {
+			$allowed_global = array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex', 'noindex_empty_terms' );
+			$robots         = array();
+			foreach ( $allowed_global as $directive ) {
+				if ( '1' === (string) ( $input['robots'][ $directive ] ?? '' ) ) {
+					$robots[ $directive ] = '1';
+				}
+			}
+			$clean['robots'] = $robots;
+		}
+
 		if ( isset( $input['post_types'] ) || isset( $input['taxonomies'] ) ) {
 			$content_types = new ContentTypes();
 
@@ -153,12 +165,12 @@ final class Options {
 	 *
 	 * Conservation of unsent slugs comes from $current already holding the stored
 	 * map (sanitize() starts from all()); this is NOT a PHP deep merge. Per slug:
-	 * whitelist, merge per field, and unset when both fields end up empty.
+	 * whitelist, merge per field, and unset when all three fields end up empty.
 	 *
-	 * @param mixed                                $input_map Raw submitted map for the group.
-	 * @param array<string, array<string, string>> $current   Stored map for this group.
-	 * @param array<int, string>                   $allowed   Whitelisted slugs.
-	 * @return array<string, array<string, string>>
+	 * @param mixed                                                                         $input_map Raw submitted map for the group.
+	 * @param array<string, array{title:string,description:string,robots?:array<string,string>}> $current   Stored map for this group.
+	 * @param array<int, string>                                                            $allowed   Whitelisted slugs.
+	 * @return array<string, array{title:string,description:string,robots?:array<string,string>}>
 	 */
 	private function sanitize_template_map( mixed $input_map, array $current, array $allowed ): array {
 		if ( ! is_array( $input_map ) ) {
@@ -180,15 +192,32 @@ final class Options {
 				? sanitize_textarea_field( wp_unslash( (string) $fields['description'] ) )
 				: (string) ( $current[ $slug ]['description'] ?? '' );
 
-			if ( '' === $title && '' === $description ) {
+			if ( array_key_exists( 'robots', $fields ) && is_array( $fields['robots'] ) ) {
+				$robots = array();
+				foreach ( array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex' ) as $directive ) {
+					$value = (string) ( $fields['robots'][ $directive ] ?? '' );
+					if ( 'on' === $value || 'off' === $value ) {
+						$robots[ $directive ] = $value;
+					}
+				}
+			} else {
+				$robots = is_array( $current[ $slug ]['robots'] ?? null ) ? $current[ $slug ]['robots'] : array();
+			}
+
+			if ( '' === $title && '' === $description && empty( $robots ) ) {
 				unset( $current[ $slug ] );
 				continue;
 			}
 
-			$current[ $slug ] = array(
+			$entry = array(
 				'title'       => $title,
 				'description' => $description,
 			);
+			if ( ! empty( $robots ) ) {
+				$entry['robots'] = $robots;
+			}
+
+			$current[ $slug ] = $entry;
 		}
 
 		return $current;
