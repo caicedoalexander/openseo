@@ -167,9 +167,9 @@ final class Options {
 	 * map (sanitize() starts from all()); this is NOT a PHP deep merge. Per slug:
 	 * whitelist, merge per field, and unset when all three fields end up empty.
 	 *
-	 * @param mixed                                                                         $input_map Raw submitted map for the group.
+	 * @param mixed                                                                              $input_map Raw submitted map for the group.
 	 * @param array<string, array{title:string,description:string,robots?:array<string,string>}> $current   Stored map for this group.
-	 * @param array<int, string>                                                            $allowed   Whitelisted slugs.
+	 * @param array<int, string>                                                                 $allowed   Whitelisted slugs.
 	 * @return array<string, array{title:string,description:string,robots?:array<string,string>}>
 	 */
 	private function sanitize_template_map( mixed $input_map, array $current, array $allowed ): array {

@@ -19,11 +19,11 @@ final class RobotsResolver {
 	/**
 	 * Effective boolean for one directive.
 	 *
-	 * @param string $entry  Per-entry value ('on'|'1'|'off'|'').
-	 * @param string $type   Per-type value ('on'|'off'|'').
-	 * @param bool   $global Global default (already cast to bool by the caller).
+	 * @param string $entry          Per-entry value ('on'|'1'|'off'|'').
+	 * @param string $type           Per-type value ('on'|'off'|'').
+	 * @param bool   $global_default Global default (already cast to bool by the caller).
 	 */
-	public static function resolve( string $entry, string $type, bool $global ): bool {
+	public static function resolve( string $entry, string $type, bool $global_default ): bool {
 		$at_entry = self::level( $entry );
 		if ( null !== $at_entry ) {
 			return $at_entry;
@@ -34,7 +34,7 @@ final class RobotsResolver {
 			return $at_type;
 		}
 
-		return $global;
+		return $global_default;
 	}
 
 	/**
