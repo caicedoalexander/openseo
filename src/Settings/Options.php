@@ -63,6 +63,10 @@ final class Options {
 					'value'   => 'large',
 				),
 			),
+			'local_website_name'           => '',
+			'local_website_alternate_name' => '',
+			'local_url'                    => '',
+			'local_email'                  => '',
 		);
 	}
 
@@ -104,7 +108,7 @@ final class Options {
 		// keep their saved value instead of resetting to default.
 		$clean = $this->all();
 
-		foreach ( array( 'title_separator', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model' ) as $key ) {
+		foreach ( array( 'title_separator', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model', 'local_website_name', 'local_website_alternate_name' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = sanitize_text_field( wp_unslash( $input[ $key ] ) );
 			}
@@ -131,10 +135,15 @@ final class Options {
 			$clean['twitter_card_type'] = in_array( $card, array( 'summary_large_image', 'summary' ), true ) ? $card : 'summary_large_image';
 		}
 
-		foreach ( array( 'og_default_image', 'schema_logo' ) as $key ) {
+		foreach ( array( 'og_default_image', 'schema_logo', 'local_url' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = esc_url_raw( wp_unslash( $input[ $key ] ) );
 			}
+		}
+
+		if ( isset( $input['local_email'] ) ) {
+			$email                = sanitize_email( wp_unslash( $input['local_email'] ) );
+			$clean['local_email'] = is_email( $email ) ? $email : '';
 		}
 
 		if ( isset( $input['redirects_default_status'] ) ) {
