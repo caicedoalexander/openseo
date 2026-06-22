@@ -64,6 +64,7 @@ final class Renderer {
 	 * Render one section by key.
 	 *
 	 * @param string $section Section key.
+	 * @return string Escaped HTML, or '' for an unknown section.
 	 */
 	private function section( string $section ): string {
 		return match ( $section ) {
@@ -172,6 +173,7 @@ final class Renderer {
 	 * Build a tel: link with a cleaned URI and the original visible text.
 	 *
 	 * @param string $phone Phone number.
+	 * @return string Escaped <a> tel: link.
 	 */
 	private function tel_link( string $phone ): string {
 		$clean = (string) preg_replace( '/[^0-9+]/', '', $phone );
