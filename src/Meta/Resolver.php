@@ -92,7 +92,34 @@ final class Resolver {
 		}
 
 		if ( is_front_page() ) {
-			return $this->variables->replace( (string) $this->options->get( 'home_title' ) );
+			return $this->variables->replace( (string) $this->options->get( 'home_title' ), TemplateContext::for_archive() );
+		}
+
+		if ( is_author() ) {
+			$template = (string) $this->options->get( 'author_title' );
+			if ( '' === $template ) {
+				$template = $this->defaults->author_title();
+			}
+
+			return $this->variables->replace( $template, TemplateContext::for_author( get_queried_object_id() ) );
+		}
+
+		if ( is_search() ) {
+			$template = (string) $this->options->get( 'search_title' );
+			if ( '' === $template ) {
+				$template = $this->defaults->search_title();
+			}
+
+			return $this->variables->replace( $template, TemplateContext::for_search() );
+		}
+
+		if ( is_404() ) {
+			$template = (string) $this->options->get( 'title_404' );
+			if ( '' === $template ) {
+				$template = $this->defaults->not_found_title();
+			}
+
+			return $this->variables->replace( $template );
 		}
 
 		return '';
@@ -132,6 +159,10 @@ final class Resolver {
 			$home = (string) $this->options->get( 'home_description' );
 
 			return '' !== $home ? $home : (string) get_bloginfo( 'description' );
+		}
+
+		if ( is_author() ) {
+			return (string) $this->options->get( 'author_description' );
 		}
 
 		return '';

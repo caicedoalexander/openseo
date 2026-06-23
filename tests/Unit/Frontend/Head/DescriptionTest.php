@@ -24,9 +24,18 @@ final class DescriptionTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		Monkey\setUp();
+		Functions\when( 'is_front_page' )->justReturn( false );
 		Functions\when( 'is_category' )->justReturn( false );
 		Functions\when( 'is_tag' )->justReturn( false );
 		Functions\when( 'is_tax' )->justReturn( false );
+		Functions\when( 'is_author' )->justReturn( false );
+		Functions\when( 'is_search' )->justReturn( false );
+		Functions\when( 'is_404' )->justReturn( false );
+		Functions\when( 'is_paged' )->justReturn( false );
+		Functions\when( 'post_password_required' )->justReturn( false );
+		Functions\when( 'get_query_var' )->justReturn( 0 );
+		Functions\when( 'get_search_query' )->justReturn( '' );
+		Functions\when( '__' )->returnArg();
 	}
 
 	protected function tearDown(): void {

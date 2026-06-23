@@ -24,6 +24,14 @@ final class ResolverTest extends TestCase {
 		Functions\when( 'get_the_excerpt' )->justReturn( '' );
 		Functions\when( 'wp_strip_all_tags' )->returnArg();
 		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'is_author' )->justReturn( false );
+		Functions\when( 'is_search' )->justReturn( false );
+		Functions\when( 'is_404' )->justReturn( false );
+		Functions\when( 'is_paged' )->justReturn( false );
+		Functions\when( 'post_password_required' )->justReturn( false );
+		Functions\when( 'get_query_var' )->justReturn( 0 );
+		Functions\when( 'get_search_query' )->justReturn( '' );
+		Functions\when( '__' )->returnArg();
 		Functions\when( 'is_category' )->justReturn( false );
 		Functions\when( 'is_tag' )->justReturn( false );
 		Functions\when( 'is_tax' )->justReturn( false );
@@ -502,6 +510,76 @@ final class ResolverTest extends TestCase {
 		Functions\when( 'get_the_title' )->justReturn( 'hello world' );
 
 		$this->assertSame( 'hello world - My Site', $this->resolver()->title() );
+	}
+
+	public function test_title_resolves_author_archive(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_author' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 7 );
+		Functions\when( 'get_the_author_meta' )->justReturn( 'Jane Doe' );
+
+		// Default author_title '%name% %sep% %sitename%'.
+		$this->assertSame( 'Jane Doe - My Site', $this->resolver()->title() );
+	}
+
+	public function test_title_resolves_search_results(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_search' )->justReturn( true );
+		Functions\when( 'get_search_query' )->justReturn( 'hello' );
+
+		// Default search_title '%search_query% %sep% %sitename%'.
+		$this->assertSame( 'hello - My Site', $this->resolver()->title() );
+	}
+
+	public function test_title_resolves_404(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_404' )->justReturn( true );
+
+		// Default title_404 'Page Not Found %sep% %sitename%'.
+		$this->assertSame( 'Page Not Found - My Site', $this->resolver()->title() );
+	}
+
+	public function test_title_uses_default_when_author_title_empty(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_author' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 7 );
+		Functions\when( 'get_the_author_meta' )->justReturn( 'Jane' );
+		Functions\when( 'get_option' )->justReturn( array( 'author_title' => '' ) );
+
+		// Cleared option falls back to TemplateDefaults::author_title().
+		$this->assertSame( 'Jane - My Site', $this->resolver()->title() );
+	}
+
+	public function test_description_resolves_author(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_author' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'author_description' => 'About Jane.' ) );
+
+		$this->assertSame( 'About Jane.', $this->resolver()->description() );
+	}
+
+	public function test_title_homepage_appends_page_label_when_paginated(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( true );
+		// A home_title that includes %page% so the archive context is observable.
+		Functions\when( 'get_option' )->justReturn( array( 'home_title' => '%sitename% %page%' ) );
+		Functions\when( 'get_query_var' )->alias( static fn( $k ) => 'paged' === $k ? 2 : 0 );
+		$wp_query                = new \stdClass();
+		$wp_query->max_num_pages = 3;
+		$GLOBALS['wp_query']     = $wp_query;
+
+		$this->assertSame( 'My Site Page 2 of 3', $this->resolver()->title() );
+
+		unset( $GLOBALS['wp_query'] );
+	}
+
+	public function test_title_homepage_without_pagination_has_no_page_label(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'home_title' => '%sitename% %page%' ) );
+		// get_query_var defaults to 0 (setUp) → page 1 → no %page%.
+
+		$this->assertSame( 'My Site', $this->resolver()->title() );
 	}
 
 	// -----------------------------------------------------------------------
