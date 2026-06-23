@@ -37,6 +37,8 @@ const GROUPS = [
 			{ name: 'meta-global', title: __( 'Meta Global', 'openseo' ) },
 			{ name: 'seo-local', title: __( 'SEO Local', 'openseo' ) },
 			{ name: 'homepage', title: __( 'Homepage', 'openseo' ) },
+			{ name: 'authors', title: __( 'Authors', 'openseo' ) },
+			{ name: 'other-pages', title: __( 'Other pages', 'openseo' ) },
 		],
 	},
 	...( contentTypes.postTypes.length
@@ -205,6 +207,8 @@ function SeoLocalPanel( { values, change } ) {
 }
 
 function HomepagePanel( { values, change } ) {
+	const homeRobots = values.home_robots ?? {};
+
 	return (
 		<>
 			<TemplateField
@@ -221,6 +225,159 @@ function HomepagePanel( { values, change } ) {
 				scope="global"
 				catalog={ catalog }
 				onChange={ ( v ) => change( 'home_description', v ) }
+			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Custom homepage robots', 'openseo' ) }
+				help={ __(
+					'Override the global robots meta for the homepage.',
+					'openseo'
+				) }
+				checked={ values.home_robots_custom === '1' }
+				onChange={ ( on ) =>
+					change( 'home_robots_custom', on ? '1' : '' )
+				}
+			/>
+			{ values.home_robots_custom === '1' && (
+				<RobotsCheckboxes
+					map={ homeRobots }
+					onChange={ ( next ) => change( 'home_robots', next ) }
+				/>
+			) }
+			<h3>{ __( 'Homepage social (OpenGraph)', 'openseo' ) }</h3>
+			<TemplateField
+				label={ __( 'Homepage title for Facebook', 'openseo' ) }
+				value={ values.home_og_title ?? '' }
+				scope="global"
+				catalog={ catalog }
+				onChange={ ( v ) => change( 'home_og_title', v ) }
+			/>
+			<TemplateField
+				label={ __( 'Homepage description for Facebook', 'openseo' ) }
+				value={ values.home_og_description ?? '' }
+				multiline
+				scope="global"
+				catalog={ catalog }
+				onChange={ ( v ) => change( 'home_og_description', v ) }
+			/>
+			<MediaField
+				label={ __(
+					'Homepage thumbnail for Facebook (min. 1200×630px).',
+					'openseo'
+				) }
+				value={ values.home_og_image ?? '' }
+				onChange={ ( url ) => change( 'home_og_image', url ) }
+			/>
+		</>
+	);
+}
+
+function AuthorsPanel( { values, change } ) {
+	const authorRobots = values.author_robots ?? {};
+
+	return (
+		<>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Author archives', 'openseo' ) }
+				help={ __(
+					'When off, author archives redirect to the homepage.',
+					'openseo'
+				) }
+				checked={ values.author_archives === '1' }
+				onChange={ ( on ) =>
+					change( 'author_archives', on ? '1' : '' )
+				}
+			/>
+			<TemplateField
+				label={ __( 'Author archive title', 'openseo' ) }
+				value={ values.author_title ?? '' }
+				scope="author"
+				catalog={ catalog }
+				onChange={ ( v ) => change( 'author_title', v ) }
+			/>
+			<TemplateField
+				label={ __( 'Author archive description', 'openseo' ) }
+				value={ values.author_description ?? '' }
+				multiline
+				scope="author"
+				catalog={ catalog }
+				onChange={ ( v ) => change( 'author_description', v ) }
+			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Custom author robots', 'openseo' ) }
+				checked={ values.author_robots_custom === '1' }
+				onChange={ ( on ) =>
+					change( 'author_robots_custom', on ? '1' : '' )
+				}
+			/>
+			{ values.author_robots_custom === '1' && (
+				<RobotsCheckboxes
+					map={ authorRobots }
+					onChange={ ( next ) => change( 'author_robots', next ) }
+				/>
+			) }
+		</>
+	);
+}
+
+function OtherPagesPanel( { values, change } ) {
+	return (
+		<>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Date archives', 'openseo' ) }
+				help={ __(
+					'When off, date archives redirect to the homepage.',
+					'openseo'
+				) }
+				checked={ values.date_archives === '1' }
+				onChange={ ( on ) => change( 'date_archives', on ? '1' : '' ) }
+			/>
+			<TemplateField
+				label={ __( '404 title', 'openseo' ) }
+				value={ values.title_404 ?? '' }
+				scope="global"
+				catalog={ catalog }
+				onChange={ ( v ) => change( 'title_404', v ) }
+			/>
+			<TemplateField
+				label={ __( 'Search results title', 'openseo' ) }
+				value={ values.search_title ?? '' }
+				scope="search"
+				catalog={ catalog }
+				onChange={ ( v ) => change( 'search_title', v ) }
+			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Noindex search results', 'openseo' ) }
+				checked={ values.noindex_search === '1' }
+				onChange={ ( on ) => change( 'noindex_search', on ? '1' : '' ) }
+			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Noindex paginated pages', 'openseo' ) }
+				checked={ values.noindex_paginated === '1' }
+				onChange={ ( on ) =>
+					change( 'noindex_paginated', on ? '1' : '' )
+				}
+			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Noindex paginated single pages', 'openseo' ) }
+				checked={ values.noindex_paginated_singular === '1' }
+				onChange={ ( on ) =>
+					change( 'noindex_paginated_singular', on ? '1' : '' )
+				}
+			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Noindex password-protected pages', 'openseo' ) }
+				checked={ values.noindex_password_protected === '1' }
+				onChange={ ( on ) =>
+					change( 'noindex_password_protected', on ? '1' : '' )
+				}
 			/>
 		</>
 	);
@@ -300,6 +457,12 @@ function renderPanel( tab, values, change ) {
 				change={ change }
 			/>
 		) : null;
+	}
+	if ( tab === 'authors' ) {
+		return <AuthorsPanel values={ values } change={ change } />;
+	}
+	if ( tab === 'other-pages' ) {
+		return <OtherPagesPanel values={ values } change={ change } />;
 	}
 	if ( tab === 'homepage' ) {
 		return <HomepagePanel values={ values } change={ change } />;
