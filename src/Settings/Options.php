@@ -31,6 +31,23 @@ final class Options {
 			'title_separator'              => '-',
 			'home_title'                   => '%sitename% %sep% %tagline%',
 			'home_description'             => '',
+			'home_robots_custom'           => '',
+			'home_robots'                  => array(),
+			'home_og_title'                => '',
+			'home_og_description'          => '',
+			'home_og_image'                => '',
+			'author_archives'              => '1',
+			'author_title'                 => '%name% %sep% %sitename%',
+			'author_description'           => '',
+			'author_robots_custom'         => '',
+			'author_robots'                => array(),
+			'date_archives'                => '1',
+			'title_404'                    => 'Page Not Found %sep% %sitename%',
+			'search_title'                 => '%search_query% %sep% %sitename%',
+			'noindex_search'               => '1',
+			'noindex_paginated'            => '',
+			'noindex_paginated_singular'   => '',
+			'noindex_password_protected'   => '',
 			'og_default_image'             => '',
 			'sitemap_enabled'              => '1',
 			'sitemap_include_authors'      => '',
@@ -123,15 +140,21 @@ final class Options {
 		// keep their saved value instead of resetting to default.
 		$clean = $this->all();
 
-		foreach ( array( 'title_separator', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model', 'local_website_name', 'local_website_alternate_name' ) as $key ) {
+		foreach ( array( 'title_separator', 'home_title', 'home_description', 'schema_site_name', 'breadcrumb_separator', 'ai_model', 'local_website_name', 'local_website_alternate_name', 'home_og_title', 'author_title', 'title_404', 'search_title' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = sanitize_text_field( wp_unslash( $input[ $key ] ) );
 			}
 		}
 
+		foreach ( array( 'home_og_description', 'author_description' ) as $key ) {
+			if ( isset( $input[ $key ] ) ) {
+				$clean[ $key ] = sanitize_textarea_field( wp_unslash( $input[ $key ] ) );
+			}
+		}
+
 		// Checkboxes: a hidden companion field guarantees the key is present (0 or
 		// 1) when its tab is submitted, so an explicit '1' check turns it on/off.
-		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors', 'redirects_auto_slug', 'redirects_track_hits', 'notfound_monitor_enabled', 'capitalize_titles' ) as $key ) {
+		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors', 'redirects_auto_slug', 'redirects_track_hits', 'notfound_monitor_enabled', 'capitalize_titles', 'home_robots_custom', 'author_robots_custom', 'author_archives', 'date_archives', 'noindex_search', 'noindex_paginated', 'noindex_paginated_singular', 'noindex_password_protected' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = '1' === $input[ $key ] ? '1' : '';
 			}
@@ -150,7 +173,7 @@ final class Options {
 			$clean['twitter_card_type'] = in_array( $card, array( 'summary_large_image', 'summary' ), true ) ? $card : 'summary_large_image';
 		}
 
-		foreach ( array( 'og_default_image', 'schema_logo', 'local_url' ) as $key ) {
+		foreach ( array( 'og_default_image', 'schema_logo', 'local_url', 'home_og_image' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = esc_url_raw( wp_unslash( $input[ $key ] ) );
 			}
@@ -180,6 +203,18 @@ final class Options {
 				}
 			}
 			$clean['robots'] = $robots;
+		}
+
+		foreach ( array( 'home_robots', 'author_robots' ) as $map_key ) {
+			if ( isset( $input[ $map_key ] ) && is_array( $input[ $map_key ] ) ) {
+				$map = array();
+				foreach ( array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex' ) as $directive ) {
+					if ( '1' === (string) ( $input[ $map_key ][ $directive ] ?? '' ) ) {
+						$map[ $directive ] = '1';
+					}
+				}
+				$clean[ $map_key ] = $map;
+			}
 		}
 
 		if ( isset( $input['post_types'] ) || isset( $input['taxonomies'] ) ) {
