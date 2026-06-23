@@ -108,6 +108,24 @@ final class VariableCatalog {
 				'description' => __( 'The taxonomy term description', 'openseo' ),
 				'scope'       => 'taxonomy',
 			),
+			array(
+				'token'       => '%name%',
+				'label'       => __( 'Author name', 'openseo' ),
+				'description' => __( "The author archive's display name", 'openseo' ),
+				'scope'       => 'author',
+			),
+			array(
+				'token'       => '%search_query%',
+				'label'       => __( 'Search query', 'openseo' ),
+				'description' => __( 'The current search term', 'openseo' ),
+				'scope'       => 'search',
+			),
+			array(
+				'token'       => '%page%',
+				'label'       => __( 'Page number', 'openseo' ),
+				'description' => __( 'Current page of paginated results', 'openseo' ),
+				'scope'       => 'global',
+			),
 		);
 	}
 }

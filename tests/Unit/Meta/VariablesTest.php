@@ -25,6 +25,8 @@ final class VariablesTest extends TestCase {
 		Functions\when( 'get_the_category' )->justReturn( array() );
 		Functions\when( 'get_the_tags' )->justReturn( false );
 		Functions\when( 'wp_get_post_parent_id' )->justReturn( 0 );
+		Functions\when( '__' )->returnArg();
+		Functions\when( 'get_search_query' )->justReturn( '' );
 	}
 
 	protected function tearDown(): void {
@@ -109,5 +111,43 @@ final class VariablesTest extends TestCase {
 		$this->assertSame( '', $variables->replace( '%tag%', $ctx ) );
 		// parent_title: wp_get_post_parent_id defaults to 0 in setUp → '' passthrough.
 		$this->assertSame( '', $variables->replace( '%parent_title%', $ctx ) );
+	}
+
+	public function test_replaces_author_name_token(): void {
+		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
+		Functions\when( 'get_the_author_meta' )->justReturn( 'Jane Doe' );
+		Functions\when( 'get_query_var' )->justReturn( 0 );
+
+		$variables = new Variables( new Options() );
+		$ctx       = TemplateContext::for_author( 7 );
+
+		$this->assertSame( 'Jane Doe - My Site', $variables->replace( '%name% %sep% %sitename%', $ctx ) );
+	}
+
+	public function test_replaces_search_query_token_raw(): void {
+		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
+		Functions\when( 'get_search_query' )->justReturn( 'tom & jerry' );
+		Functions\when( 'get_query_var' )->justReturn( 0 );
+
+		$variables = new Variables( new Options() );
+		$ctx       = TemplateContext::for_search();
+
+		$this->assertSame( 'tom & jerry', $variables->replace( '%search_query%', $ctx ) );
+	}
+
+	public function test_replaces_page_token(): void {
+		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
+		Functions\when( '__' )->returnArg();
+		Functions\when( 'get_query_var' )->alias( static fn( $k ) => 'paged' === $k ? 3 : 0 );
+		$wp_query                = new \stdClass();
+		$wp_query->max_num_pages = 5;
+		$GLOBALS['wp_query']     = $wp_query;
+
+		$variables = new Variables( new Options() );
+		$ctx       = TemplateContext::for_archive();
+
+		$this->assertSame( 'Page 3 of 5', $variables->replace( '%page%', $ctx ) );
+
+		unset( $GLOBALS['wp_query'] );
 	}
 }
