@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for the Twitter Card presenter.
+ * Unit tests for the document title presenter.
  *
  * @package OpenSEO
  */
@@ -11,7 +11,7 @@ namespace OpenSEO\Tests\Unit\Frontend\Head;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
-use OpenSEO\Frontend\Head\Twitter;
+use OpenSEO\Frontend\Head\Title;
 use OpenSEO\Meta\Resolver;
 use OpenSEO\Meta\TemplateDefaults;
 use OpenSEO\Meta\TypeTemplates;
@@ -19,11 +19,16 @@ use OpenSEO\Meta\Variables;
 use OpenSEO\Settings\Options;
 use PHPUnit\Framework\TestCase;
 
-final class TwitterTest extends TestCase {
+final class TitleTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
 		Monkey\setUp();
+		Functions\when( 'esc_html' )->alias(
+			static fn( $s ) => htmlspecialchars( (string) $s, ENT_QUOTES, 'UTF-8' )
+		);
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
 		Functions\when( 'is_singular' )->justReturn( false );
 		Functions\when( 'is_front_page' )->justReturn( false );
 		Functions\when( 'is_category' )->justReturn( false );
@@ -32,15 +37,9 @@ final class TwitterTest extends TestCase {
 		Functions\when( 'is_author' )->justReturn( false );
 		Functions\when( 'is_search' )->justReturn( false );
 		Functions\when( 'is_404' )->justReturn( false );
-		Functions\when( 'is_paged' )->justReturn( false );
-		Functions\when( 'post_password_required' )->justReturn( false );
 		Functions\when( 'get_query_var' )->justReturn( 0 );
 		Functions\when( 'get_search_query' )->justReturn( '' );
 		Functions\when( '__' )->returnArg();
-		Functions\when( 'get_post_meta' )->justReturn( '' );
-		Functions\when( 'get_bloginfo' )->justReturn( 'My Site' );
-		Functions\when( 'esc_attr' )->returnArg();
-		Functions\when( 'esc_url' )->returnArg();
 	}
 
 	protected function tearDown(): void {
@@ -54,23 +53,18 @@ final class TwitterTest extends TestCase {
 		return new Resolver( $options, new Variables( $options ), $defaults, new TypeTemplates( $options, $defaults ) );
 	}
 
-	public function test_card_uses_configured_type(): void {
-		Functions\when( 'get_option' )->justReturn( array( 'twitter_card_type' => 'summary' ) );
+	public function test_escapes_resolved_search_title(): void {
+		Functions\when( 'is_search' )->justReturn( true );
+		Functions\when( 'get_search_query' )->justReturn( '<script>alert(1)</script>' );
 
-		ob_start();
-		( new Twitter( $this->resolver() ) )->output();
-		$output = (string) ob_get_clean();
+		$result = ( new Title( $this->resolver() ) )->filter_title( 'WP fallback' );
 
-		$this->assertStringContainsString( '<meta name="twitter:card" content="summary"', $output );
+		$this->assertStringNotContainsString( '<script>', $result );
+		$this->assertStringContainsString( '&lt;script&gt;', $result );
 	}
 
-	public function test_card_defaults_to_summary_large_image(): void {
-		Functions\when( 'get_option' )->justReturn( array() );
-
-		ob_start();
-		( new Twitter( $this->resolver() ) )->output();
-		$output = (string) ob_get_clean();
-
-		$this->assertStringContainsString( '<meta name="twitter:card" content="summary_large_image"', $output );
+	public function test_returns_wp_title_when_resolver_empty(): void {
+		// All conditionals false → resolver returns '' → keep WP's title.
+		$this->assertSame( 'WP fallback', ( new Title( $this->resolver() ) )->filter_title( 'WP fallback' ) );
 	}
 }

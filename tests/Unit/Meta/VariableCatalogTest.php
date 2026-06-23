@@ -18,6 +18,9 @@ final class VariableCatalogTest extends TestCase {
 		parent::setUp();
 		Monkey\setUp();
 		Functions\when( '__' )->returnArg();
+		Functions\when( 'get_query_var' )->justReturn( 0 );
+		Functions\when( 'get_the_author_meta' )->justReturn( 'Jane Doe' );
+		Functions\when( 'get_search_query' )->justReturn( 'a keyword' );
 	}
 
 	protected function tearDown(): void {
@@ -34,7 +37,7 @@ final class VariableCatalogTest extends TestCase {
 			$this->assertArrayHasKey( 'label', $entry );
 			$this->assertArrayHasKey( 'description', $entry );
 			$this->assertArrayHasKey( 'scope', $entry );
-			$this->assertContains( $entry['scope'], array( 'global', 'singular', 'taxonomy' ) );
+			$this->assertContains( $entry['scope'], array( 'global', 'singular', 'taxonomy', 'author', 'search' ) );
 			$this->assertSame( 1, preg_match( '/^%[a-z_]+%$/', $entry['token'] ) );
 		}
 	}
@@ -70,6 +73,14 @@ final class VariableCatalogTest extends TestCase {
 		}
 	}
 
+	public function test_catalog_includes_special_page_tokens(): void {
+		$tokens = array_column( ( new VariableCatalog() )->all(), 'token' );
+
+		foreach ( array( '%name%', '%search_query%', '%page%' ) as $expected ) {
+			$this->assertContains( $expected, $tokens );
+		}
+	}
+
 	public function test_catalog_includes_enriched_tokens(): void {
 		$tokens = array_column( ( new VariableCatalog() )->all(), 'token' );
 
@@ -87,6 +98,12 @@ final class VariableCatalogTest extends TestCase {
 			$term->name        = 'News';
 			$term->description = 'All news.';
 			return TemplateContext::for_term( $term );
+		}
+		if ( 'author' === $scope ) {
+			return TemplateContext::for_author( 7 );
+		}
+		if ( 'search' === $scope ) {
+			return TemplateContext::for_search();
 		}
 		return TemplateContext::none();
 	}

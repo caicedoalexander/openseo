@@ -556,6 +556,63 @@ final class OptionsTest extends TestCase {
 
 		$this->assertSame( '—', $clean['title_separator'] );
 	}
+
+	public function test_defaults_include_special_page_keys(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+
+		$options = new Options();
+
+		$this->assertSame( '1', $options->get( 'author_archives' ) );
+		$this->assertSame( '1', $options->get( 'date_archives' ) );
+		$this->assertSame( '1', $options->get( 'noindex_search' ) );
+		$this->assertSame( '%name% %sep% %sitename%', $options->get( 'author_title' ) );
+		$this->assertSame( 'Page Not Found %sep% %sitename%', $options->get( 'title_404' ) );
+		$this->assertSame( '%search_query% %sep% %sitename%', $options->get( 'search_title' ) );
+		$this->assertSame( '', $options->get( 'home_robots_custom' ) );
+		$this->assertSame( array(), $options->get( 'home_robots' ) );
+	}
+
+	public function test_sanitize_handles_special_page_fields(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array(
+				'home_robots_custom'         => '1',
+				'home_robots'                => array( 'noindex' => '1', 'bogus' => '1', 'nofollow' => '' ),
+				'home_og_title'              => 'Home OG',
+				'home_og_description'        => 'Home OG desc',
+				'home_og_image'              => 'https://example.com/og.png',
+				'author_archives'            => '0',
+				'author_title'               => '%name%',
+				'author_robots_custom'       => '1',
+				'author_robots'              => array( 'noindex' => '1' ),
+				'date_archives'              => '0',
+				'title_404'                  => '404 %sitename%',
+				'search_title'               => '%search_query%',
+				'noindex_search'             => '1',
+				'noindex_paginated'          => '1',
+				'noindex_paginated_singular' => '0',
+				'noindex_password_protected' => '1',
+			)
+		);
+
+		$this->assertSame( '1', $clean['home_robots_custom'] );
+		$this->assertSame( array( 'noindex' => '1' ), $clean['home_robots'] );
+		$this->assertSame( 'Home OG', $clean['home_og_title'] );
+		$this->assertSame( 'Home OG desc', $clean['home_og_description'] );
+		$this->assertSame( 'https://example.com/og.png', $clean['home_og_image'] );
+		$this->assertSame( '', $clean['author_archives'] );
+		$this->assertSame( '%name%', $clean['author_title'] );
+		$this->assertSame( array( 'noindex' => '1' ), $clean['author_robots'] );
+		$this->assertSame( '', $clean['date_archives'] );
+		$this->assertSame( '1', $clean['noindex_search'] );
+		$this->assertSame( '1', $clean['noindex_paginated'] );
+		$this->assertSame( '', $clean['noindex_paginated_singular'] );
+		$this->assertSame( '1', $clean['noindex_password_protected'] );
+	}
 }
 
 

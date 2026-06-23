@@ -48,6 +48,9 @@ final class Variables {
 			'%category%'         => $context->category,
 			'%tag%'              => $context->tag,
 			'%parent_title%'     => $context->parent_title,
+			'%name%'             => $context->name,
+			'%search_query%'     => $context->search_query,
+			'%page%'             => $context->page,
 		);
 
 		$output = strtr( $template, $replacements );

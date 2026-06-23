@@ -39,6 +39,6 @@ final class Title implements Hookable {
 	public function filter_title( string $title ): string {
 		$resolved = $this->resolver->title();
 
-		return '' !== $resolved ? $resolved : $title;
+		return '' !== $resolved ? esc_html( $resolved ) : $title;
 	}
 }

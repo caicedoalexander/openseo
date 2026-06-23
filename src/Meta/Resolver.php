@@ -25,6 +25,8 @@ use WP_Term;
  */
 final class Resolver {
 
+	private const DIRECTIVES = array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex' );
+
 	/**
 	 * Initializes the Resolver with settings, variables, defaults, and per-type templates.
 	 *
@@ -92,7 +94,34 @@ final class Resolver {
 		}
 
 		if ( is_front_page() ) {
-			return $this->variables->replace( (string) $this->options->get( 'home_title' ) );
+			return $this->variables->replace( (string) $this->options->get( 'home_title' ), TemplateContext::for_archive() );
+		}
+
+		if ( is_author() ) {
+			$template = (string) $this->options->get( 'author_title' );
+			if ( '' === $template ) {
+				$template = $this->defaults->author_title();
+			}
+
+			return $this->variables->replace( $template, TemplateContext::for_author( get_queried_object_id() ) );
+		}
+
+		if ( is_search() ) {
+			$template = (string) $this->options->get( 'search_title' );
+			if ( '' === $template ) {
+				$template = $this->defaults->search_title();
+			}
+
+			return $this->variables->replace( $template, TemplateContext::for_search() );
+		}
+
+		if ( is_404() ) {
+			$template = (string) $this->options->get( 'title_404' );
+			if ( '' === $template ) {
+				$template = $this->defaults->not_found_title();
+			}
+
+			return $this->variables->replace( $template );
 		}
 
 		return '';
@@ -134,6 +163,10 @@ final class Resolver {
 			return '' !== $home ? $home : (string) get_bloginfo( 'description' );
 		}
 
+		if ( is_author() ) {
+			return (string) $this->options->get( 'author_description' );
+		}
+
 		return '';
 	}
 
@@ -141,9 +174,39 @@ final class Resolver {
 	 * Effective robots directive, e.g. "index, follow".
 	 */
 	public function robots(): string {
+		$effective            = $this->effective_robots();
+		$effective['noindex'] = $effective['noindex'] || $this->force_noindex();
+
+		$parts = $this->robots_parts( $effective );
+
+		if ( ! $effective['noindex'] && ! $effective['nosnippet'] ) {
+			$parts = array_merge( $parts, $this->advanced_robots_parts() );
+		}
+
+		return implode( ', ', $parts );
+	}
+
+	/**
+	 * The five effective robots booleans for the current surface, before the
+	 * cross-surface noindex overlay. Custom home/author maps are absolute;
+	 * every other surface uses the entry → type → global cascade.
+	 *
+	 * @return array<string, bool>
+	 */
+	private function effective_robots(): array {
 		$global_map = $this->options->get( 'robots' );
 		$global_map = is_array( $global_map ) ? $global_map : array();
-		$global     = static fn( string $directive ): bool => '1' === (string) ( $global_map[ $directive ] ?? '' );
+		$global     = static fn( string $d ): bool => '1' === (string) ( $global_map[ $d ] ?? '' );
+
+		$custom = $this->custom_surface_map();
+		if ( null !== $custom ) {
+			$effective = array();
+			foreach ( self::DIRECTIVES as $d ) {
+				$effective[ $d ] = '1' === (string) ( $custom[ $d ] ?? '' );
+			}
+
+			return $effective;
+		}
 
 		$type_robots         = array();
 		$entry               = array();
@@ -170,23 +233,64 @@ final class Resolver {
 		}
 
 		$effective = array();
-		foreach ( array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex' ) as $directive ) {
-			$entry_val               = ( 'noindex' === $directive || 'nofollow' === $directive ) ? (string) ( $entry[ $directive ] ?? '' ) : '';
-			$type_val                = (string) ( $type_robots[ $directive ] ?? '' );
-			$effective[ $directive ] = RobotsResolver::resolve( $entry_val, $type_val, $global( $directive ) );
+		foreach ( self::DIRECTIVES as $d ) {
+			$entry_val       = ( 'noindex' === $d || 'nofollow' === $d ) ? (string) ( $entry[ $d ] ?? '' ) : '';
+			$type_val        = (string) ( $type_robots[ $d ] ?? '' );
+			$effective[ $d ] = RobotsResolver::resolve( $entry_val, $type_val, $global( $d ) );
 		}
 
 		if ( $force_noindex_empty ) {
 			$effective['noindex'] = true;
 		}
 
-		$parts = $this->robots_parts( $effective );
+		return $effective;
+	}
 
-		if ( ! $effective['noindex'] && ! $effective['nosnippet'] ) {
-			$parts = array_merge( $parts, $this->advanced_robots_parts() );
+	/**
+	 * Absolute robots map for surfaces that define their own (posts homepage,
+	 * author archives) when their "custom robots" toggle is on; null otherwise.
+	 *
+	 * @return array<string, string>|null
+	 */
+	private function custom_surface_map(): ?array {
+		if ( is_front_page() && ! is_singular() && '1' === (string) $this->options->get( 'home_robots_custom' ) ) {
+			$map = $this->options->get( 'home_robots' );
+
+			return is_array( $map ) ? $map : array();
 		}
 
-		return implode( ', ', $parts );
+		if ( is_author() && '1' === (string) $this->options->get( 'author_robots_custom' ) ) {
+			$map = $this->options->get( 'author_robots' );
+
+			return is_array( $map ) ? $map : array();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Cross-surface reasons to force noindex regardless of the resolved
+	 * cascade: search results, paginated listings/singulars, and
+	 * password-protected posts.
+	 */
+	private function force_noindex(): bool {
+		if ( is_search() && '1' === (string) $this->options->get( 'noindex_search' ) ) {
+			return true;
+		}
+
+		if ( '1' === (string) $this->options->get( 'noindex_paginated' ) && is_paged() ) {
+			return true;
+		}
+
+		if ( '1' === (string) $this->options->get( 'noindex_paginated_singular' ) && is_singular() && (int) get_query_var( 'page' ) > 1 ) {
+			return true;
+		}
+
+		if ( '1' === (string) $this->options->get( 'noindex_password_protected' ) && is_singular() && post_password_required() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -256,23 +360,49 @@ final class Resolver {
 	}
 
 	/**
-	 * Open Graph title: og override -> resolved title.
+	 * Whether the current request is the posts homepage (latest-posts front
+	 * page, not a static front page — which resolves as a singular instead).
+	 */
+	private function is_posts_homepage(): bool {
+		return is_front_page() && ! is_singular();
+	}
+
+	/**
+	 * Open Graph title: homepage og -> home og title; singular: og override -> resolved title.
 	 */
 	public function social_title(): string {
+		if ( $this->is_posts_homepage() ) {
+			$home = (string) $this->options->get( 'home_og_title' );
+
+			return '' !== $home ? $home : $this->title();
+		}
+
 		return $this->social_value( '_openseo_og_title', $this->title() );
 	}
 
 	/**
-	 * Open Graph description: og override -> resolved description.
+	 * Open Graph description: homepage og -> home og description; singular: og override -> resolved description.
 	 */
 	public function social_description(): string {
+		if ( $this->is_posts_homepage() ) {
+			$home = (string) $this->options->get( 'home_og_description' );
+
+			return '' !== $home ? $home : $this->description();
+		}
+
 		return $this->social_value( '_openseo_og_description', $this->description() );
 	}
 
 	/**
-	 * Social image: og override -> featured image -> global default.
+	 * Social image: homepage og -> home og image; singular: og override -> featured image -> global default.
 	 */
 	public function social_image(): string {
+		if ( $this->is_posts_homepage() ) {
+			$home = (string) $this->options->get( 'home_og_image' );
+
+			return '' !== $home ? $home : (string) $this->options->get( 'og_default_image' );
+		}
+
 		$override = $this->meta_value( '_openseo_og_image' );
 		if ( '' !== $override ) {
 			return $override;

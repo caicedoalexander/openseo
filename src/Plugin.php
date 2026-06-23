@@ -26,6 +26,7 @@ use OpenSEO\Frontend\Head\HeadPrinter;
 use OpenSEO\Frontend\Head\OpenGraph;
 use OpenSEO\Frontend\Head\Robots;
 use OpenSEO\Frontend\Head\Title;
+use OpenSEO\Frontend\ArchiveRedirect;
 use OpenSEO\Frontend\Head\Twitter;
 use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
@@ -153,6 +154,7 @@ final class Plugin {
 			new Dispatcher( $redirects_cache, new Matcher(), $redirects_repo, $options ),
 			new SlugWatcher( $redirects_repo, $redirects_cache, $options ),
 			new PostMeta(),
+			new ArchiveRedirect( $options ),
 			new SettingsMigrations(),
 			new Title( $resolver ),
 			new HeadPrinter(
