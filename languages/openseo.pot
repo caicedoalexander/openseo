@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-22T23:27:10+00:00\n"
+"POT-Creation-Date: 2026-06-23T03:33:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: openseo\n"
@@ -152,6 +152,20 @@ msgstr ""
 msgid "View on map"
 msgstr ""
 
+#. translators: 1: current page, 2: total pages.
+#: src/Meta/TemplateContext.php:170
+#: assets/build/admin-settings.js:3
+#: assets/src/admin/components/DataTable.js:175
+#, php-format,js-format
+msgid "Page %1$d of %2$d"
+msgstr ""
+
+#. translators: %d: current page number.
+#: src/Meta/TemplateContext.php:174
+#, php-format
+msgid "Page %d"
+msgstr ""
+
 #: src/Meta/VariableCatalog.php:29
 msgid "Site title"
 msgstr ""
@@ -186,7 +200,7 @@ msgstr ""
 
 #: src/Meta/VariableCatalog.php:53
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:246
+#: assets/src/admin/views/Titles.js:392
 msgid "Title"
 msgstr ""
 
@@ -264,6 +278,30 @@ msgstr ""
 
 #: src/Meta/VariableCatalog.php:108
 msgid "The taxonomy term description"
+msgstr ""
+
+#: src/Meta/VariableCatalog.php:113
+msgid "Author name"
+msgstr ""
+
+#: src/Meta/VariableCatalog.php:114
+msgid "The author archive's display name"
+msgstr ""
+
+#: src/Meta/VariableCatalog.php:119
+msgid "Search query"
+msgstr ""
+
+#: src/Meta/VariableCatalog.php:120
+msgid "The current search term"
+msgstr ""
+
+#: src/Meta/VariableCatalog.php:125
+msgid "Page number"
+msgstr ""
+
+#: src/Meta/VariableCatalog.php:126
+msgid "Current page of paginated results"
 msgstr ""
 
 #: src/Redirects/RuleValidator.php:55
@@ -738,7 +776,7 @@ msgstr ""
 
 #: assets/build/admin-settings.js:1
 #: assets/src/admin/components/LocalBusinessFields.js:54
-#: assets/src/admin/views/Titles.js:259
+#: assets/src/admin/views/Titles.js:405
 msgid "Description"
 msgstr ""
 
@@ -887,159 +925,264 @@ msgid "No"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:29
+#: assets/src/admin/views/Titles.js:28
 msgid "Summary card with large image"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:32
+#: assets/src/admin/views/Titles.js:31
 msgid "Summary card"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:38
+#: assets/src/admin/views/Titles.js:37
 msgid "Meta Global"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:39
+#: assets/src/admin/views/Titles.js:38
 msgid "SEO Local"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:40
+#: assets/src/admin/views/Titles.js:39
 msgid "Homepage"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:46
+#: assets/src/admin/views/Titles.js:40
+msgid "Authors"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:41
+msgid "Other pages"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:47
 msgid "Content types"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:57
+#: assets/src/admin/views/Titles.js:58
 msgid "Taxonomies"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:80
+#: assets/src/admin/views/Titles.js:81
 msgid "Capitalize titles"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:81
+#: assets/src/admin/views/Titles.js:82
 msgid "Automatically capitalize the first letter of each word in titles."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:90
+#: assets/src/admin/views/Titles.js:91
 msgid "Default robots"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:107
+#: assets/src/admin/views/Titles.js:98
 msgid "Noindex empty term archives"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:120
+#: assets/src/admin/views/Titles.js:111
 msgid "OpenGraph thumbnail"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:122
+#: assets/src/admin/views/Titles.js:113
 msgid "Default image used when a post has no featured or social image."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:131
+#: assets/src/admin/views/Titles.js:122
 msgid "Twitter card type"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:145
+#: assets/src/admin/views/Titles.js:136
 msgid "Site represents"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:149
+#: assets/src/admin/views/Titles.js:140
 msgid "Organization"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:152
+#: assets/src/admin/views/Titles.js:143
 msgid "Person"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:158
+#: assets/src/admin/views/Titles.js:149
 msgid "Website name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:159
+#: assets/src/admin/views/Titles.js:150
 msgid "Name of the WebSite node (defaults to site name)."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:168
+#: assets/src/admin/views/Titles.js:159
 msgid "Alternate website name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:176
+#: assets/src/admin/views/Titles.js:167
 msgid "Person or Organization name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:177
+#: assets/src/admin/views/Titles.js:168
 msgid "Name of the Organization/Person entity (defaults to site name)."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:184
+#: assets/src/admin/views/Titles.js:175
 msgid "Logo"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:186
+#: assets/src/admin/views/Titles.js:177
 msgid "Minimum size 112×112px."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
 #: assets/build/admin-settings.js:3
 #: assets/src/admin/views/NotFound.js:19
-#: assets/src/admin/views/Titles.js:192
+#: assets/src/admin/views/Titles.js:183
 msgid "URL"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:193
+#: assets/src/admin/views/Titles.js:184
 msgid "Defaults to the site URL."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:200
+#: assets/src/admin/views/Titles.js:191
 msgid "Email"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:206
+#: assets/src/admin/views/Titles.js:197
 msgid "Phone"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:222
+#: assets/src/admin/views/Titles.js:215
 msgid "Homepage title"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:229
+#: assets/src/admin/views/Titles.js:222
 msgid "Homepage description"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:272
+#: assets/src/admin/views/Titles.js:231
+msgid "Custom homepage robots"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:232
+msgid "Override the global robots meta for the homepage."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:247
+msgid "Homepage social (OpenGraph)"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:249
+msgid "Homepage title for Facebook"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:256
+msgid "Homepage description for Facebook"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:264
+msgid "Homepage thumbnail for Facebook (min. 1200×630px)."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:282
+msgid "Author archives"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:283
+msgid "When off, author archives redirect to the homepage."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:293
+msgid "Author archive title"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:300
+msgid "Author archive description"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:309
+msgid "Custom author robots"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:330
+msgid "Date archives"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:331
+msgid "When off, date archives redirect to the homepage."
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:339
+msgid "404 title"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:346
+msgid "Search results title"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:354
+msgid "Noindex search results"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:360
+msgid "Noindex paginated pages"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:368
+msgid "Noindex paginated single pages"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:376
+msgid "Noindex password-protected pages"
+msgstr ""
+
+#: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:418
 msgid "Robots"
 msgstr ""
 
@@ -1068,13 +1211,6 @@ msgstr ""
 #: assets/build/admin-settings.js:2
 #: assets/src/admin/components/DataTable.js:170
 msgid "Previous"
-msgstr ""
-
-#. translators: 1: current page, 2: total pages.
-#: assets/build/admin-settings.js:3
-#: assets/src/admin/components/DataTable.js:175
-#, js-format
-msgid "Page %1$d of %2$d"
 msgstr ""
 
 #: assets/build/admin-settings.js:3

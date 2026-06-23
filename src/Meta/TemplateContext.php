@@ -166,7 +166,7 @@ final class TemplateContext {
 		}
 
 		if ( $total > 1 ) {
-			/* translators: 1: current page number, 2: total pages. */
+			/* translators: 1: current page, 2: total pages. */
 			return sprintf( __( 'Page %1$d of %2$d', 'openseo' ), $paged, $total );
 		}
 
