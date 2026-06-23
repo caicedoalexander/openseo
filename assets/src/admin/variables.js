@@ -6,7 +6,7 @@
  * Variables applicable to a scope: every 'global' plus those of the given scope.
  *
  * @param {Array}  catalog Variable catalog ({ token, label, description, scope }).
- * @param {string} scope   'global' | 'singular' | 'taxonomy'.
+ * @param {string} scope   'global' | 'singular' | 'taxonomy' | 'author' | 'search'.
  * @return {Array} Filtered list, in catalog order.
  */
 export function variablesForScope( catalog, scope ) {

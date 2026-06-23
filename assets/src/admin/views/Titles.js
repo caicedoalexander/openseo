@@ -1,5 +1,4 @@
 import {
-	CheckboxControl,
 	SelectControl,
 	TextControl,
 	ToggleControl,
@@ -14,8 +13,8 @@ import { SeparatorField } from '../components/SeparatorField';
 import { AdvancedRobotsField } from '../components/AdvancedRobotsField';
 import { LocalBusinessFields } from '../components/LocalBusinessFields';
 import { setTemplateField } from '../templateFields';
-import { ROBOTS_DIRECTIVES } from '../robots';
-import { RobotsFields, ROBOTS_LABELS } from '../components/RobotsFields';
+import { RobotsFields } from '../components/RobotsFields';
+import { RobotsCheckboxes } from '../components/RobotsCheckboxes';
 
 const bootstrap = window.openseoAdmin ?? {};
 const contentTypes = bootstrap.contentTypes ?? {
@@ -88,20 +87,10 @@ function MetaGlobalPanel( { values, change } ) {
 				}
 			/>
 			<h3>{ __( 'Default robots', 'openseo' ) }</h3>
-			{ ROBOTS_DIRECTIVES.map( ( directive ) => (
-				<CheckboxControl
-					key={ directive }
-					__nextHasNoMarginBottom
-					label={ ROBOTS_LABELS[ directive ] }
-					checked={ robots[ directive ] === '1' }
-					onChange={ ( on ) =>
-						change( 'robots', {
-							...robots,
-							[ directive ]: on ? '1' : '',
-						} )
-					}
-				/>
-			) ) }
+			<RobotsCheckboxes
+				map={ robots }
+				onChange={ ( next ) => change( 'robots', next ) }
+			/>
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Noindex empty term archives', 'openseo' ) }
