@@ -636,4 +636,82 @@ final class ResolverTest extends TestCase {
 		// noindex bail → no max-snippet appended.
 		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
 	}
+
+	public function test_robots_homepage_custom_map_is_absolute(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'home_robots_custom' => '1',
+				'home_robots'        => array( 'noindex' => '1', 'noarchive' => '1' ),
+			)
+		);
+
+		$this->assertSame( 'noindex, follow, noarchive', $this->resolver()->robots() );
+	}
+
+	public function test_robots_author_custom_map(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_author' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'author_robots_custom' => '1',
+				'author_robots'        => array( 'nofollow' => '1' ),
+			)
+		);
+
+		$this->assertSame( 'index, nofollow', $this->resolver()->robots() );
+	}
+
+	public function test_robots_search_is_noindexed_when_enabled(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_search' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'noindex_search' => '1' ) );
+
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
+	}
+
+	public function test_robots_overlay_noindex_on_paginated(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_paged' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'noindex_paginated' => '1' ) );
+
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
+	}
+
+	public function test_robots_overlay_noindex_on_password_protected(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'post_password_required' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'noindex_password_protected' => '1' ) );
+
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
+	}
+
+	public function test_robots_overlay_noindex_on_paginated_singular(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 5 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_query_var' )->alias( static fn( $k ) => 'page' === $k ? 2 : 0 );
+		Functions\when( 'get_option' )->justReturn( array( 'noindex_paginated_singular' => '1' ) );
+
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
+	}
+
+	public function test_robots_overlay_suppresses_advanced_when_forced_noindex(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_paged' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'noindex_paginated' => '1',
+				'advanced_robots'   => array( 'max_snippet' => array( 'enabled' => '1', 'length' => '50' ) ),
+			)
+		);
+
+		// Overlay noindex must suppress advanced robots.
+		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
+	}
 }

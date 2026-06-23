@@ -25,6 +25,8 @@ use WP_Term;
  */
 final class Resolver {
 
+	private const DIRECTIVES = array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex' );
+
 	/**
 	 * Initializes the Resolver with settings, variables, defaults, and per-type templates.
 	 *
@@ -172,9 +174,39 @@ final class Resolver {
 	 * Effective robots directive, e.g. "index, follow".
 	 */
 	public function robots(): string {
+		$effective            = $this->effective_robots();
+		$effective['noindex'] = $effective['noindex'] || $this->force_noindex();
+
+		$parts = $this->robots_parts( $effective );
+
+		if ( ! $effective['noindex'] && ! $effective['nosnippet'] ) {
+			$parts = array_merge( $parts, $this->advanced_robots_parts() );
+		}
+
+		return implode( ', ', $parts );
+	}
+
+	/**
+	 * The five effective robots booleans for the current surface, before the
+	 * cross-surface noindex overlay. Custom home/author maps are absolute;
+	 * every other surface uses the entry → type → global cascade.
+	 *
+	 * @return array<string, bool>
+	 */
+	private function effective_robots(): array {
 		$global_map = $this->options->get( 'robots' );
 		$global_map = is_array( $global_map ) ? $global_map : array();
-		$global     = static fn( string $directive ): bool => '1' === (string) ( $global_map[ $directive ] ?? '' );
+		$global     = static fn( string $d ): bool => '1' === (string) ( $global_map[ $d ] ?? '' );
+
+		$custom = $this->custom_surface_map();
+		if ( null !== $custom ) {
+			$effective = array();
+			foreach ( self::DIRECTIVES as $d ) {
+				$effective[ $d ] = '1' === (string) ( $custom[ $d ] ?? '' );
+			}
+
+			return $effective;
+		}
 
 		$type_robots         = array();
 		$entry               = array();
@@ -201,23 +233,64 @@ final class Resolver {
 		}
 
 		$effective = array();
-		foreach ( array( 'noindex', 'nofollow', 'noarchive', 'nosnippet', 'noimageindex' ) as $directive ) {
-			$entry_val               = ( 'noindex' === $directive || 'nofollow' === $directive ) ? (string) ( $entry[ $directive ] ?? '' ) : '';
-			$type_val                = (string) ( $type_robots[ $directive ] ?? '' );
-			$effective[ $directive ] = RobotsResolver::resolve( $entry_val, $type_val, $global( $directive ) );
+		foreach ( self::DIRECTIVES as $d ) {
+			$entry_val       = ( 'noindex' === $d || 'nofollow' === $d ) ? (string) ( $entry[ $d ] ?? '' ) : '';
+			$type_val        = (string) ( $type_robots[ $d ] ?? '' );
+			$effective[ $d ] = RobotsResolver::resolve( $entry_val, $type_val, $global( $d ) );
 		}
 
 		if ( $force_noindex_empty ) {
 			$effective['noindex'] = true;
 		}
 
-		$parts = $this->robots_parts( $effective );
+		return $effective;
+	}
 
-		if ( ! $effective['noindex'] && ! $effective['nosnippet'] ) {
-			$parts = array_merge( $parts, $this->advanced_robots_parts() );
+	/**
+	 * Absolute robots map for surfaces that define their own (posts homepage,
+	 * author archives) when their "custom robots" toggle is on; null otherwise.
+	 *
+	 * @return array<string, string>|null
+	 */
+	private function custom_surface_map(): ?array {
+		if ( is_front_page() && ! is_singular() && '1' === (string) $this->options->get( 'home_robots_custom' ) ) {
+			$map = $this->options->get( 'home_robots' );
+
+			return is_array( $map ) ? $map : array();
 		}
 
-		return implode( ', ', $parts );
+		if ( is_author() && '1' === (string) $this->options->get( 'author_robots_custom' ) ) {
+			$map = $this->options->get( 'author_robots' );
+
+			return is_array( $map ) ? $map : array();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Cross-surface reasons to force noindex regardless of the resolved
+	 * cascade: search results, paginated listings/singulars, and
+	 * password-protected posts.
+	 */
+	private function force_noindex(): bool {
+		if ( is_search() && '1' === (string) $this->options->get( 'noindex_search' ) ) {
+			return true;
+		}
+
+		if ( '1' === (string) $this->options->get( 'noindex_paginated' ) && is_paged() ) {
+			return true;
+		}
+
+		if ( '1' === (string) $this->options->get( 'noindex_paginated_singular' ) && is_singular() && (int) get_query_var( 'page' ) > 1 ) {
+			return true;
+		}
+
+		if ( '1' === (string) $this->options->get( 'noindex_password_protected' ) && is_singular() && post_password_required() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
