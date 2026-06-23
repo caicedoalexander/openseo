@@ -360,23 +360,49 @@ final class Resolver {
 	}
 
 	/**
-	 * Open Graph title: og override -> resolved title.
+	 * Whether the current request is the posts homepage (latest-posts front
+	 * page, not a static front page — which resolves as a singular instead).
+	 */
+	private function is_posts_homepage(): bool {
+		return is_front_page() && ! is_singular();
+	}
+
+	/**
+	 * Open Graph title: homepage og -> home og title; singular: og override -> resolved title.
 	 */
 	public function social_title(): string {
+		if ( $this->is_posts_homepage() ) {
+			$home = (string) $this->options->get( 'home_og_title' );
+
+			return '' !== $home ? $home : $this->title();
+		}
+
 		return $this->social_value( '_openseo_og_title', $this->title() );
 	}
 
 	/**
-	 * Open Graph description: og override -> resolved description.
+	 * Open Graph description: homepage og -> home og description; singular: og override -> resolved description.
 	 */
 	public function social_description(): string {
+		if ( $this->is_posts_homepage() ) {
+			$home = (string) $this->options->get( 'home_og_description' );
+
+			return '' !== $home ? $home : $this->description();
+		}
+
 		return $this->social_value( '_openseo_og_description', $this->description() );
 	}
 
 	/**
-	 * Social image: og override -> featured image -> global default.
+	 * Social image: homepage og -> home og image; singular: og override -> featured image -> global default.
 	 */
 	public function social_image(): string {
+		if ( $this->is_posts_homepage() ) {
+			$home = (string) $this->options->get( 'home_og_image' );
+
+			return '' !== $home ? $home : (string) $this->options->get( 'og_default_image' );
+		}
+
 		$override = $this->meta_value( '_openseo_og_image' );
 		if ( '' !== $override ) {
 			return $override;

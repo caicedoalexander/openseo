@@ -714,4 +714,41 @@ final class ResolverTest extends TestCase {
 		// Overlay noindex must suppress advanced robots.
 		$this->assertSame( 'noindex, follow', $this->resolver()->robots() );
 	}
+
+	// -----------------------------------------------------------------------
+	// social_*() — posts homepage (is_front_page() && ! is_singular())
+	// -----------------------------------------------------------------------
+
+	public function test_social_title_uses_home_og_on_posts_homepage(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'home_og_title' => 'Home OG Title' ) );
+
+		$this->assertSame( 'Home OG Title', $this->resolver()->social_title() );
+	}
+
+	public function test_social_description_uses_home_og_on_posts_homepage(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'home_og_description' => 'Home OG Desc' ) );
+
+		$this->assertSame( 'Home OG Desc', $this->resolver()->social_description() );
+	}
+
+	public function test_social_image_uses_home_og_on_posts_homepage(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( array( 'home_og_image' => 'https://example.com/home-og.jpg' ) );
+
+		$this->assertSame( 'https://example.com/home-og.jpg', $this->resolver()->social_image() );
+	}
+
+	public function test_social_title_falls_back_to_resolved_on_homepage_without_home_og(): void {
+		Functions\when( 'is_singular' )->justReturn( false );
+		Functions\when( 'is_front_page' )->justReturn( true );
+		// No home_og_title; home_title default '%sitename% %sep% %tagline%'.
+		Functions\when( 'get_bloginfo' )->alias( static fn( $k ) => 'name' === $k ? 'My Site' : 'Tagline' );
+
+		$this->assertSame( 'My Site - Tagline', $this->resolver()->social_title() );
+	}
 }
