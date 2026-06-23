@@ -43,4 +43,25 @@ final class TemplateDefaults {
 	public function taxonomy_description(): string {
 		return '%term_description%';
 	}
+
+	/**
+	 * Default title template for author archives.
+	 */
+	public function author_title(): string {
+		return '%name% %sep% %sitename%';
+	}
+
+	/**
+	 * Default title template for search results.
+	 */
+	public function search_title(): string {
+		return '%search_query% %sep% %sitename%';
+	}
+
+	/**
+	 * Default title template for 404 pages.
+	 */
+	public function not_found_title(): string {
+		return 'Page Not Found %sep% %sitename%';
+	}
 }

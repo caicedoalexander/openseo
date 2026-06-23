@@ -19,4 +19,11 @@ final class TemplateDefaultsTest extends TestCase {
 		$this->assertSame( '%term% %sep% %sitename%', $d->taxonomy_title() );
 		$this->assertSame( '%term_description%', $d->taxonomy_description() );
 	}
+
+	public function test_special_page_defaults(): void {
+		$d = new TemplateDefaults();
+		$this->assertSame( '%name% %sep% %sitename%', $d->author_title() );
+		$this->assertSame( '%search_query% %sep% %sitename%', $d->search_title() );
+		$this->assertSame( 'Page Not Found %sep% %sitename%', $d->not_found_title() );
+	}
 }
