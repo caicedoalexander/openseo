@@ -35,6 +35,13 @@ final class ContentPiecesTest extends TestCase {
 		Functions\when( 'is_category' )->justReturn( false );
 		Functions\when( 'is_tag' )->justReturn( false );
 		Functions\when( 'is_tax' )->justReturn( false );
+		Functions\when( 'is_author' )->justReturn( false );
+		Functions\when( 'is_search' )->justReturn( false );
+		Functions\when( 'is_404' )->justReturn( false );
+		Functions\when( 'is_paged' )->justReturn( false );
+		Functions\when( 'get_query_var' )->justReturn( 0 );
+		Functions\when( 'get_search_query' )->justReturn( '' );
+		Functions\when( '__' )->returnArg();
 		Functions\when( 'get_the_author_meta' )->justReturn( 'Jane' );
 		Functions\when( 'get_the_author' )->justReturn( 'Jane' );
 		Functions\when( 'get_author_posts_url' )->justReturn( 'https://example.com/author/jane/' );
