@@ -21,6 +21,9 @@ final class TemplateContextTest extends TestCase {
 		Functions\when( 'get_the_category' )->justReturn( array() );
 		Functions\when( 'get_the_tags' )->justReturn( false );
 		Functions\when( 'wp_get_post_parent_id' )->justReturn( 0 );
+		Functions\when( '__' )->returnArg();
+		Functions\when( 'get_query_var' )->justReturn( 0 );
+		Functions\when( 'get_search_query' )->justReturn( '' );
 	}
 
 	protected function tearDown(): void {
@@ -111,5 +114,45 @@ final class TemplateContextTest extends TestCase {
 		$this->assertSame( '', $ctx->category );
 		$this->assertSame( '', $ctx->tag );
 		$this->assertSame( 'Parent Page', $ctx->parent_title );
+	}
+
+	public function test_for_author_reads_display_name(): void {
+		Functions\when( 'get_the_author_meta' )->alias(
+			static fn( $field, $id ) => 'display_name' === $field && 7 === $id ? 'Jane Doe' : ''
+		);
+
+		$ctx = TemplateContext::for_author( 7 );
+
+		$this->assertSame( 'Jane Doe', $ctx->name );
+		$this->assertSame( '', $ctx->search_query );
+		$this->assertSame( '', $ctx->page );
+	}
+
+	public function test_for_search_reads_raw_query(): void {
+		Functions\when( 'get_search_query' )->justReturn( 'tom & jerry' );
+
+		$ctx = TemplateContext::for_search();
+
+		$this->assertSame( 'tom & jerry', $ctx->search_query );
+		$this->assertSame( '', $ctx->name );
+	}
+
+	public function test_page_label_is_empty_when_not_paginated(): void {
+		Functions\when( 'get_query_var' )->justReturn( 0 );
+
+		$this->assertSame( '', TemplateContext::for_archive()->page );
+	}
+
+	public function test_page_label_uses_paged_and_total(): void {
+		Functions\when( 'get_query_var' )->alias(
+			static fn( $key ) => 'paged' === $key ? 2 : 0
+		);
+		$wp_query                = new \stdClass();
+		$wp_query->max_num_pages = 4;
+		$GLOBALS['wp_query']     = $wp_query;
+
+		$this->assertSame( 'Page 2 of 4', TemplateContext::for_archive()->page );
+
+		unset( $GLOBALS['wp_query'] );
 	}
 }

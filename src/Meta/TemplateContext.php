@@ -13,7 +13,8 @@ use WP_Term;
 
 /**
  * Carries the primitives a template needs (title, excerpt, term name/description,
- * date, modified date, author, primary category/tag, and parent title)
+ * date, modified date, author, primary category/tag, parent title, author name,
+ * search query, and page label)
  * without retaining WP_Post/WP_Term, so Variables stays pure and unit-testable.
  * All WordPress reads happen in the factories.
  */
@@ -33,6 +34,9 @@ final class TemplateContext {
 	 * @param string $category         Primary category name.
 	 * @param string $tag              Primary tag name.
 	 * @param string $parent_title     Parent entry title.
+	 * @param string $name            Author display name (author archives).
+	 * @param string $search_query    Raw search term (search results pages).
+	 * @param string $page            "Page X of Y" label (paginated contexts).
 	 */
 	private function __construct(
 		public readonly int $post_id,
@@ -46,6 +50,9 @@ final class TemplateContext {
 		public readonly string $category = '',
 		public readonly string $tag = '',
 		public readonly string $parent_title = '',
+		public readonly string $name = '',
+		public readonly string $search_query = '',
+		public readonly string $page = '',
 	) {}
 
 	/**
@@ -98,5 +105,72 @@ final class TemplateContext {
 	 */
 	public static function none(): self {
 		return new self( 0, '', '', '', '' );
+	}
+
+	/**
+	 * Context for an author archive.
+	 *
+	 * @param int $author_id Queried author ID.
+	 */
+	public static function for_author( int $author_id ): self {
+		return new self(
+			0,
+			'',
+			'',
+			'',
+			'',
+			name: (string) get_the_author_meta( 'display_name', $author_id ),
+			page: self::current_page_label(),
+		);
+	}
+
+	/**
+	 * Context for a search results page. The query stays RAW; the Title
+	 * presenter escapes it (the document <title> is not escaped by core).
+	 */
+	public static function for_search(): self {
+		return new self(
+			0,
+			'',
+			'',
+			'',
+			'',
+			search_query: (string) get_search_query( false ),
+			page: self::current_page_label(),
+		);
+	}
+
+	/**
+	 * Context for a paginated archive / posts homepage (only %page% applies).
+	 */
+	public static function for_archive(): self {
+		return new self( 0, '', '', '', '', page: self::current_page_label() );
+	}
+
+	/**
+	 * "Page X of Y" for a paginated request, or '' when on page 1 / unpaginated.
+	 * Reads the archive page ('paged') first, then the in-post page ('page').
+	 */
+	private static function current_page_label(): string {
+		$paged = (int) get_query_var( 'paged' );
+		if ( 0 === $paged ) {
+			$paged = (int) get_query_var( 'page' );
+		}
+		if ( $paged < 2 ) {
+			return '';
+		}
+
+		$total = 0;
+		if ( isset( $GLOBALS['wp_query'] ) && is_object( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp_query']->max_num_pages ) ) {
+			$total = (int) $GLOBALS['wp_query']->max_num_pages;
+		}
+
+		if ( $total > 1 ) {
+			/* translators: 1: current page number, 2: total pages. */
+			return sprintf( __( 'Page %1$d of %2$d', 'openseo' ), $paged, $total );
+		}
+
+		/* translators: %d: current page number. */
+		return sprintf( __( 'Page %d', 'openseo' ), $paged );
 	}
 }
