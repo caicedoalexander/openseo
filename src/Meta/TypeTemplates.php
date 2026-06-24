@@ -53,10 +53,32 @@ final class TypeTemplates {
 	}
 
 	/**
+	 * Effective schema @type for a post type: the stored per-type value, or the
+	 * automatic default. Never returns '' (callers branch on the concrete type).
+	 *
+	 * @param string $post_type Post type slug.
+	 */
+	public function schema_type_for( string $post_type ): string {
+		$stored = $this->stored( $post_type, 'schema_type' );
+
+		return '' !== $stored ? $stored : $this->defaults->schema_type( $post_type );
+	}
+
+	/**
+	 * Stored per-type default social image, or '' when none (falls through to
+	 * the global default in the Resolver).
+	 *
+	 * @param string $post_type Post type slug.
+	 */
+	public function og_image_for( string $post_type ): string {
+		return $this->stored( $post_type, 'og_image' );
+	}
+
+	/**
 	 * Stored per-type template field, or '' when absent.
 	 *
 	 * @param string $post_type Post type slug.
-	 * @param string $field     'title' or 'description'.
+	 * @param string $field     Stored field key ('title', 'description', 'schema_type', 'og_image').
 	 */
 	private function stored( string $post_type, string $field ): string {
 		$map = $this->options->get( 'post_types' );
