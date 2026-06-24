@@ -16,7 +16,7 @@ import {
 	TextareaControl,
 	TabPanel,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { resolveSnippet, formatBreadcrumb } from './preview';
 import { aiErrorMessage } from './ai';
@@ -111,7 +111,6 @@ function GenerateButton( { abilityName, field, onResult } ) {
 }
 
 const SCHEMA_OPTIONS = [
-	{ label: __( 'Default (automatic)', 'openseo' ), value: '' },
 	{ label: 'Article', value: 'Article' },
 	{ label: 'BlogPosting', value: 'BlogPosting' },
 	{ label: 'NewsArticle', value: 'NewsArticle' },
@@ -155,12 +154,22 @@ function SchemaField() {
 		}
 	};
 
+	const schemaDefault = window.openseoEditor?.schemaTypeDefault ?? '';
+	const schemaOptions = [
+		{
+			/* translators: %s: automatic schema type for this content type. */
+			label: sprintf( __( 'Automatic (%s)', 'openseo' ), schemaDefault ),
+			value: '',
+		},
+		...SCHEMA_OPTIONS,
+	];
+
 	return (
 		<>
 			<SelectControl
 				label={ __( 'Schema type', 'openseo' ) }
 				value={ type }
-				options={ SCHEMA_OPTIONS }
+				options={ schemaOptions }
 				onChange={ setType }
 			/>
 			{ aiAvailable && (
