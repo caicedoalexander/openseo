@@ -143,7 +143,7 @@ final class Plugin {
 				new Organization( $options ),
 				new Person( $options ),
 				new WebPagePiece( $resolver ),
-				new Article( $resolver, $options ),
+				new Article( $resolver, $options, $type_templates ),
 				new BreadcrumbList( $trail ),
 			)
 		);
