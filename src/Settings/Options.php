@@ -61,6 +61,8 @@ final class Options {
 			'redirects_track_hits'         => '1',
 			'notfound_monitor_enabled'     => '',
 			'notfound_retention_days'      => '30',
+			'attachment_redirect'          => '1',
+			'attachment_redirect_orphan'   => '',
 			'post_types'                   => array(),
 			'taxonomies'                   => array(),
 			'robots'                       => array(),

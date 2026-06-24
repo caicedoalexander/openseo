@@ -557,6 +557,15 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( '—', $clean['title_separator'] );
 	}
 
+	public function test_defaults_include_attachment_redirect_keys(): void {
+		Functions\when( 'get_option' )->justReturn( false );
+
+		$all = ( new Options() )->all();
+
+		$this->assertSame( '1', $all['attachment_redirect'] );
+		$this->assertSame( '', $all['attachment_redirect_orphan'] );
+	}
+
 	public function test_defaults_include_special_page_keys(): void {
 		Functions\when( 'get_option' )->justReturn( array() );
 
