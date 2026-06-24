@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-23T03:33:42+00:00\n"
+"POT-Creation-Date: 2026-06-24T02:33:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: openseo\n"
@@ -19,8 +19,8 @@ msgstr ""
 #: src/Admin/Menu.php:66
 #: src/Admin/Menu.php:67
 #: src/Ai/Abilities.php:62
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:347
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:356
 msgid "OpenSEO"
 msgstr ""
 
@@ -57,8 +57,8 @@ msgid "Titles & Meta"
 msgstr ""
 
 #: src/Admin/Menu.php:136
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:340
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:349
 msgid "Social"
 msgstr ""
 
@@ -71,7 +71,7 @@ msgid "Schema"
 msgstr ""
 
 #: src/Admin/Menu.php:151
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:253
 msgid "Redirects"
 msgstr ""
@@ -154,7 +154,7 @@ msgstr ""
 
 #. translators: 1: current page, 2: total pages.
 #: src/Meta/TemplateContext.php:170
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/components/DataTable.js:175
 #, php-format,js-format
 msgid "Page %1$d of %2$d"
@@ -200,7 +200,7 @@ msgstr ""
 
 #: src/Meta/VariableCatalog.php:53
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:392
+#: assets/src/admin/views/Titles.js:407
 msgid "Title"
 msgstr ""
 
@@ -321,7 +321,7 @@ msgid "This would create a redirect loop with an existing rule."
 msgstr ""
 
 #: src/Rest/RedirectsController.php:160
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:95
 msgid "Could not save the redirect."
 msgstr ""
@@ -612,7 +612,7 @@ msgid "Active redirects"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Dashboard.js:32
 #: assets/src/admin/views/NotFound.js:75
 msgid "Logged 404s"
@@ -624,7 +624,7 @@ msgid "Could not save settings."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/components/SaveBar.js:19
 #: assets/src/admin/views/NotFound.js:70
 #: assets/src/admin/views/Redirects.js:248
@@ -695,7 +695,8 @@ msgstr ""
 #: assets/build/admin-settings.js:1
 #: assets/build/editor.js:1
 #: assets/src/admin/components/AdvancedRobotsField.js:12
-#: assets/src/editor/index.js:119
+#: assets/src/admin/views/Titles.js:41
+#: assets/src/editor/index.js:118
 msgid "None"
 msgstr ""
 
@@ -776,7 +777,7 @@ msgstr ""
 
 #: assets/build/admin-settings.js:1
 #: assets/src/admin/components/LocalBusinessFields.js:54
-#: assets/src/admin/views/Titles.js:405
+#: assets/src/admin/views/Titles.js:415
 msgid "Description"
 msgstr ""
 
@@ -841,7 +842,7 @@ msgid "Phone numbers"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/components/LocalBusinessFields.js:125
 #: assets/src/admin/components/LocalBusinessFields.js:145
 #: assets/src/admin/views/Redirects.js:114
@@ -875,16 +876,16 @@ msgid "Add info"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/build/editor.js:1
+#: assets/build/editor.js:3
 #: assets/src/admin/components/RobotsFields.js:6
-#: assets/src/editor/index.js:315
+#: assets/src/editor/index.js:324
 msgid "No index"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/build/editor.js:1
+#: assets/build/editor.js:3
 #: assets/src/admin/components/RobotsFields.js:7
-#: assets/src/editor/index.js:322
+#: assets/src/editor/index.js:331
 msgid "No follow"
 msgstr ""
 
@@ -925,518 +926,562 @@ msgid "No"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:28
+#: assets/src/admin/views/Titles.js:29
 msgid "Summary card with large image"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:31
+#: assets/src/admin/views/Titles.js:32
 msgid "Summary card"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:37
+#: assets/src/admin/views/Titles.js:47
 msgid "Meta Global"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:38
+#: assets/src/admin/views/Titles.js:48
 msgid "SEO Local"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:39
+#: assets/src/admin/views/Titles.js:49
 msgid "Homepage"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:40
+#: assets/src/admin/views/Titles.js:50
 msgid "Authors"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:41
+#: assets/src/admin/views/Titles.js:51
 msgid "Other pages"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:47
+#: assets/src/admin/views/Titles.js:57
 msgid "Content types"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:58
+#: assets/src/admin/views/Titles.js:68
 msgid "Taxonomies"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:81
+#: assets/src/admin/views/Titles.js:91
 msgid "Capitalize titles"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:82
+#: assets/src/admin/views/Titles.js:92
 msgid "Automatically capitalize the first letter of each word in titles."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:91
+#: assets/src/admin/views/Titles.js:101
 msgid "Default robots"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:98
+#: assets/src/admin/views/Titles.js:108
 msgid "Noindex empty term archives"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:111
+#: assets/src/admin/views/Titles.js:121
 msgid "OpenGraph thumbnail"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:113
+#: assets/src/admin/views/Titles.js:123
 msgid "Default image used when a post has no featured or social image."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:122
+#: assets/src/admin/views/Titles.js:132
 msgid "Twitter card type"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:136
+#: assets/src/admin/views/Titles.js:146
 msgid "Site represents"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:140
+#: assets/src/admin/views/Titles.js:150
 msgid "Organization"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:143
+#: assets/src/admin/views/Titles.js:153
 msgid "Person"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:149
+#: assets/src/admin/views/Titles.js:159
 msgid "Website name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:150
+#: assets/src/admin/views/Titles.js:160
 msgid "Name of the WebSite node (defaults to site name)."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:159
+#: assets/src/admin/views/Titles.js:169
 msgid "Alternate website name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:167
+#: assets/src/admin/views/Titles.js:177
 msgid "Person or Organization name"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:168
+#: assets/src/admin/views/Titles.js:178
 msgid "Name of the Organization/Person entity (defaults to site name)."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:175
+#: assets/src/admin/views/Titles.js:185
 msgid "Logo"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:177
+#: assets/src/admin/views/Titles.js:187
 msgid "Minimum size 112×112px."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:19
-#: assets/src/admin/views/Titles.js:183
+#: assets/src/admin/views/Titles.js:193
 msgid "URL"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:184
+#: assets/src/admin/views/Titles.js:194
 msgid "Defaults to the site URL."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:191
+#: assets/src/admin/views/Titles.js:201
 msgid "Email"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:197
+#: assets/src/admin/views/Titles.js:207
 msgid "Phone"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:215
+#: assets/src/admin/views/Titles.js:225
 msgid "Homepage title"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:222
+#: assets/src/admin/views/Titles.js:232
 msgid "Homepage description"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:231
+#: assets/src/admin/views/Titles.js:241
 msgid "Custom homepage robots"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:232
+#: assets/src/admin/views/Titles.js:242
 msgid "Override the global robots meta for the homepage."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:247
+#: assets/src/admin/views/Titles.js:257
 msgid "Homepage social (OpenGraph)"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:249
+#: assets/src/admin/views/Titles.js:259
 msgid "Homepage title for Facebook"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:256
+#: assets/src/admin/views/Titles.js:266
 msgid "Homepage description for Facebook"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:264
+#: assets/src/admin/views/Titles.js:274
 msgid "Homepage thumbnail for Facebook (min. 1200×630px)."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:282
+#: assets/src/admin/views/Titles.js:292
 msgid "Author archives"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:283
+#: assets/src/admin/views/Titles.js:293
 msgid "When off, author archives redirect to the homepage."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:293
+#: assets/src/admin/views/Titles.js:303
 msgid "Author archive title"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:300
+#: assets/src/admin/views/Titles.js:310
 msgid "Author archive description"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:309
+#: assets/src/admin/views/Titles.js:319
 msgid "Custom author robots"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:330
+#: assets/src/admin/views/Titles.js:340
 msgid "Date archives"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:331
+#: assets/src/admin/views/Titles.js:341
 msgid "When off, date archives redirect to the homepage."
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:339
+#: assets/src/admin/views/Titles.js:349
 msgid "404 title"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:346
+#: assets/src/admin/views/Titles.js:356
 msgid "Search results title"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:354
+#: assets/src/admin/views/Titles.js:364
 msgid "Noindex search results"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:360
+#: assets/src/admin/views/Titles.js:370
 msgid "Noindex paginated pages"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:368
+#: assets/src/admin/views/Titles.js:378
 msgid "Noindex paginated single pages"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:376
+#: assets/src/admin/views/Titles.js:386
 msgid "Noindex password-protected pages"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
-#: assets/src/admin/views/Titles.js:418
+#: assets/src/admin/views/Titles.js:423
 msgid "Robots"
 msgstr ""
 
 #: assets/build/admin-settings.js:1
+#: assets/src/admin/views/Titles.js:437
+msgid "Default schema type"
+msgstr ""
+
+#. translators: %s: automatic schema type for this content type.
+#: assets/build/admin-settings.js:2
+#: assets/build/editor.js:3
+#: assets/src/admin/views/Titles.js:443
+#: assets/src/editor/index.js:161
+#, js-format
+msgid "Automatic (%s)"
+msgstr ""
+
+#: assets/build/admin-settings.js:2
+#: assets/src/admin/views/Titles.js:453
+msgid "Default social image for this content type."
+msgstr ""
+
+#: assets/build/admin-settings.js:2
+#: assets/src/admin/views/Titles.js:473
+msgid "Redirect attachment pages to the parent post"
+msgstr ""
+
+#: assets/build/admin-settings.js:2
+#: assets/src/admin/views/Titles.js:477
+msgid "Recommended: attachment pages are thin content. When on, their SEO templates below are disabled."
+msgstr ""
+
+#: assets/build/admin-settings.js:2
+#: assets/src/admin/views/Titles.js:491
+msgid "Fallback URL for attachments with no parent"
+msgstr ""
+
+#: assets/build/admin-settings.js:2
+#: assets/src/admin/views/Titles.js:495
+msgid "Used when an attachment has no parent post. Defaults to the homepage."
+msgstr ""
+
+#: assets/build/admin-settings.js:2
+#: assets/src/admin/views/Titles.js:505
+msgid "Attachment SEO templates are disabled while redirection is on."
+msgstr ""
+
+#: assets/build/admin-settings.js:2
 #: assets/src/admin/components/DataTable.js:28
 msgid "Nothing here yet."
 msgstr ""
 
 #. translators: %d: number of selected rows.
-#: assets/build/admin-settings.js:2
+#: assets/build/admin-settings.js:3
 #: assets/src/admin/components/DataTable.js:63
 #, js-format
 msgid "%d selected"
 msgstr ""
 
-#: assets/build/admin-settings.js:2
+#: assets/build/admin-settings.js:3
 #: assets/src/admin/components/DataTable.js:75
 msgid "Search"
 msgstr ""
 
-#: assets/build/admin-settings.js:2
+#: assets/build/admin-settings.js:3
 #: assets/src/admin/components/DataTable.js:104
 msgid "Actions"
 msgstr ""
 
-#: assets/build/admin-settings.js:2
+#: assets/build/admin-settings.js:3
 #: assets/src/admin/components/DataTable.js:170
 msgid "Previous"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/components/DataTable.js:185
 msgid "Next"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Social.js:7
 msgid "The default social image is now managed under OpenSEO → Titles & Meta → Meta Global."
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Sitemaps.js:11
 msgid "Enable XML sitemap"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Sitemaps.js:18
 msgid "Include author sitemap"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Schema.js:10
 msgid "Breadcrumb separator"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/hooks/useRedirects.js:33
 #: assets/src/admin/hooks/useRedirects.js:53
 msgid "Could not load redirects."
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:103
 msgid "Source"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:108
 msgid "regex"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:113
 #: assets/src/admin/views/Redirects.js:325
 msgid "Target"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:117
 msgid "Status"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:120
 msgid "Enabled"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:121
 msgid "Disabled"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:20
 #: assets/src/admin/views/Redirects.js:123
 msgid "Hits"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:153
 #: assets/src/admin/views/Redirects.js:177
 msgid "Enable"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:152
 #: assets/src/admin/views/Redirects.js:185
 msgid "Disable"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:39
 #: assets/src/admin/views/Redirects.js:169
 #: assets/src/admin/views/Redirects.js:193
 msgid "Delete"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:199
 msgid "Delete the selected redirects?"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:46
 #: assets/src/admin/views/Redirects.js:211
 msgid "Settings"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:214
 msgid "Auto-redirect on slug change"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:222
 msgid "Track redirect hits"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:230
 msgid "Default redirect type"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:71
 #: assets/src/admin/views/Redirects.js:249
 msgid "Save settings"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:258
 #: assets/src/admin/views/Redirects.js:297
 msgid "Add redirect"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:141
 msgid "Edit"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:162
 msgid "Delete this redirect?"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:289
 msgid "No redirects yet."
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:296
 msgid "Edit redirect"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:308
 msgid "Source path"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:334
 msgid "Regex source"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:349
 msgid "Cancel"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Redirects.js:352
 msgid "Save redirect"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/hooks/useNotfound.js:23
 #: assets/src/admin/hooks/useNotfound.js:43
 msgid "Could not load 404s."
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:21
 msgid "Last seen"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:49
 msgid "Enable 404 monitor"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:57
 msgid "404 retention (days)"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:84
 msgid "Clear the entire 404 log?"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:91
 msgid "Clear log"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:32
 msgid "Create redirect"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/NotFound.js:109
 msgid "No 404s logged."
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Ai.js:20
 msgid "An AI connector is configured. The editor can generate titles and descriptions."
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Ai.js:26
 msgid "No AI connector is configured."
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/build/editor.js:1
 #: assets/src/admin/views/Ai.js:32
 #: assets/src/editor/index.js:68
 msgid "Settings → Connectors"
 msgstr ""
 
-#: assets/build/admin-settings.js:3
+#: assets/build/admin-settings.js:4
 #: assets/src/admin/views/Ai.js:42
 msgid "AI model (optional override)"
 msgstr ""
@@ -1486,72 +1531,67 @@ msgstr ""
 msgid "Connect an AI provider to generate suggestions."
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:114
-msgid "Default (automatic)"
-msgstr ""
-
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:161
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:170
 msgid "Schema type"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:174
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:183
 msgid "Analyzing…"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:175
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:184
 msgid "Recommend with AI"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:180
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:189
 msgid "Recommended:"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:190
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:199
 msgid "Apply"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:243
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:252
 msgid "SEO title"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:259
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:268
 msgid "Meta description"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:288
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:297
 msgid "Social title"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:293
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:302
 msgid "Social description"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:298
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:307
 msgid "Social image URL"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:328
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:337
 msgid "Canonical URL"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:339
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:348
 msgid "General"
 msgstr ""
 
-#: assets/build/editor.js:1
-#: assets/src/editor/index.js:341
+#: assets/build/editor.js:3
+#: assets/src/editor/index.js:350
 msgid "Advanced"
 msgstr ""

@@ -113,16 +113,17 @@ final class Assets implements Hookable {
 	 * @param array<int, array{slug:string, label:string}> $types               Slug/label pairs.
 	 * @param string                                       $default_title       Default title template.
 	 * @param string                                       $default_description Default description template.
-	 * @return array<int, array{slug:string, label:string, defaultTitle:string, defaultDescription:string}>
+	 * @param bool                                         $with_schema         Add defaultSchemaType (post types only).
+	 * @return array<int, array<string, string>>
 	 */
-	private function content_type_entries( array $types, string $default_title, string $default_description ): array {
+	private function content_type_entries( array $types, string $default_title, string $default_description, bool $with_schema = false ): array {
 		return array_map(
-			static fn( array $type ): array => array(
+			fn( array $type ): array => array(
 				'slug'               => $type['slug'],
 				'label'              => $type['label'],
 				'defaultTitle'       => $default_title,
 				'defaultDescription' => $default_description,
-			),
+			) + ( $with_schema ? array( 'defaultSchemaType' => $this->defaults->schema_type( $type['slug'] ) ) : array() ),
 			$types
 		);
 	}
@@ -144,7 +145,8 @@ final class Assets implements Hookable {
 				'postTypes'  => $this->content_type_entries(
 					$this->content_types->post_types(),
 					$this->defaults->singular_title(),
-					$this->defaults->singular_description()
+					$this->defaults->singular_description(),
+					true
 				),
 				'taxonomies' => $this->content_type_entries(
 					$this->content_types->taxonomies(),

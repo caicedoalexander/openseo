@@ -12,12 +12,11 @@ namespace OpenSEO\Settings;
 /**
  * Single source of truth for which post types and taxonomies get SEO templates.
  * Used by Options::sanitize() (whitelist) and Admin\Assets (bootstrap) so the
- * editable set and the validated set never diverge. Criterion: public, minus
- * attachment (a media item needs no SEO title template).
+ * editable set and the validated set never diverge. Criterion: public post
+ * types and taxonomies (attachments included so their pages can be redirected
+ * or templated from Titles & Meta).
  */
 final class ContentTypes {
-
-	private const EXCLUDED_POST_TYPES = array( 'attachment' );
 
 	/**
 	 * Eligible post types as slug/label pairs.
@@ -28,9 +27,6 @@ final class ContentTypes {
 		$out = array();
 
 		foreach ( get_post_types( array( 'public' => true ), 'objects' ) as $type ) {
-			if ( in_array( $type->name, self::EXCLUDED_POST_TYPES, true ) ) {
-				continue;
-			}
 			$out[] = array(
 				'slug'  => (string) $type->name,
 				'label' => (string) ( $type->labels->name ?? $type->name ),

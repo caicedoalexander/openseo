@@ -64,6 +64,12 @@ final class ContentPiecesTest extends TestCase {
 		return new Resolver( $options, new Variables( $options ), $defaults, new TypeTemplates( $options, $defaults ) );
 	}
 
+	private function article(): Article {
+		$options  = new Options();
+		$defaults = new TemplateDefaults();
+		return new Article( $this->resolver(), $options, new TypeTemplates( $options, $defaults ) );
+	}
+
 	public function test_webpage_needed_on_singular_and_references_website(): void {
 		Functions\when( 'is_singular' )->justReturn( true );
 		Functions\when( 'is_front_page' )->justReturn( false );
@@ -90,7 +96,7 @@ final class ContentPiecesTest extends TestCase {
 		Functions\when( 'is_singular' )->justReturn( true );
 		Functions\when( 'is_front_page' )->justReturn( false );
 
-		$piece = new Article( $this->resolver(), new Options() );
+		$piece = $this->article();
 
 		$this->assertTrue( $piece->is_needed() );
 
@@ -109,7 +115,7 @@ final class ContentPiecesTest extends TestCase {
 			static fn( $id, $key ) => '_openseo_schema_type' === $key ? 'NewsArticle' : ''
 		);
 
-		$piece = new Article( $this->resolver(), new Options() );
+		$piece = $this->article();
 
 		$this->assertSame( 'NewsArticle', $piece->data()['@type'] );
 	}
@@ -121,12 +127,12 @@ final class ContentPiecesTest extends TestCase {
 		Functions\when( 'get_post_meta' )->alias(
 			static fn( $id, $key ) => '_openseo_schema_type' === $key ? 'none' : ''
 		);
-		$this->assertFalse( ( new Article( $this->resolver(), new Options() ) )->is_needed() );
+		$this->assertFalse( $this->article()->is_needed() );
 
 		Functions\when( 'get_post_meta' )->alias(
 			static fn( $id, $key ) => '_openseo_schema_type' === $key ? 'WebPage' : ''
 		);
-		$this->assertFalse( ( new Article( $this->resolver(), new Options() ) )->is_needed() );
+		$this->assertFalse( $this->article()->is_needed() );
 	}
 
 	public function test_article_suppressed_for_pages_by_default(): void {
@@ -134,7 +140,7 @@ final class ContentPiecesTest extends TestCase {
 		Functions\when( 'is_front_page' )->justReturn( false );
 		Functions\when( 'get_post_type' )->justReturn( 'page' );
 
-		$this->assertFalse( ( new Article( $this->resolver(), new Options() ) )->is_needed() );
+		$this->assertFalse( $this->article()->is_needed() );
 	}
 
 	public function test_webpage_front_page_needed_but_has_no_singular_fields(): void {
@@ -155,6 +161,20 @@ final class ContentPiecesTest extends TestCase {
 		Functions\when( 'is_singular' )->justReturn( false );
 		Functions\when( 'is_front_page' )->justReturn( false );
 
-		$this->assertFalse( ( new Article( $this->resolver(), new Options() ) )->is_needed() );
+		$this->assertFalse( $this->article()->is_needed() );
+	}
+
+	public function test_article_type_from_per_type_default(): void {
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'get_post_type' )->justReturn( 'review' );
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'review' => array( 'schema_type' => 'NewsArticle' ) ) )
+		);
+
+		$piece = $this->article();
+
+		$this->assertTrue( $piece->is_needed() );
+		$this->assertSame( 'NewsArticle', $piece->data()['@type'] );
 	}
 }

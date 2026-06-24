@@ -79,6 +79,7 @@ final class EditorPanel implements Hookable {
 					'connectorsUrl'       => Connector::settings_url(),
 					'titleTemplate'       => $this->type_templates->title_for( $post_type ),
 					'descriptionTemplate' => $this->type_templates->description_for( $post_type ),
+					'schemaTypeDefault'   => $this->type_templates->schema_type_for( $post_type ),
 					'separator'           => (string) $this->options->get( 'title_separator' ),
 					'siteName'            => (string) get_bloginfo( 'name' ),
 					'tagline'             => (string) get_bloginfo( 'description' ),

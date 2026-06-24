@@ -1,10 +1,11 @@
 import {
+	Notice,
 	SelectControl,
 	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { VerticalTabs } from '../components/VerticalTabs';
 import { TemplateField } from '../components/TemplateField';
@@ -29,6 +30,15 @@ const TWITTER_CARD_OPTIONS = [
 		value: 'summary_large_image',
 	},
 	{ label: __( 'Summary card', 'openseo' ), value: 'summary' },
+];
+
+// Order kept consistent with the editor's SCHEMA_OPTIONS (Task 10).
+const SCHEMA_TYPE_OPTIONS = [
+	{ label: 'Article', value: 'Article' },
+	{ label: 'BlogPosting', value: 'BlogPosting' },
+	{ label: 'NewsArticle', value: 'NewsArticle' },
+	{ label: 'WebPage', value: 'WebPage' },
+	{ label: __( 'None', 'openseo' ), value: 'none' },
 ];
 
 const GROUPS = [
@@ -386,6 +396,11 @@ function OtherPagesPanel( { values, change } ) {
 function TypePanel( { type, mapKey, scope, values, change } ) {
 	const map = values[ mapKey ] ?? {};
 	const entry = map[ type.slug ] ?? {};
+	const isPostType = mapKey === 'post_types';
+
+	const setField = ( field, value ) =>
+		change( mapKey, setTemplateField( map, type.slug, field, value ) );
+
 	return (
 		<>
 			<TemplateField
@@ -394,12 +409,7 @@ function TypePanel( { type, mapKey, scope, values, change } ) {
 				placeholder={ type.defaultTitle }
 				scope={ scope }
 				catalog={ catalog }
-				onChange={ ( v ) =>
-					change(
-						mapKey,
-						setTemplateField( map, type.slug, 'title', v )
-					)
-				}
+				onChange={ ( v ) => setField( 'title', v ) }
 			/>
 			<TemplateField
 				label={ __( 'Description', 'openseo' ) }
@@ -408,12 +418,7 @@ function TypePanel( { type, mapKey, scope, values, change } ) {
 				multiline
 				scope={ scope }
 				catalog={ catalog }
-				onChange={ ( v ) =>
-					change(
-						mapKey,
-						setTemplateField( map, type.slug, 'description', v )
-					)
-				}
+				onChange={ ( v ) => setField( 'description', v ) }
 			/>
 			<h3>{ __( 'Robots', 'openseo' ) }</h3>
 			<RobotsFields
@@ -425,6 +430,93 @@ function TypePanel( { type, mapKey, scope, values, change } ) {
 					} )
 				}
 			/>
+			{ isPostType && (
+				<>
+					<SelectControl
+						__nextHasNoMarginBottom
+						label={ __( 'Default schema type', 'openseo' ) }
+						value={ entry.schema_type ?? '' }
+						options={ [
+							{
+								label: sprintf(
+									/* translators: %s: automatic schema type for this content type. */
+									__( 'Automatic (%s)', 'openseo' ),
+									type.defaultSchemaType ?? ''
+								),
+								value: '',
+							},
+							...SCHEMA_TYPE_OPTIONS,
+						] }
+						onChange={ ( v ) => setField( 'schema_type', v ) }
+					/>
+					<MediaField
+						label={ __(
+							'Default social image for this content type.',
+							'openseo'
+						) }
+						value={ entry.og_image ?? '' }
+						onChange={ ( url ) => setField( 'og_image', url ) }
+					/>
+				</>
+			) }
+		</>
+	);
+}
+
+function AttachmentsPanel( { type, values, change } ) {
+	const redirect = values.attachment_redirect === '1';
+
+	return (
+		<>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __(
+					'Redirect attachment pages to the parent post',
+					'openseo'
+				) }
+				help={ __(
+					'Recommended: attachment pages are thin content. When on, their SEO templates below are disabled.',
+					'openseo'
+				) }
+				checked={ redirect }
+				onChange={ ( on ) =>
+					change( 'attachment_redirect', on ? '1' : '' )
+				}
+			/>
+			{ redirect ? (
+				<>
+					<TextControl
+						__nextHasNoMarginBottom
+						type="url"
+						label={ __(
+							'Fallback URL for attachments with no parent',
+							'openseo'
+						) }
+						help={ __(
+							'Used when an attachment has no parent post. Defaults to the homepage.',
+							'openseo'
+						) }
+						value={ values.attachment_redirect_orphan ?? '' }
+						onChange={ ( v ) =>
+							change( 'attachment_redirect_orphan', v )
+						}
+					/>
+					<Notice status="info" isDismissible={ false }>
+						{ __(
+							'Attachment SEO templates are disabled while redirection is on.',
+							'openseo'
+						) }
+					</Notice>
+				</>
+			) : (
+				<TypePanel
+					type={ type }
+					mapKey="post_types"
+					scope="singular"
+					values={ values }
+					change={ change }
+				/>
+			) }
 		</>
 	);
 }
@@ -434,7 +526,19 @@ function renderPanel( tab, values, change ) {
 		const type = contentTypes.postTypes.find(
 			( t ) => t.slug === tab.slice( 3 )
 		);
-		return type ? (
+		if ( ! type ) {
+			return null;
+		}
+		if ( type.slug === 'attachment' ) {
+			return (
+				<AttachmentsPanel
+					type={ type }
+					values={ values }
+					change={ change }
+				/>
+			);
+		}
+		return (
 			<TypePanel
 				type={ type }
 				mapKey="post_types"
@@ -442,7 +546,7 @@ function renderPanel( tab, values, change ) {
 				values={ values }
 				change={ change }
 			/>
-		) : null;
+		);
 	}
 	if ( tab.startsWith( 'tax:' ) ) {
 		const type = contentTypes.taxonomies.find(

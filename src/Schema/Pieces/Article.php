@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace OpenSEO\Schema\Pieces;
 
 use OpenSEO\Meta\Resolver;
+use OpenSEO\Meta\TypeTemplates;
 use OpenSEO\Schema\Ids;
 use OpenSEO\Schema\Piece;
 use OpenSEO\Settings\Options;
@@ -22,14 +23,16 @@ final class Article implements Piece {
 	private const ARTICLE_TYPES = array( 'Article', 'BlogPosting', 'NewsArticle' );
 
 	/**
-	 * Initializes the Article piece with the shared resolver and settings.
+	 * Initializes the Article piece with the shared resolver, settings, and type templates.
 	 *
-	 * @param Resolver $resolver Shared SEO value resolver.
-	 * @param Options  $options  Settings accessor (identity type for publisher).
+	 * @param Resolver      $resolver       Shared SEO value resolver.
+	 * @param Options       $options        Settings accessor (identity type for publisher).
+	 * @param TypeTemplates $type_templates Per-content-type schema defaults.
 	 */
 	public function __construct(
 		private readonly Resolver $resolver,
-		private readonly Options $options
+		private readonly Options $options,
+		private readonly TypeTemplates $type_templates
 	) {}
 
 	/**
@@ -40,18 +43,7 @@ final class Article implements Piece {
 			return false;
 		}
 
-		$override = (string) get_post_meta( get_queried_object_id(), '_openseo_schema_type', true );
-
-		if ( in_array( $override, self::ARTICLE_TYPES, true ) ) {
-			return true;
-		}
-
-		if ( 'none' === $override || 'WebPage' === $override ) {
-			return false;
-		}
-
-		// Default ('' override): emit an Article only for the 'post' post type.
-		return 'post' === get_post_type( get_queried_object_id() );
+		return in_array( $this->effective_schema_type(), self::ARTICLE_TYPES, true );
 	}
 
 	/**
@@ -77,7 +69,7 @@ final class Article implements Piece {
 		$author_id = (int) get_post_field( 'post_author', $id );
 
 		$data = array(
-			'@type'            => $this->type( (string) get_post_meta( $id, '_openseo_schema_type', true ) ),
+			'@type'            => $this->type(),
 			'@id'              => Ids::article( $url ),
 			'headline'         => $this->resolver->title(),
 			'isPartOf'         => array( '@id' => Ids::webpage( $url ) ),
@@ -104,12 +96,26 @@ final class Article implements Piece {
 	}
 
 	/**
-	 * Resolve the effective @type from the per-entry override.
-	 *
-	 * @param string $override Stored per-entry schema type.
-	 * @return string
+	 * Resolve the effective schema type: per-entry override → per-type default →
+	 * automatic default. Shared by is_needed() and type() to avoid drift.
 	 */
-	private function type( string $override ): string {
-		return in_array( $override, self::ARTICLE_TYPES, true ) ? $override : 'Article';
+	private function effective_schema_type(): string {
+		$id       = get_queried_object_id();
+		$override = (string) get_post_meta( $id, '_openseo_schema_type', true );
+
+		if ( '' !== $override ) {
+			return $override;
+		}
+
+		return $this->type_templates->schema_type_for( (string) get_post_type( $id ) );
+	}
+
+	/**
+	 * The Article @type to emit (only reached when is_needed() is true).
+	 */
+	private function type(): string {
+		$effective = $this->effective_schema_type();
+
+		return in_array( $effective, self::ARTICLE_TYPES, true ) ? $effective : 'Article';
 	}
 }

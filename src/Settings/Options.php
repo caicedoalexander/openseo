@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace OpenSEO\Settings;
 
+use OpenSEO\Meta\PostMeta;
+
 /**
  * Reads, writes, and sanitizes the single options array used by OpenSEO.
  *
@@ -61,6 +63,8 @@ final class Options {
 			'redirects_track_hits'         => '1',
 			'notfound_monitor_enabled'     => '',
 			'notfound_retention_days'      => '30',
+			'attachment_redirect'          => '1',
+			'attachment_redirect_orphan'   => '',
 			'post_types'                   => array(),
 			'taxonomies'                   => array(),
 			'robots'                       => array(),
@@ -154,7 +158,7 @@ final class Options {
 
 		// Checkboxes: a hidden companion field guarantees the key is present (0 or
 		// 1) when its tab is submitted, so an explicit '1' check turns it on/off.
-		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors', 'redirects_auto_slug', 'redirects_track_hits', 'notfound_monitor_enabled', 'capitalize_titles', 'home_robots_custom', 'author_robots_custom', 'author_archives', 'date_archives', 'noindex_search', 'noindex_paginated', 'noindex_paginated_singular', 'noindex_password_protected' ) as $key ) {
+		foreach ( array( 'sitemap_enabled', 'sitemap_include_authors', 'redirects_auto_slug', 'redirects_track_hits', 'notfound_monitor_enabled', 'capitalize_titles', 'home_robots_custom', 'author_robots_custom', 'author_archives', 'date_archives', 'noindex_search', 'noindex_paginated', 'noindex_paginated_singular', 'noindex_password_protected', 'attachment_redirect' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = '1' === $input[ $key ] ? '1' : '';
 			}
@@ -173,7 +177,7 @@ final class Options {
 			$clean['twitter_card_type'] = in_array( $card, array( 'summary_large_image', 'summary' ), true ) ? $card : 'summary_large_image';
 		}
 
-		foreach ( array( 'og_default_image', 'schema_logo', 'local_url', 'home_og_image' ) as $key ) {
+		foreach ( array( 'og_default_image', 'schema_logo', 'local_url', 'home_og_image', 'attachment_redirect_orphan' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = esc_url_raw( wp_unslash( $input[ $key ] ) );
 			}
@@ -224,7 +228,8 @@ final class Options {
 				$clean['post_types'] = $this->sanitize_template_map(
 					$input['post_types'],
 					is_array( $clean['post_types'] ?? null ) ? $clean['post_types'] : array(),
-					$content_types->post_type_slugs()
+					$content_types->post_type_slugs(),
+					true
 				);
 			}
 
@@ -269,14 +274,17 @@ final class Options {
 	 *
 	 * Conservation of unsent slugs comes from $current already holding the stored
 	 * map (sanitize() starts from all()); this is NOT a PHP deep merge. Per slug:
-	 * whitelist, merge per field, and unset when all three fields end up empty.
+	 * whitelist, merge per field, and unset when every field ends up empty. The
+	 * rich fields (schema_type, og_image) are only processed for post_types
+	 * ($allow_rich) and are omitted from the entry when empty (lean map).
 	 *
-	 * @param mixed                                                                              $input_map Raw submitted map for the group.
-	 * @param array<string, array{title:string,description:string,robots?:array<string,string>}> $current   Stored map for this group.
-	 * @param array<int, string>                                                                 $allowed   Whitelisted slugs.
-	 * @return array<string, array{title:string,description:string,robots?:array<string,string>}>
+	 * @param mixed                                                                                                                   $input_map  Raw submitted map for the group.
+	 * @param array<string, array{title:string,description:string,robots?:array<string,string>,schema_type?:string,og_image?:string}> $current    Stored map for this group.
+	 * @param array<int, string>                                                                                                      $allowed    Whitelisted slugs.
+	 * @param bool                                                                                                                    $allow_rich Whether to accept schema_type/og_image (post types only).
+	 * @return array<string, array{title:string,description:string,robots?:array<string,string>,schema_type?:string,og_image?:string}>
 	 */
-	private function sanitize_template_map( mixed $input_map, array $current, array $allowed ): array {
+	private function sanitize_template_map( mixed $input_map, array $current, array $allowed, bool $allow_rich = false ): array {
 		if ( ! is_array( $input_map ) ) {
 			return $current;
 		}
@@ -308,7 +316,22 @@ final class Options {
 				$robots = is_array( $current[ $slug ]['robots'] ?? null ) ? $current[ $slug ]['robots'] : array();
 			}
 
-			if ( '' === $title && '' === $description && empty( $robots ) ) {
+			$schema_type = '';
+			$og_image    = '';
+			if ( $allow_rich ) {
+				if ( array_key_exists( 'schema_type', $fields ) ) {
+					$candidate   = (string) $fields['schema_type'];
+					$schema_type = in_array( $candidate, PostMeta::SCHEMA_TYPES, true ) ? $candidate : '';
+				} else {
+					$schema_type = (string) ( $current[ $slug ]['schema_type'] ?? '' );
+				}
+
+				$og_image = array_key_exists( 'og_image', $fields )
+					? esc_url_raw( wp_unslash( (string) $fields['og_image'] ) )
+					: (string) ( $current[ $slug ]['og_image'] ?? '' );
+			}
+
+			if ( '' === $title && '' === $description && empty( $robots ) && '' === $schema_type && '' === $og_image ) {
 				unset( $current[ $slug ] );
 				continue;
 			}
@@ -319,6 +342,12 @@ final class Options {
 			);
 			if ( ! empty( $robots ) ) {
 				$entry['robots'] = $robots;
+			}
+			if ( '' !== $schema_type ) {
+				$entry['schema_type'] = $schema_type;
+			}
+			if ( '' !== $og_image ) {
+				$entry['og_image'] = $og_image;
 			}
 
 			$current[ $slug ] = $entry;

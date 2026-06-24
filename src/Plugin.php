@@ -27,6 +27,7 @@ use OpenSEO\Frontend\Head\OpenGraph;
 use OpenSEO\Frontend\Head\Robots;
 use OpenSEO\Frontend\Head\Title;
 use OpenSEO\Frontend\ArchiveRedirect;
+use OpenSEO\Frontend\AttachmentRedirect;
 use OpenSEO\Frontend\Head\Twitter;
 use OpenSEO\Meta\PostMeta;
 use OpenSEO\Meta\Resolver;
@@ -143,7 +144,7 @@ final class Plugin {
 				new Organization( $options ),
 				new Person( $options ),
 				new WebPagePiece( $resolver ),
-				new Article( $resolver, $options ),
+				new Article( $resolver, $options, $type_templates ),
 				new BreadcrumbList( $trail ),
 			)
 		);
@@ -155,6 +156,7 @@ final class Plugin {
 			new SlugWatcher( $redirects_repo, $redirects_cache, $options ),
 			new PostMeta(),
 			new ArchiveRedirect( $options ),
+			new AttachmentRedirect( $options ),
 			new SettingsMigrations(),
 			new Title( $resolver ),
 			new HeadPrinter(

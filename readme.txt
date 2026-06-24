@@ -61,6 +61,10 @@ WordPress 7.0 or newer, because OpenSEO builds on the Abilities API and AI Clien
 
 == Changelog ==
 
+= Unreleased =
+* Titles &amp; Meta: per-content-type and taxonomy panels — Attachments (with redirect-to-parent, on by default), default schema type per content type, and default social image per content type.
+* Attachment pages now redirect to their parent post by default; disable in OpenSEO &rarr; Titles &amp; Meta &rarr; Attachments.
+
 = 0.1.0 =
 * On-page meta: titles, meta descriptions, robots, canonical, Open Graph, and Twitter Cards with a per-entry/template/fallback cascade and title-template variables.
 * AI assistance via the WordPress AI Client: generate meta descriptions and titles, and suggest a schema.org type, exposed through the Abilities API.

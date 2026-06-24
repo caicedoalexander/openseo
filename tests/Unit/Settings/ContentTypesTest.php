@@ -29,7 +29,7 @@ final class ContentTypesTest extends TestCase {
 		return $type;
 	}
 
-	public function test_post_types_exclude_attachment(): void {
+	public function test_post_types_include_attachment(): void {
 		Functions\when( 'get_post_types' )->justReturn(
 			array(
 				'post'       => $this->fake_type( 'post', 'Posts' ),
@@ -42,7 +42,7 @@ final class ContentTypesTest extends TestCase {
 
 		$this->assertContains( 'post', $slugs );
 		$this->assertContains( 'page', $slugs );
-		$this->assertNotContains( 'attachment', $slugs );
+		$this->assertContains( 'attachment', $slugs );
 	}
 
 	public function test_taxonomies_map_slug_and_label(): void {

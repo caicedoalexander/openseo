@@ -557,6 +557,15 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( '—', $clean['title_separator'] );
 	}
 
+	public function test_defaults_include_attachment_redirect_keys(): void {
+		Functions\when( 'get_option' )->justReturn( false );
+
+		$all = ( new Options() )->all();
+
+		$this->assertSame( '1', $all['attachment_redirect'] );
+		$this->assertSame( '', $all['attachment_redirect_orphan'] );
+	}
+
 	public function test_defaults_include_special_page_keys(): void {
 		Functions\when( 'get_option' )->justReturn( array() );
 
@@ -570,6 +579,65 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( '%search_query% %sep% %sitename%', $options->get( 'search_title' ) );
 		$this->assertSame( '', $options->get( 'home_robots_custom' ) );
 		$this->assertSame( array(), $options->get( 'home_robots' ) );
+	}
+
+	public function test_sanitize_stores_per_type_schema_and_og_image(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'get_post_types' )->justReturn(
+			array( 'post' => (object) array( 'name' => 'post', 'labels' => (object) array( 'name' => 'Posts' ) ) )
+		);
+
+		$clean = ( new Options() )->sanitize(
+			array(
+				'post_types' => array(
+					'post' => array(
+						'title'       => '',
+						'description' => '',
+						'schema_type' => 'NewsArticle',
+						'og_image'    => 'https://x.test/a.jpg',
+					),
+				),
+			)
+		);
+
+		$this->assertSame( 'NewsArticle', $clean['post_types']['post']['schema_type'] );
+		$this->assertSame( 'https://x.test/a.jpg', $clean['post_types']['post']['og_image'] );
+	}
+
+	public function test_sanitize_rejects_invalid_schema_type(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'get_post_types' )->justReturn(
+			array( 'post' => (object) array( 'name' => 'post', 'labels' => (object) array( 'name' => 'Posts' ) ) )
+		);
+
+		$clean = ( new Options() )->sanitize(
+			array( 'post_types' => array( 'post' => array( 'schema_type' => 'Bogus', 'og_image' => 'https://x.test/a.jpg' ) ) )
+		);
+
+		$this->assertArrayNotHasKey( 'schema_type', $clean['post_types']['post'] );
+		$this->assertSame( 'https://x.test/a.jpg', $clean['post_types']['post']['og_image'] );
+	}
+
+	public function test_sanitize_attachment_redirect_keys(): void {
+		Functions\when( 'get_option' )->justReturn( array() );
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+
+		$clean = ( new Options() )->sanitize(
+			array(
+				'attachment_redirect'        => '1',
+				'attachment_redirect_orphan' => 'https://x.test/orphan/',
+			)
+		);
+
+		$this->assertSame( '1', $clean['attachment_redirect'] );
+		$this->assertSame( 'https://x.test/orphan/', $clean['attachment_redirect_orphan'] );
 	}
 
 	public function test_sanitize_handles_special_page_fields(): void {

@@ -64,4 +64,19 @@ final class TemplateDefaults {
 	public function not_found_title(): string {
 		return 'Page Not Found %sep% %sitename%';
 	}
+
+	/**
+	 * Default schema @type for a content type when no per-type or per-entry
+	 * value is set. Mirrors the historical behavior (Article only for posts).
+	 *
+	 * @param string $post_type Post type slug.
+	 */
+	public function schema_type( string $post_type ): string {
+		$map = array(
+			'post' => 'Article',
+			'page' => 'WebPage',
+		);
+
+		return $map[ $post_type ] ?? 'none';
+	}
 }
