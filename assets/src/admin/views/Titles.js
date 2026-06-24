@@ -1,4 +1,5 @@
 import {
+	Notice,
 	SelectControl,
 	TextControl,
 	ToggleControl,
@@ -462,12 +463,82 @@ function TypePanel( { type, mapKey, scope, values, change } ) {
 	);
 }
 
+function AttachmentsPanel( { type, values, change } ) {
+	const redirect = values.attachment_redirect === '1';
+
+	return (
+		<>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __(
+					'Redirect attachment pages to the parent post',
+					'openseo'
+				) }
+				help={ __(
+					'Recommended: attachment pages are thin content. When on, their SEO templates below are disabled.',
+					'openseo'
+				) }
+				checked={ redirect }
+				onChange={ ( on ) =>
+					change( 'attachment_redirect', on ? '1' : '' )
+				}
+			/>
+			{ redirect ? (
+				<>
+					<TextControl
+						__nextHasNoMarginBottom
+						type="url"
+						label={ __(
+							'Fallback URL for attachments with no parent',
+							'openseo'
+						) }
+						help={ __(
+							'Used when an attachment has no parent post. Defaults to the homepage.',
+							'openseo'
+						) }
+						value={ values.attachment_redirect_orphan ?? '' }
+						onChange={ ( v ) =>
+							change( 'attachment_redirect_orphan', v )
+						}
+					/>
+					<Notice status="info" isDismissible={ false }>
+						{ __(
+							'Attachment SEO templates are disabled while redirection is on.',
+							'openseo'
+						) }
+					</Notice>
+				</>
+			) : (
+				<TypePanel
+					type={ type }
+					mapKey="post_types"
+					scope="singular"
+					values={ values }
+					change={ change }
+				/>
+			) }
+		</>
+	);
+}
+
 function renderPanel( tab, values, change ) {
 	if ( tab.startsWith( 'pt:' ) ) {
 		const type = contentTypes.postTypes.find(
 			( t ) => t.slug === tab.slice( 3 )
 		);
-		return type ? (
+		if ( ! type ) {
+			return null;
+		}
+		if ( type.slug === 'attachment' ) {
+			return (
+				<AttachmentsPanel
+					type={ type }
+					values={ values }
+					change={ change }
+				/>
+			);
+		}
+		return (
 			<TypePanel
 				type={ type }
 				mapKey="post_types"
@@ -475,7 +546,7 @@ function renderPanel( tab, values, change ) {
 				values={ values }
 				change={ change }
 			/>
-		) : null;
+		);
 	}
 	if ( tab.startsWith( 'tax:' ) ) {
 		const type = contentTypes.taxonomies.find(
