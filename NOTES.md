@@ -263,7 +263,11 @@ npm run env:run -- cli wp option get openseo_settings
 npm run env:run -- cli wp eval 'var_dump( function_exists("wp_register_ability") );'
 
 # Regenerar el archivo de traducciones (.pot):
-npm run env:run -- cli wp i18n make-pot wp-content/plugins/openseo languages/openseo.pot
+# OJO: la ruta de SALIDA se resuelve relativa al CWD del contenedor (/var/www/html),
+# no al plugin. Hay que pasar la ruta destino completa relativa al plugin, o el .pot
+# se escribe en una ruta no montada y el archivo del host nunca cambia.
+npm run env:run -- cli wp i18n make-pot wp-content/plugins/openseo wp-content/plugins/openseo/languages/openseo.pot
+# Verificar que el archivo del host cambió: git status --short languages/openseo.pot
 ```
 
 `wp-cli.yml` aporta defaults para scripts repetibles.
