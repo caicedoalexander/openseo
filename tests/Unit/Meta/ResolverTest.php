@@ -751,4 +751,43 @@ final class ResolverTest extends TestCase {
 
 		$this->assertSame( 'My Site - Tagline', $this->resolver()->social_title() );
 	}
+
+	public function test_social_image_uses_per_type_default_before_global(): void {
+		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 9 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );          // sin og_image de entrada
+		Functions\when( 'get_the_post_thumbnail_url' )->justReturn( '' ); // sin destacada
+		Functions\when( 'get_option' )->justReturn(
+			array(
+				'post_types'       => array( 'post' => array( 'og_image' => 'https://x.test/type.jpg' ) ),
+				'og_default_image' => 'https://x.test/global.jpg',
+			)
+		);
+
+		$options  = new Options();
+		$defaults = new TemplateDefaults();
+		$resolver = new Resolver( $options, new Variables( $options ), $defaults, new TypeTemplates( $options, $defaults ) );
+
+		$this->assertSame( 'https://x.test/type.jpg', $resolver->social_image() );
+	}
+
+	public function test_social_image_featured_wins_over_per_type_default(): void {
+		Functions\when( 'is_front_page' )->justReturn( false );
+		Functions\when( 'is_singular' )->justReturn( true );
+		Functions\when( 'get_queried_object_id' )->justReturn( 9 );
+		Functions\when( 'get_post_type' )->justReturn( 'post' );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'get_the_post_thumbnail_url' )->justReturn( 'https://x.test/featured.jpg' );
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'post' => array( 'og_image' => 'https://x.test/type.jpg' ) ) )
+		);
+
+		$options  = new Options();
+		$defaults = new TemplateDefaults();
+		$resolver = new Resolver( $options, new Variables( $options ), $defaults, new TypeTemplates( $options, $defaults ) );
+
+		$this->assertSame( 'https://x.test/featured.jpg', $resolver->social_image() );
+	}
 }

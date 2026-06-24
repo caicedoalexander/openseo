@@ -413,6 +413,11 @@ final class Resolver {
 			if ( '' !== $featured ) {
 				return $featured;
 			}
+
+			$type_image = $this->type_templates->og_image_for( (string) get_post_type( get_queried_object_id() ) );
+			if ( '' !== $type_image ) {
+				return $type_image;
+			}
 		}
 
 		return (string) $this->options->get( 'og_default_image' );
