@@ -509,6 +509,7 @@ function AttachmentsPanel( { type, values, change } ) {
 					</Notice>
 				</>
 			) : (
+				/* type is forwarded to TypePanel for the attachment slug */
 				<TypePanel
 					type={ type }
 					mapKey="post_types"

@@ -320,7 +320,7 @@ final class Options {
 			$og_image    = '';
 			if ( $allow_rich ) {
 				if ( array_key_exists( 'schema_type', $fields ) ) {
-					$candidate   = (string) $fields['schema_type'];
+					$candidate   = sanitize_text_field( wp_unslash( (string) $fields['schema_type'] ) );
 					$schema_type = in_array( $candidate, PostMeta::SCHEMA_TYPES, true ) ? $candidate : '';
 				} else {
 					$schema_type = (string) ( $current[ $slug ]['schema_type'] ?? '' );

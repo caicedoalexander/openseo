@@ -65,6 +65,7 @@ final class TypeTemplatesTest extends TestCase {
 		$this->assertSame( 'Article', $this->type_templates()->schema_type_for( 'post' ) );
 		$this->assertSame( 'WebPage', $this->type_templates()->schema_type_for( 'page' ) );
 		$this->assertSame( 'none', $this->type_templates()->schema_type_for( 'attachment' ) );
+		$this->assertSame( 'none', $this->type_templates()->schema_type_for( 'book' ) );
 	}
 
 	public function test_og_image_for_returns_stored_or_empty(): void {

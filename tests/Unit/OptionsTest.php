@@ -624,6 +624,31 @@ final class OptionsTest extends TestCase {
 		$this->assertSame( 'https://x.test/a.jpg', $clean['post_types']['post']['og_image'] );
 	}
 
+	public function test_sanitize_unsets_slug_when_invalid_schema_type_leaves_all_fields_empty(): void {
+		Functions\when( 'get_option' )->justReturn(
+			array( 'post_types' => array( 'post' => array( 'title' => 'Old', 'description' => '' ) ) )
+		);
+		Functions\when( 'wp_unslash' )->returnArg();
+		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'esc_url_raw' )->returnArg();
+
+		// Empty title/description + invalid schema_type (rejected to '') + no og_image → fully empty → unset.
+		$clean = ( new Options() )->sanitize(
+			array(
+				'post_types' => array(
+					'post' => array(
+						'title'       => '',
+						'description' => '',
+						'schema_type' => 'Bogus',
+						'og_image'    => '',
+					),
+				),
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'post', $clean['post_types'] );
+	}
+
 	public function test_sanitize_attachment_redirect_keys(): void {
 		Functions\when( 'get_option' )->justReturn( array() );
 		Functions\when( 'wp_unslash' )->returnArg();

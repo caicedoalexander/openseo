@@ -394,7 +394,7 @@ final class Resolver {
 	}
 
 	/**
-	 * Social image: homepage og -> home og image; singular: og override -> featured image -> global default.
+	 * Social image: homepage og -> home og image; singular: og override -> featured image -> per-type default -> global default.
 	 */
 	public function social_image(): string {
 		if ( $this->is_posts_homepage() ) {
@@ -409,12 +409,13 @@ final class Resolver {
 		}
 
 		if ( is_singular() ) {
-			$featured = (string) get_the_post_thumbnail_url( get_queried_object_id(), 'full' );
+			$id       = get_queried_object_id();
+			$featured = (string) get_the_post_thumbnail_url( $id, 'full' );
 			if ( '' !== $featured ) {
 				return $featured;
 			}
 
-			$type_image = $this->type_templates->og_image_for( (string) get_post_type( get_queried_object_id() ) );
+			$type_image = $this->type_templates->og_image_for( (string) get_post_type( $id ) );
 			if ( '' !== $type_image ) {
 				return $type_image;
 			}

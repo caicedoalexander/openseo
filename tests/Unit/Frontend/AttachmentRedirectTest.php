@@ -61,7 +61,7 @@ final class AttachmentRedirectTest extends TestCase {
 	}
 
 	public function test_target_falls_back_to_orphan_url(): void {
-		Functions\when( 'get_post_field' )->justReturn( 0 ); // sin padre
+		Functions\when( 'get_post_field' )->justReturn( 0 ); // no parent
 		Functions\when( 'get_permalink' )->justReturn( 'https://x.test/attachment/' );
 
 		$this->assertSame(
@@ -78,7 +78,7 @@ final class AttachmentRedirectTest extends TestCase {
 	}
 
 	public function test_target_anti_identity_falls_back_to_home(): void {
-		Functions\when( 'get_post_field' )->justReturn( 10 ); // padre = el propio adjunto
+		Functions\when( 'get_post_field' )->justReturn( 10 ); // parent = the attachment itself
 		Functions\when( 'get_permalink' )->justReturn( 'https://x.test/attachment/' );
 
 		$this->assertSame( 'https://x.test/', $this->module( array() )->target() );

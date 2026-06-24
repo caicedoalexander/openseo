@@ -757,8 +757,8 @@ final class ResolverTest extends TestCase {
 		Functions\when( 'is_singular' )->justReturn( true );
 		Functions\when( 'get_queried_object_id' )->justReturn( 9 );
 		Functions\when( 'get_post_type' )->justReturn( 'post' );
-		Functions\when( 'get_post_meta' )->justReturn( '' );          // sin og_image de entrada
-		Functions\when( 'get_the_post_thumbnail_url' )->justReturn( '' ); // sin destacada
+		Functions\when( 'get_post_meta' )->justReturn( '' );          // no per-entry og_image
+		Functions\when( 'get_the_post_thumbnail_url' )->justReturn( '' ); // no featured image
 		Functions\when( 'get_option' )->justReturn(
 			array(
 				'post_types'       => array( 'post' => array( 'og_image' => 'https://x.test/type.jpg' ) ),

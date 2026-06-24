@@ -114,7 +114,7 @@ final class Assets implements Hookable {
 	 * @param string                                       $default_title       Default title template.
 	 * @param string                                       $default_description Default description template.
 	 * @param bool                                         $with_schema         Add defaultSchemaType (post types only).
-	 * @return array<int, array<string, string>>
+	 * @return array<int, array{slug:string, label:string, defaultTitle:string, defaultDescription:string, defaultSchemaType?:string}>
 	 */
 	private function content_type_entries( array $types, string $default_title, string $default_description, bool $with_schema = false ): array {
 		return array_map(
