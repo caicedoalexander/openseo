@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Titles & Meta: per-content-type and taxonomy panels — Attachments (with redirect-to-parent, on by default), default schema type per content type, and default social image per content type.
+
+### Changed
+- Attachment pages now redirect to their parent post by default; disable in OpenSEO → Titles & Meta → Attachments.
+
 ## [0.1.0] - 2026-06-17
 
 ### Added
